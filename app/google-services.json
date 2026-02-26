@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "63236284341",
+    "project_id": "halalytics",
+    "storage_bucket": "halalytics.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:63236284341:android:57bbfa6157f5317c20c3fc",
+        "android_client_info": {
+          "package_name": "com.example.halalyticscompose"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHLAsW-6KEv0lDpxvpR6-bsGacnc47iqc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

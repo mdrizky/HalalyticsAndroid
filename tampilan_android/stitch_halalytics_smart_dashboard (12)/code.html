@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Halal-Ku Favorites</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2beea6",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#10221b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-card {
+            background: rgba(28, 39, 35, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(43, 238, 166, 0.1);
+        }
+        .emerald-glow {
+            box-shadow: 0 0 15px rgba(43, 238, 166, 0.3);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white selection:bg-primary/30">
+<!-- Main Container for iOS Feel -->
+<div class="relative flex h-screen w-full flex-col overflow-hidden max-w-md mx-auto shadow-2xl">
+<!-- TopAppBar -->
+<header class="flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-50 p-4 pb-2 justify-between">
+<div class="text-primary flex size-12 shrink-0 items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined" style="font-size: 28px;">chevron_left</span>
+</div>
+<h2 class="text-gray-900 dark:text-white text-xl font-bold leading-tight tracking-tight flex-1 text-center">Halal-Ku Favorites</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex items-center justify-center rounded-full h-10 w-10 bg-primary/10 text-primary cursor-pointer">
+<span class="material-symbols-outlined" style="font-size: 22px;">search</span>
+</button>
+</div>
+</header>
+<!-- Tabs -->
+<nav class="pb-1 bg-background-light dark:bg-background-dark">
+<div class="flex border-b border-gray-200 dark:border-white/10 px-4 gap-6 overflow-x-auto no-scrollbar">
+<a class="flex flex-col items-center justify-center border-b-2 border-primary text-primary pb-3 pt-4 whitespace-nowrap" href="#">
+<p class="text-sm font-bold tracking-wide uppercase">All Items</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-gray-500 dark:text-[#9db9af] pb-3 pt-4 whitespace-nowrap" href="#">
+<p class="text-sm font-bold tracking-wide uppercase">Snacks</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-gray-500 dark:text-[#9db9af] pb-3 pt-4 whitespace-nowrap" href="#">
+<p class="text-sm font-bold tracking-wide uppercase">Beverages</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-gray-500 dark:text-[#9db9af] pb-3 pt-4 whitespace-nowrap" href="#">
+<p class="text-sm font-bold tracking-wide uppercase">Dairy</p>
+</a>
+</div>
+</nav>
+<!-- Product Grid Scrollable Area -->
+<main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark no-scrollbar pb-24">
+<div class="grid grid-cols-2 gap-4 p-4">
+<!-- Card 1 -->
+<div class="glass-card rounded-2xl overflow-hidden flex flex-col group">
+<div class="relative aspect-square bg-cover bg-center" data-alt="Organic medjool dates in a premium wooden bowl" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCVy_vi3HxxDRkS96rJGhJwJlGKN8Nyfzv8Ha1SrWgJrBwHu-lLBiSNnPyuKRcQ_bTcVV1WxstI6zbqpV-nEHIhnFqhCL4I31TVVfVQgpecDCleZun53ZlViJ9p1Tlu76y5yXglKB2L-DYALpzuD0OjwtD6fpEasdUyEGrPzfoj-VmWjq45yxuhqnO0klz4XFIN4L4HIIRR2hGXzkf-eSMEE8DMyvKqNq1n9LSHPsXq-8UbZhb7uvu0FsrrZOEBzZywZ5r52ylfIz7B");'>
+<div class="absolute top-2 right-2 bg-primary/90 text-background-dark rounded-full p-1 emerald-glow">
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="p-3">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2">Premium Medjool Dates</h3>
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">sticky_note_2</span>
+</div>
+<p class="text-[10px] text-primary font-medium tracking-widest uppercase opacity-80">9.2 Health Score</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card rounded-2xl overflow-hidden flex flex-col group">
+<div class="relative aspect-square bg-cover bg-center" data-alt="Modern glass bottle of matcha almond milk" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBVmQ9eeIawLfvN6n0VC4MZS-DAtqGa6LDto6Soi2kMIBVUyX6Pz2t3zA8UY8hT1xOx0YTwiuHnYM2QHvGct62KiVXSa_VI6W4QSlsVdtrf0qrzJNXTQQQAMIG1zB7KRMTT7340_lAlK0C9Om0ekrwByqzui7Q3vKbrGevQRyWC-Rs-zwDnHDroh-5Y4pPgtl3qx10P4DvhgWwvlyPeAVZ2o_Z2FG9RDGWTexGZQDZeGYp--vtDd6EYftNZnJL5DYOhkrJC12Y2AjEF");'>
+<div class="absolute top-2 right-2 bg-primary/90 text-background-dark rounded-full p-1">
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="p-3">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2">Matcha Almond Milk</h3>
+</div>
+<p class="text-[10px] text-primary font-medium tracking-widest uppercase opacity-80">8.5 Health Score</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-card rounded-2xl overflow-hidden flex flex-col group">
+<div class="relative aspect-square bg-cover bg-center" data-alt="Bowl of spicy miso ramen with eggs and seaweed" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCSvc93yT5iA5CvixCGKtX2AHZ1cd6H4IsuVREy59A0uBYSGrye18BQRGf-YpuU13Qo_1m_0GkEFvJ6RVagVqqGHiITDzr4H572T0lqEtkIiecVykvyvBioNeWe8_5m4h2pO9YoIQG98LhkAeVt0dqsFVvSTRyS6pH6RBho7d2FrL18fu5rHELsmfKazeMFFaFfYBjUgp6ADrX9x-ZPJqvqP0I0ErokQMWpIaxJZCISDYoXOrPnyMbkI--E_AdQM-QF5MeVlVqIZkRt");'>
+<div class="absolute top-2 right-2 bg-primary/90 text-background-dark rounded-full p-1 emerald-glow">
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="p-3">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2">Spicy Miso Ramen (Halal)</h3>
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">sticky_note_2</span>
+</div>
+<p class="text-[10px] text-primary font-medium tracking-widest uppercase opacity-80">7.8 Health Score</p>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="glass-card rounded-2xl overflow-hidden flex flex-col group">
+<div class="relative aspect-square bg-cover bg-center" data-alt="Small jar of dark chocolate hazelnut butter" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCQznfQjVnhmddOGFKfcA-NMiUgThaKViL4TPOf67Pwf4w1B3ALpiKDc1UIqbggIViKP_7qm4mIrZl3L43_2ApGvrqfE13AjyTCBhoeMQhTXrIs4X4Vyq1qVdwwGi7jUkyA22FGtZDzLcE8H7ZBavc1iCQ9wNu7sGeZKM2X206v_kq04Nb-RuhOaoJGHNpPvS18DDddkPosftdOf6QlsBcRdXx6MGH4JnqVc5c6J3z-_1An3fnKV69bMoYwDxwIYMMYePUHqqgr5Jdn");'>
+<div class="absolute top-2 right-2 bg-primary/90 text-background-dark rounded-full p-1">
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="p-3">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2">Pure Hazelnut Spread</h3>
+</div>
+<p class="text-[10px] text-primary font-medium tracking-widest uppercase opacity-80">8.9 Health Score</p>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="glass-card rounded-2xl overflow-hidden flex flex-col group">
+<div class="relative aspect-square bg-cover bg-center" data-alt="Fresh organic dragonfruit sliced on a plate" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDBfThNmpE9CvhVUZKYwmklLCciqkls0GkapEEZn7hWHg08hIfnBgepqxBnYB5pIWKe4ic3qw7xzuUvRcamZeHRA2ueejl8sSz1r7pRIxKDT0xRhw5T1RnC911vZ3k6vgxDGK3AnJj_NBlSGwK6iZqVyn_c1KFupm-MkfZ4KRX8tVST3xxQvN90mfFIlOe9LlyaSrlZPKnDQvx5Bi05HkiAYBQyKTak6wGGd6jkfGq7vT9Il3oPaB3SaZ9sgp_X_JrTtg9rgBE3RVj8");'>
+<div class="absolute top-2 right-2 bg-primary/90 text-background-dark rounded-full p-1">
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="p-3">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2">Organic Dragon Fruit</h3>
+</div>
+<p class="text-[10px] text-primary font-medium tracking-widest uppercase opacity-80">9.9 Health Score</p>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="glass-card rounded-2xl overflow-hidden flex flex-col group">
+<div class="relative aspect-square bg-cover bg-center" data-alt="Abstract emerald green and black gradient pattern" style="background-image: linear-gradient(45deg, #10221b, #2beea644);">
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-white/20" style="font-size: 48px;">inventory_2</span>
+</div>
+</div>
+<div class="p-3">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2">Seaweed Thins</h3>
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">sticky_note_2</span>
+</div>
+<p class="text-[10px] text-primary font-medium tracking-widest uppercase opacity-80">9.1 Health Score</p>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB (Floating Action Button) -->
+<div class="fixed bottom-24 right-6 z-50">
+<button class="flex items-center justify-center rounded-full h-14 w-14 bg-primary text-background-dark shadow-lg emerald-glow active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-size: 32px; font-variation-settings: 'wght' 600;">add</span>
+</button>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-xl border-t border-gray-200 dark:border-primary/20 pb-safe">
+<div class="flex max-w-md mx-auto h-20 items-center justify-around px-2">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-gray-400 dark:text-[#9db9af]" href="#">
+<span class="material-symbols-outlined" style="font-size: 26px;">qr_code_scanner</span>
+<p class="text-[10px] font-bold uppercase tracking-wider">Scan</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-size: 26px; font-variation-settings: 'FILL' 1;">favorite</span>
+<p class="text-[10px] font-bold uppercase tracking-wider">Favorites</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-gray-400 dark:text-[#9db9af]" href="#">
+<span class="material-symbols-outlined" style="font-size: 26px;">analytics</span>
+<p class="text-[10px] font-bold uppercase tracking-wider">Insights</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-gray-400 dark:text-[#9db9af]" href="#">
+<span class="material-symbols-outlined" style="font-size: 26px;">account_circle</span>
+<p class="text-[10px] font-bold uppercase tracking-wider">Profile</p>
+</a>
+</div>
+<!-- Indicator for Home (iOS style) -->
+<div class="flex justify-center pb-2">
+<div class="h-1 w-32 rounded-full bg-gray-300 dark:bg-white/20"></div>
+</div>
+</nav>
+</div>
+<!-- Hidden CSS for custom scrollbar (no-scrollbar utility) -->
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
+</body></html>

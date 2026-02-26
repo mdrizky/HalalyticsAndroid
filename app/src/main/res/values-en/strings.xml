@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Halalytics</string>
+    <string name="settings_title">Settings</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="language">Language</string>
+    <string name="notifications">Notifications</string>
+    <string name="watchlist">Allergy Watchlist</string>
+    <string name="scan">Scan</string>
+    <string name="profile">Profile</string>
+    <string name="home">Home</string>
+    <string name="achievements">Achievements</string>
+    <string name="health_score">Health Score</string>
+    <string name="streak">Streak</string>
+</resources>

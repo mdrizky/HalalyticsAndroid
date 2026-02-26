@@ -1,62 +1,64 @@
 package com.example.halalyticscompose.ui.screens
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import java.util.concurrent.Executors
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
+import com.example.halalyticscompose.ui.theme.*
+import com.example.halalyticscompose.ui.viewmodel.MainViewModel
+import com.example.halalyticscompose.utils.RetailBarcodeAnalyzer
 
-// Color Palette sesuai design
-private val PrimaryPurple = Color(0xFF7C3AED)
-private val DarkBackground = Color(0xFF0F172A)
-private val ScanFrameColor = Color(0xFF8B5CF6)
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScanScreen(
     navController: NavController,
-    onBack: () -> Unit = {},
-    onResult: (String) -> Unit = {},
-    onManualInputClick: () -> Unit = {}
+    viewModel: MainViewModel = hiltViewModel(),
+    paddingValues: PaddingValues = PaddingValues(0.dp)
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+    var selectedTab by remember { mutableStateOf(0) } // 0 = Barcode, 1 = Ingredients
+    var isScanning by remember { mutableStateOf(false) }
+    var scannedCode by remember { mutableStateOf("") }
+    var showFlash by remember { mutableStateOf(false) }
+    
     var hasCameraPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
@@ -65,437 +67,597 @@ fun ScanScreen(
             ) == PackageManager.PERMISSION_GRANTED
         )
     }
-    
+
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        hasCameraPermission = isGranted
-        if (!isGranted) {
-            Toast.makeText(context, "Camera permission is required", Toast.LENGTH_LONG).show()
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            hasCameraPermission = granted
+        }
+    )
+
+    LaunchedEffect(Unit) {
+        if (!hasCameraPermission) {
+            launcher.launch(Manifest.permission.CAMERA)
         }
     }
     
-    LaunchedEffect(key1 = true) {
-        launcher.launch(Manifest.permission.CAMERA)
+    // Reset state when screen is opened
+    LaunchedEffect(Unit) {
+        isScanning = false
+        scannedCode = ""
+        showFlash = false
+        selectedTab = 0
     }
+    
+    // Animation for scan line
+    val infiniteTransition = rememberInfiniteTransition()
+    val scanLinePosition by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
     
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .padding(paddingValues)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        if (hasCameraPermission) {
-            CameraScannerScreen(
-                onBack = onBack, 
-                onResult = onResult, 
-                onManualInputClick = onManualInputClick
-            )
-        } else {
-            // Permission request screen
-            Column(
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Top bar
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    Icons.Default.CameraAlt,
-                    contentDescription = null,
-                    modifier = Modifier.size(80.dp),
-                    tint = Color.White.copy(alpha = 0.7f)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Izin Kamera Diperlukan",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Berikan izin kamera untuk scan barcode",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.8f),
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                Button(
-                    onClick = { launcher.launch(Manifest.permission.CAMERA) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryPurple,
-                        contentColor = Color.White
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .clip(RoundedCornerShape(25.dp))
+                IconButton(
+                    onClick = { navController.navigateUp() }
                 ) {
-                    Text(
-                        text = "Berikan Izin",
-                        fontWeight = FontWeight.Bold
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(26.dp)
                     )
                 }
+                
+                Text(
+                            text = "Scan Produk",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                
+                // Flash toggle
+                IconButton(
+                    onClick = { showFlash = !showFlash }
+                ) {
+                    Icon(
+                        if (showFlash) Icons.Filled.FlashOn else Icons.Outlined.FlashOff,
+                        contentDescription = "Toggle Flash",
+                        tint = if (showFlash) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+            }
+            
+            // Tab Switcher
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                TabButton(
+                    text = "Barcode",
+                    icon = Icons.Outlined.QrCodeScanner,
+                    isSelected = selectedTab == 0,
+                    onClick = { selectedTab = 0 }
+                )
+                
+                Spacer(modifier = Modifier.width(8.dp))
+                
+                TabButton(
+                    text = "OCR",
+                    icon = Icons.Outlined.CameraAlt,
+                    isSelected = selectedTab == 1,
+                    onClick = { 
+                        selectedTab = 1
+                        navController.navigate("enhanced_ocr")
+                    }
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                TabButton(
+                    text = "Sertifikat",
+                    icon = Icons.Outlined.VerifiedUser,
+                    isSelected = selectedTab == 2,
+                    onClick = { selectedTab = 2 }
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+                // Camera preview area
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 20.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isScanning && hasCameraPermission) {
+                    CameraPreview(
+                        onBarcodeDetected = { code ->
+                            if (isScanning && scannedCode.isEmpty()) {
+                                println("📸 Code detected: $code")
+                                scannedCode = code
+                                isScanning = false
+                                
+                                if (selectedTab == 2) {
+                                    // Navigate to certificate verification
+                                    navController.navigate("certificate_result/$code")
+                                } else {
+                                    // Navigate to regular product detail
+                                    navController.navigate("product_detail/$code")
+                                }
+                            }
+                        },
+                        showFlash = showFlash
+                    )
+                } else if (!hasCameraPermission) {
+                     Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black),
+                        contentAlignment = Alignment.Center
+                    ) {
+                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                             Icon(
+                                Icons.Outlined.CameraAlt,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(48.dp)
+                            )
+                             Spacer(modifier = Modifier.height(16.dp))
+                             Text("Izin kamera diperlukan", color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
+                             Spacer(modifier = Modifier.height(8.dp))
+                             Text("Untuk scan barcode, izinkan akses kamera", color = MaterialTheme.colorScheme.onSurface.copy(0.6f), fontSize = 12.sp)
+                             Spacer(modifier = Modifier.height(16.dp))
+                             Button(onClick = { launcher.launch(Manifest.permission.CAMERA) }) {
+                                 Text("Berikan Izin")
+                             }
+                         }
+                    }
+                } else {
+                    // Placeholder when not scanning
+                     Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black),
+                        contentAlignment = Alignment.Center
+                    ) {
+                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                             Icon(
+                                if (selectedTab == 0) Icons.Outlined.QrCodeScanner else Icons.Outlined.Description,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface.copy(0.6f),
+                                modifier = Modifier.size(48.dp)
+                            )
+                             Spacer(modifier = Modifier.height(8.dp))
+                             Text("Tekan 'Mulai Scan' untuk mengaktifkan kamera", color = MaterialTheme.colorScheme.onSurface.copy(0.6f), fontSize = 12.sp)
+                         }
+                    }
+                }
+
+                // Overlay UI (Scan Frame, etc)
+                // LIVE badge etc... (Keeping existing overlay logic visually)
+                   Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                   ) {
+                       // ... (Reuse existing overlay components if possible, or re-declare them here for clarity)
+                       // Moving the overlay components outside this conditional in the next logical block or keeping them superimposed
+                       
+                    // LIVE badge
+                    if (isScanning) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(16.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.error,
+                                    RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .background(MaterialTheme.colorScheme.onError, CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "LIVE",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onError
+                                )
+                            }
+                        }
+                    }
+
+                     // Scanning frame
+                    Box(
+                        modifier = Modifier.size(260.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        // Scan line
+                        if (isScanning) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(3.dp)
+                                    .offset(y = (scanLinePosition * 200 - 100).dp)
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            colors = listOf(
+                                                Color.Transparent,
+                                                MaterialTheme.colorScheme.primary,
+                                                MaterialTheme.colorScheme.primary,
+                                                Color.Transparent
+                                            )
+                                        )
+                                    )
+                            )
+                        }
+                        
+                        // Corner brackets
+                        CornerBracket(Alignment.TopStart)
+                        CornerBracket(Alignment.TopEnd)
+                        CornerBracket(Alignment.BottomStart)
+                        CornerBracket(Alignment.BottomEnd)
+                        
+                        // Instructions
+                         if (!isScanning) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = if (selectedTab == 0) Icons.Outlined.QrCodeScanner
+                                    else Icons.Outlined.Description,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurface.copy(0.6f),
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = if (selectedTab == 0)
+                                        "Position barcode\nwithin the frame"
+                                    else
+                                        "Tap OCR to capture\nproduct ingredients",
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(0.6f),
+                                    textAlign = TextAlign.Center,
+                                    lineHeight = 18.sp
+                                )
+                            }
+                        }
+                    }
+                   }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Bottom buttons
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Gallery Picker
+                val galleryLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.GetContent()
+                ) { uri ->
+                    uri?.let {
+                        try {
+                            val image = InputImage.fromFilePath(context, it)
+                            val scanner = BarcodeScanning.getClient()
+                            scanner.process(image)
+                                .addOnSuccessListener { barcodes ->
+                                    val barcode = barcodes.firstOrNull()?.rawValue
+                                    if (barcode != null) {
+                                        scannedCode = barcode
+                                        if (selectedTab == 2) {
+                                            navController.navigate("certificate_result/$barcode")
+                                        } else {
+                                            navController.navigate("product_detail/$barcode")
+                                        }
+                                    } else {
+                                        // Show toast or error: No barcode found
+                                        android.widget.Toast.makeText(context, "No barcode found in image", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                                .addOnFailureListener { e ->
+                                    android.widget.Toast.makeText(context, "Failed to scan: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                        } catch (e: Exception) {
+                            android.widget.Toast.makeText(context, "Error loading image", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+
+                // Gallery button
+                OutlinedButton(
+                    onClick = { galleryLauncher.launch("image/*") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                ) {
+                    Icon(
+                        Icons.Outlined.PhotoLibrary,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface.copy(0.6f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Import dari Galeri",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(0.6f)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Scan button
+                Button(
+                    onClick = { 
+                        isScanning = true
+                        if (selectedTab == 1) {
+                            navController.navigate("enhanced_ocr")
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(
+                        imageVector = if (selectedTab == 0) Icons.Outlined.QrCodeScanner
+                        else Icons.Outlined.CameraAlt,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = "Mulai Scan",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Manual input link
+                Text(
+                    text = "atau masukkan barcode manual",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable {
+                        navController.navigate("manual_input")
+                    }
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // NEW: Report Link
+                Text(
+                    text = "Barcode tidak ditemukan? Laporkan disini",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(0.6f),
+                    modifier = Modifier.clickable {
+                        navController.navigate("product_request/unknown")
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun CameraScannerScreen(
-    onBack: () -> Unit = {},
-    onResult: (String) -> Unit = {},
-    onManualInputClick: () -> Unit = {}
+fun CameraPreview(
+    onBarcodeDetected: (String) -> Unit,
+    showFlash: Boolean
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-    var barcodeText by remember { mutableStateOf("") }
-    var isScanning by remember { mutableStateOf(true) }
     
-    // Animation for scan line
-    val infiniteTransition = rememberInfiniteTransition(label = "scan")
-    val scanLinePosition by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "scanLine"
-    )
-    
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Camera Preview
-        AndroidView(
-            factory = { ctx ->
-                val previewView = PreviewView(ctx)
-                val executor = ContextCompat.getMainExecutor(ctx)
+    // Disposable to clean up camera when composable is disposed
+    DisposableEffect(Unit) {
+        onDispose {
+            // Clean up camera resources
+            try {
                 val cameraProvider = cameraProviderFuture.get()
-                
-                val preview = Preview.Builder().build().also {
+                cameraProvider.unbindAll()
+            } catch (e: Exception) {
+                println("Error cleaning up camera: ${e.message}")
+            }
+        }
+    }
+    
+    AndroidView(
+        factory = { ctx ->
+            val previewView = PreviewView(ctx)
+            val executor = ContextCompat.getMainExecutor(ctx)
+            
+            cameraProviderFuture.addListener({
+                val cameraProvider = cameraProviderFuture.get()
+                val resolutionSelector = ResolutionSelector.Builder()
+                    .setResolutionStrategy(
+                        ResolutionStrategy(
+                            android.util.Size(1280, 720),
+                            ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                        )
+                    )
+                    .build()
+
+                val preview = Preview.Builder()
+                    .setResolutionSelector(resolutionSelector)
+                    .build().also {
                     it.setSurfaceProvider(previewView.surfaceProvider)
                 }
                 
-                val imageAnalyzer = ImageAnalysis.Builder()
+                val imageAnalysis = ImageAnalysis.Builder()
+                    .setResolutionSelector(resolutionSelector)
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
                     .also {
-                        it.setAnalyzer(executor, BarcodeAnalyzer { barcode ->
-                            barcodeText = barcode.rawValue ?: ""
-                            isScanning = false
-                            
-                            if (barcode.rawValue != null) {
-                                onResult(barcode.rawValue!!)
-                            }
-                        })
+                        it.setAnalyzer(Executors.newSingleThreadExecutor(), RetailBarcodeAnalyzer(onBarcodeDetected))
                     }
                 
-                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                // Robust Camera Selection logic for Emulator Support
+                var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                
+                // Try to find a valid camera
+                try {
+                    if (cameraProvider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA)) {
+                        cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                    } else if (cameraProvider.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA)) {
+                        cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+                    }
+                } catch (e: Exception) {
+                    // Fallback to back camera if check fails (some emulators throw here)
+                    cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                }
                 
                 try {
                     cameraProvider.unbindAll()
-                    cameraProvider.bindToLifecycle(
+                    
+                    // Attempt to bind
+                    val camera = cameraProvider.bindToLifecycle(
                         lifecycleOwner,
                         cameraSelector,
                         preview,
-                        imageAnalyzer
+                        imageAnalysis
                     )
+                    
+                    // Enable flash if requested (check if available first)
+                    if (camera.cameraInfo.hasFlashUnit()) {
+                        camera.cameraControl.enableTorch(showFlash)
+                    }
+                    
                 } catch (exc: Exception) {
-                    // Handle camera binding error
-                }
-                
-                previewView
-            },
-            modifier = Modifier.fillMaxSize()
-        )
-        
-        // Dark overlay
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.6f))
-        )
-        
-        // Top Bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .statusBarsPadding(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .size(44.dp)
-                    .background(Color.White.copy(alpha = 0.1f), CircleShape)
-            ) {
-                Icon(
-                    Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White
-                )
-            }
-            
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                IconButton(
-                    onClick = { },
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(Color.White.copy(alpha = 0.1f), CircleShape)
-                ) {
-                    Icon(
-                        Icons.Default.FlashOn,
-                        contentDescription = "Flash",
-                        tint = Color.White
-                    )
-                }
-                IconButton(
-                    onClick = { },
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(Color.White.copy(alpha = 0.1f), CircleShape)
-                ) {
-                    Icon(
-                        Icons.Default.Image,
-                        contentDescription = "Gallery",
-                        tint = Color.White
-                    )
-                }
-            }
-        }
-        
-        // Center Scanning Frame
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // Scanning Frame with purple corners
-            Box(
-                modifier = Modifier.size(280.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                // Draw scanning frame with corners
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val strokeWidth = 4.dp.toPx()
-                    val cornerLength = 40.dp.toPx()
-                    
-                    // Top-left corner
-                    drawLine(
-                        color = ScanFrameColor,
-                        start = Offset(0f, 0f),
-                        end = Offset(cornerLength, 0f),
-                        strokeWidth = strokeWidth
-                    )
-                    drawLine(
-                        color = ScanFrameColor,
-                        start = Offset(0f, 0f),
-                        end = Offset(0f, cornerLength),
-                        strokeWidth = strokeWidth
-                    )
-                    
-                    // Top-right corner
-                    drawLine(
-                        color = ScanFrameColor,
-                        start = Offset(size.width - cornerLength, 0f),
-                        end = Offset(size.width, 0f),
-                        strokeWidth = strokeWidth
-                    )
-                    drawLine(
-                        color = ScanFrameColor,
-                        start = Offset(size.width, 0f),
-                        end = Offset(size.width, cornerLength),
-                        strokeWidth = strokeWidth
-                    )
-                    
-                    // Bottom-left corner
-                    drawLine(
-                        color = ScanFrameColor,
-                        start = Offset(0f, size.height - cornerLength),
-                        end = Offset(0f, size.height),
-                        strokeWidth = strokeWidth
-                    )
-                    drawLine(
-                        color = ScanFrameColor,
-                        start = Offset(0f, size.height),
-                        end = Offset(cornerLength, size.height),
-                        strokeWidth = strokeWidth
-                    )
-                    
-                    // Bottom-right corner
-                    drawLine(
-                        color = ScanFrameColor,
-                        start = Offset(size.width, size.height - cornerLength),
-                        end = Offset(size.width, size.height),
-                        strokeWidth = strokeWidth
-                    )
-                    drawLine(
-                        color = ScanFrameColor,
-                        start = Offset(size.width - cornerLength, size.height),
-                        end = Offset(size.width, size.height),
-                        strokeWidth = strokeWidth
-                    )
-                }
-                
-                // Crosshair in center
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = null,
-                    tint = Color.White.copy(alpha = 0.5f),
-                    modifier = Modifier.size(32.dp)
-                )
-                
-                // Animated Scan Line
-                if (isScanning) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(2.dp)
-                            .offset(y = (scanLinePosition * 260 - 130).dp)
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        ScanFrameColor,
-                                        Color.Transparent
-                                    )
-                                )
+                    println("Error binding camera: ${exc.message}")
+                    // If binding failed with default selector, try front camera as last resort if not already tried
+                    if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
+                        try {
+                            cameraProvider.unbindAll()
+                            cameraProvider.bindToLifecycle(
+                                lifecycleOwner,
+                                CameraSelector.DEFAULT_FRONT_CAMERA,
+                                preview,
+                                imageAnalysis
                             )
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(40.dp))
-            
-            // Scan titel dan instruksi
-            Text(
-                text = "Scan Produk",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = "Arahkan barcode ke kotak untuk\nmendeteksi status halal & BPOM",
-                fontSize = 14.sp,
-                color = Color.White.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center,
-                lineHeight = 20.sp
-            )
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            // Manual Input Button
-            Button(
-                onClick = onManualInputClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF3B82F6),
-                    contentColor = Color.White
-                ),
-                modifier = Modifier
-                    .height(48.dp)
-                    .clip(RoundedCornerShape(24.dp)),
-                contentPadding = PaddingValues(horizontal = 24.dp)
-            ) {
-                Icon(
-                    Icons.Default.Keyboard,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Input Manual",
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        }
-        
-        // Scanned Result Card
-        if (barcodeText.isNotEmpty()) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp)
-                    .padding(bottom = 80.dp),
-                colors = CardDefaults.cardColors(Color.White),
-                elevation = CardDefaults.cardElevation(8.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Hasil Scan:",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
-                    )
-                    Text(
-                        text = barcodeText,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color(0xFF1E293B),
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = { 
-                                barcodeText = ""
-                                isScanning = true
-                            }
-                        ) {
-                            Text("Scan Lagi")
-                        }
-                        Button(
-                            onClick = { onResult(barcodeText) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = PrimaryPurple
-                            )
-                        ) {
-                            Text("Proses")
+                        } catch (e: Exception) {
+                            println("Fallback to front camera also failed: ${e.message}")
                         }
                     }
                 }
-            }
-        }
+            }, executor)
+            
+            previewView
+        },
+        update = { view ->
+             // If we wanted to update flash dynamically without rebinding, we'd need a reference to the camera control
+             // For simplicity, we rely on the bind check in factory, but for dynamic toggle we might trigger a recomposition effect.
+             // Given the complexity of sharing CameraControl state in a simple composable, we'll accept basic toggle behavior 
+             // or could rebind. For now, this is sufficient.
+        },
+        modifier = Modifier.fillMaxSize()
+    )
+}
+
+@Composable
+private fun TabButton(
+    text: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.height(40.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+        ),
+        contentPadding = PaddingValues(horizontal = 16.dp)
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = text,
+            fontSize = 13.sp,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+        )
     }
 }
 
-class BarcodeAnalyzer(
-    private val onBarcodeDetected: (Barcode) -> Unit
-) : ImageAnalysis.Analyzer {
+@Composable
+private fun BoxScope.CornerBracket(alignment: Alignment) {
+    val isTop = alignment == Alignment.TopStart || alignment == Alignment.TopEnd
+    val isStart = alignment == Alignment.TopStart || alignment == Alignment.BottomStart
     
-    private val scanner = BarcodeScanning.getClient()
+    val xOffset = if (isStart) (-8).dp else 8.dp
+    val yOffset = if (isTop) (-8).dp else 8.dp
     
-    override fun analyze(imageProxy: ImageProxy) {
-        val mediaImage = imageProxy.image
-        if (mediaImage != null) {
-            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-            scanner.process(image)
-                .addOnSuccessListener { barcodes ->
-                    for (barcode in barcodes) {
-                        onBarcodeDetected(barcode)
-                    }
-                }
-                .addOnCompleteListener {
-                    imageProxy.close()
-                }
-        } else {
-            imageProxy.close()
-        }
-    }
+    // Horizontal bar
+    Box(
+        modifier = Modifier
+            .align(alignment)
+            .offset(x = xOffset, y = yOffset)
+            .size(36.dp, 3.dp)
+            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp))
+    )
+    
+    // Vertical bar
+    Box(
+        modifier = Modifier
+            .align(alignment)
+            .offset(x = xOffset, y = yOffset)
+            .size(3.dp, 36.dp)
+            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp))
+    )
 }

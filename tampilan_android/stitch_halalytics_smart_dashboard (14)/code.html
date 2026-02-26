@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notification Center - Halalytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0df29e",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0a0f0d", // Deeper charcoal for 2026 look
+                        "card-glass": "rgba(27, 39, 35, 0.6)",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .unread-glow {
+            box-shadow: 0 0 15px rgba(13, 242, 158, 0.15);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen">
+<!-- Top Navigation Bar -->
+<nav class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined text-white cursor-pointer">arrow_back_ios</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Notification Center</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="text-primary text-sm font-semibold hover:opacity-80 transition-opacity">Clear All</button>
+</div>
+</div>
+<!-- Tabs Section -->
+<div class="px-4 mt-2">
+<div class="flex border-b border-white/10 gap-8">
+<a class="flex flex-col items-center justify-center border-b-2 border-primary text-white pb-3 pt-2" href="#">
+<p class="text-sm font-bold tracking-wide">Recent</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-white/40 pb-3 pt-2" href="#">
+<p class="text-sm font-bold tracking-wide">Health</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-white/40 pb-3 pt-2" href="#">
+<p class="text-sm font-bold tracking-wide">Halal Scan</p>
+</a>
+</div>
+</div>
+</nav>
+<main class="max-w-md mx-auto pb-20">
+<!-- Section: Unread -->
+<div class="flex items-center justify-between px-4 pt-6 pb-2">
+<h3 class="text-white text-xs font-bold uppercase tracking-[0.2em] opacity-50">Unread updates</h3>
+<span class="bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full">3 NEW</span>
+</div>
+<!-- Notification Card 1: Product Verified (Unread Glow) -->
+<div class="px-4 py-2">
+<div class="glass-card unread-glow flex flex-col gap-4 rounded-2xl bg-card-glass p-4 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<div class="flex items-start justify-between gap-4">
+<div class="flex flex-[2_2_0px] flex-col gap-2">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg">verified_user</span>
+<p class="text-primary text-[10px] font-bold uppercase tracking-wider">Product Verified</p>
+</div>
+<p class="text-white text-base font-semibold leading-tight">Gelatin Source Confirmed</p>
+<p class="text-white/60 text-sm font-normal leading-relaxed">The source for 'Gummy Vitamins' has been traced to a Halal-certified facility in Germany.</p>
+</div>
+</div>
+<div class="w-20 h-20 bg-center bg-no-repeat bg-cover rounded-xl flex-shrink-0" data-alt="Close up of halal gummy vitamins" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBFmTTTvXLVIko1FaazQ78H5eGkDpRy2wEjJlHtU6mp6naJnc38xDvzb4czOLxJI2u6W4GaGHFhoKY-waRGpb3zhUyGs3yUEseOIVYzkkNx52Ue30i36z5P6vWc7PnwYz9UrlN_thWQ86M9f6vh0KBC9e4BWu2vFmVOglcF7ScrGSLPkZrhA8vPo0dozg5JbEqXkWFPhXPZtGDk3DoFeY_eMl7uNII-vZny-i0oDEQx85Fi5lKvZtJcV0fqAqTqtgAIikfZgRFQ0dGJ");'>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 cursor-pointer items-center justify-center rounded-full h-10 px-4 bg-primary text-background-dark text-sm font-bold">
+                        View Certificate
+                    </button>
+<button class="flex size-10 items-center justify-center rounded-full bg-white/5 text-white">
+<span class="material-symbols-outlined text-xl">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Notification Card 2: Medication Reminder -->
+<div class="px-4 py-2">
+<div class="glass-card unread-glow flex flex-col gap-4 rounded-2xl bg-card-glass p-4 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<div class="flex items-start justify-between gap-4">
+<div class="flex flex-[2_2_0px] flex-col gap-2">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg">pill</span>
+<p class="text-primary text-[10px] font-bold uppercase tracking-wider">Schedule Reminder</p>
+</div>
+<p class="text-white text-base font-semibold leading-tight">Afternoon Vitamin D</p>
+<p class="text-white/60 text-sm font-normal leading-relaxed">It's time for your daily dose. For best absorption, take with a meal containing healthy fats.</p>
+</div>
+</div>
+<div class="w-20 h-20 bg-center bg-no-repeat bg-cover rounded-xl flex-shrink-0" data-alt="Vitamin capsules on a dark surface" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCGeAsuKB8wKXgI9uVKeE_UbBcS-JiOr7MkqYcFY447E7tU-a4vIzZ_aGihGPOlRgaCxKDoGnuGOw-DVLzhaZ-_yl_bluiRZLHuCquVDgJy5E8H2ihDOJJd8in018y5TD0jnZy3y4K3WOqj56zL_30ZkJ6tTveWSEb6BYZX94Cdob0juVhqhVsgodpxL5h0DBPhq7-wuGuNJ8rN8qL_uW5FPadyMTo2pHgO0d5SRghtk4eg_JFE0nrBneUktGfdzO8x1xAeb6BT1ppd");'>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 cursor-pointer items-center justify-center rounded-full h-10 px-4 bg-primary/20 text-primary border border-primary/30 text-sm font-bold">
+                        Mark Taken
+                    </button>
+<button class="flex-1 cursor-pointer items-center justify-center rounded-full h-10 px-4 bg-white/5 text-white/60 text-sm font-bold">
+                        Snooze 15m
+                    </button>
+</div>
+</div>
+</div>
+<!-- Section: Read / Earlier -->
+<div class="flex items-center justify-between px-4 pt-8 pb-2">
+<h3 class="text-white text-xs font-bold uppercase tracking-[0.2em] opacity-50">Earlier today</h3>
+</div>
+<!-- Notification Card 3: Health Tip (Read) -->
+<div class="px-4 py-2 opacity-70">
+<div class="glass-card flex items-stretch justify-between gap-4 rounded-2xl bg-card-glass/40 p-4">
+<div class="flex flex-[2_2_0px] flex-col gap-3">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-white/60 text-lg">lightbulb</span>
+<p class="text-white/40 text-[10px] font-bold uppercase tracking-wider">Health Insights</p>
+</div>
+<p class="text-white text-base font-semibold leading-tight">Optimize Your Sleep</p>
+<p class="text-white/60 text-sm font-normal leading-normal">Consistent sleep patterns improve metabolic health by 14%. Check your last week's data.</p>
+</div>
+<button class="flex min-w-[100px] cursor-pointer items-center justify-center rounded-full h-8 px-4 bg-white/10 text-white text-xs font-semibold w-fit">
+                        View Analytics
+                    </button>
+</div>
+<div class="w-24 bg-center bg-no-repeat aspect-square bg-cover rounded-xl flex-1 border border-white/5" data-alt="Abstract visualization of sleep cycles" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAoTirjL2G1f2yvSnfN5dgSvJTJzBOSbs8IhZpVTnLKSai1VcnnDHEwlpdaY4JwQh_oQw2no9whfPdIpIMI63AM78Btlt3S4Z6XdlSxnP29J-W3JUGkNPgiOYdQQF7ca95RA39L2-s6S-IKQ4NttGd5dM09nYq5ipv7d8KjAx-Qh9UVv7gqdgMSxRzFzEm92frzLkHcdII2eEGvlOGhzSPZCDjRhxUXx_-gDt_xtj2ZD0Px5yONZDhWAN-47pp6p9r5E5SFVCr39Gz7");'>
+</div>
+</div>
+</div>
+<!-- Notification Card 4: System Update -->
+<div class="px-4 py-2 opacity-70">
+<div class="glass-card flex items-stretch justify-between gap-4 rounded-2xl bg-card-glass/40 p-4">
+<div class="flex flex-[2_2_0px] flex-col gap-3">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-white/60 text-lg">barcode_scanner</span>
+<p class="text-white/40 text-[10px] font-bold uppercase tracking-wider">System Scan</p>
+</div>
+<p class="text-white text-base font-semibold leading-tight">Pantry Inventory Updated</p>
+<p class="text-white/60 text-sm font-normal leading-normal">Scanning complete: 12 new items added to your digital pantry via smart-receipt.</p>
+</div>
+</div>
+<div class="flex flex-col justify-center">
+<span class="text-white/30 text-[10px] font-medium italic">9:41 AM</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation (iOS Style) -->
+<footer class="fixed bottom-0 w-full bg-background-dark/80 backdrop-blur-xl border-t border-white/5 px-6 pb-8 pt-3 flex justify-between items-center">
+<div class="flex flex-col items-center gap-1 opacity-50">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-50">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+<span class="text-[10px] font-medium">Scan</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<div class="relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute -top-1 -right-1 size-2 bg-primary rounded-full ring-2 ring-background-dark"></span>
+</div>
+<span class="text-[10px] font-bold">Alerts</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-50">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-[10px] font-medium">Stats</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-50">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</div>
+</footer>
+</body></html>

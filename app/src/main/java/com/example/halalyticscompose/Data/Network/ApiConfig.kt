@@ -1,9 +1,14 @@
 package com.example.halalyticscompose.Data.Network
 
+import android.util.Log
+import com.example.halalyticscompose.Data.API.ApiService
+// import com.example.halalyticscompose.Data.Network.ExternalApiService
 import okhttp3.OkHttpClient
+import okhttp3.Interceptor
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 object ApiConfig {
@@ -13,25 +18,66 @@ object ApiConfig {
     // For Real Device: use your computer's IP address (e.g., 192.168.1.100)
     // For Production: use your domain (e.g., https://api.halalytics.com/api/)
     
-    private const val BASE_URL = "http://10.0.2.2:8000/api/"
+    private const val BASE_DOMAIN = "http://10.0.2.2:8000"
+    private const val BASE_URL = "$BASE_DOMAIN/api/"
+    private const val TAG = "HalalyticsApiConfig"
     
     // Alternative URLs (uncomment as needed):
     // private const val BASE_URL = "http://192.168.1.100:8000/api/" // For real device
     // private const val BASE_URL = "https://your-domain.com/api/" // For production
     
     /**
-     * Create OkHttpClient with logging interceptor
+     * Create OkHttpClient with logging interceptor and JSON headers
      */
     private fun provideOkHttpClient(): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = HttpLoggingInterceptor.Level.BASIC
+        }
+
+        val requestMetricsInterceptor = Interceptor { chain ->
+            val original = chain.request()
+            val requestId = UUID.randomUUID().toString().take(8)
+            val startNs = System.nanoTime()
+
+            val requestBuilder = original.newBuilder()
+                .header("Accept", "application/json")
+
+            val contentType = original.header("Content-Type")?.lowercase().orEmpty()
+            if (original.body != null &&
+                contentType.isEmpty() &&
+                !contentType.contains("multipart")
+            ) {
+                requestBuilder.header("Content-Type", "application/json")
+            }
+
+            val request = requestBuilder
+                .header("X-Request-Id", requestId)
+                .method(original.method, original.body)
+                .build()
+
+            try {
+                val response = chain.proceed(request)
+                val tookMs = (System.nanoTime() - startNs) / 1_000_000
+                if (!response.isSuccessful) {
+                    val errorBody = response.peekBody(1024).string().replace("\n", " ").trim()
+                    Log.e(TAG, "[$requestId] ${request.method} ${request.url} -> ${response.code} (${tookMs}ms) error=$errorBody")
+                } else {
+                    Log.i(TAG, "[$requestId] ${request.method} ${request.url} -> ${response.code} (${tookMs}ms)")
+                }
+                response
+            } catch (e: Exception) {
+                val tookMs = (System.nanoTime() - startNs) / 1_000_000
+                Log.e(TAG, "[$requestId] ${request.method} ${request.url} failed (${tookMs}ms): ${e.message}", e)
+                throw e
+            }
         }
         
         return OkHttpClient.Builder()
+            .addInterceptor(requestMetricsInterceptor)
             .addInterceptor(loggingInterceptor)
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
-            .writeTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(120, TimeUnit.SECONDS)
+            .readTimeout(120, TimeUnit.SECONDS)
+            .writeTimeout(120, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .build()
     }
@@ -46,18 +92,28 @@ object ApiConfig {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
+
+    // Main API Service
+    val apiService: ApiService by lazy {
+        retrofit.create(ApiService::class.java)
+    }
+
+    // OCR Product API Service
+    val ocrProductApiService: com.example.halalyticscompose.data.api.OCRProductApiService by lazy {
+        retrofit.create(com.example.halalyticscompose.data.api.OCRProductApiService::class.java)
+    }
     
     /**
-     * Get External API Service (for OpenFoodFacts products)
+     * Get Ingredient API Service
      */
-    fun getExternalApiService(): ExternalApiService {
-        return retrofit.create(ExternalApiService::class.java)
+    fun getIngredientApiService(): com.example.halalyticscompose.data.api.IngredientApiService {
+        return retrofit.create(com.example.halalyticscompose.data.api.IngredientApiService::class.java)
     }
     
     /**
      * Create authenticated client with Bearer token
      */
-    fun getAuthenticatedApiService(token: String): ExternalApiService {
+    fun getAuthenticatedApiService(token: String): com.example.halalyticscompose.Data.Network.ExternalApiService {
         val authInterceptor = okhttp3.Interceptor { chain ->
             val original = chain.request()
             val request = original.newBuilder()
@@ -78,6 +134,38 @@ object ApiConfig {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         
-        return authenticatedRetrofit.create(ExternalApiService::class.java)
+        return authenticatedRetrofit.create(com.example.halalyticscompose.Data.Network.ExternalApiService::class.java)
+    }
+
+    /**
+     * Get External API Service (Unauthenticated)
+     */
+    fun getExternalApiService(): com.example.halalyticscompose.Data.Network.ExternalApiService {
+        return retrofit.create(com.example.halalyticscompose.Data.Network.ExternalApiService::class.java)
+    }
+
+    /**
+     * Get OpenBeautyFacts API Service
+     */
+    fun getOpenBeautyFactsApiService(): com.example.halalyticscompose.Data.API.ExternalApiService {
+        val retrofitOpenBeautyFacts = Retrofit.Builder()
+            .baseUrl("https://world.openbeautyfacts.org/")
+            .client(provideOkHttpClient())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofitOpenBeautyFacts.create(com.example.halalyticscompose.Data.API.ExternalApiService::class.java)
+    }
+
+    /**
+     * Get full image URL from relative path
+     */
+    fun getFullImageUrl(relativePath: String?): String? {
+        if (relativePath.isNullOrEmpty()) return null
+        if (relativePath.startsWith("http")) return relativePath
+        
+        // Ensure starting slash
+        val cleanPath = relativePath.trim()
+        val path = if (cleanPath.startsWith("/")) cleanPath else "/$cleanPath"
+        return "$BASE_DOMAIN$path"
     }
 }

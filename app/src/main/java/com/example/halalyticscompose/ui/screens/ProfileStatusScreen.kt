@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.halalyticscompose.Data.Model.LoginModel
+import com.example.halalyticscompose.ui.theme.MushboohYellow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +42,7 @@ fun ProfileStatusScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            Icons.Default.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Kembali",
                             tint = MaterialTheme.colorScheme.onSurface
                         )
@@ -87,10 +89,10 @@ fun ProfileStatusScreen(
                                 style = MaterialTheme.typography.headlineLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = when {
-                                    bmiValue < 18.5 -> Color.Blue
-                                    bmiValue < 25 -> Color.Green
-                                    bmiValue < 30 -> Color(0xFFFF9800)
-                                    else -> Color.Red
+                                    bmiValue < 18.5 -> MaterialTheme.colorScheme.tertiary
+                                    bmiValue < 25 -> MaterialTheme.colorScheme.primary
+                                    bmiValue < 30 -> MushboohYellow
+                                    else -> MaterialTheme.colorScheme.error
                                 }
                             )
                             Text(
@@ -149,7 +151,7 @@ fun ProfileStatusScreen(
                         // Activity Level
                         activityLevel?.let {
                             ProfileStatusItem(
-                                icon = Icons.Default.DirectionsRun,
+                                icon = Icons.AutoMirrored.Filled.DirectionsRun,
                                 title = "Level Aktivitas",
                                 value = it
                             )
@@ -208,12 +210,12 @@ fun ProfileStatusScreen(
                             StatItem(
                                 title = "Halal",
                                 value = (user?.halal_count ?: 0).toString(),
-                                color = Color(0xFF4CAF50)
+                                color = MaterialTheme.colorScheme.primary
                             )
                             StatItem(
                                 title = "Syubhat",
                                 value = (user?.syubhat_count ?: 0).toString(),
-                                color = Color(0xFFFF9800)
+                                color = MushboohYellow
                             )
                         }
                         
@@ -227,7 +229,7 @@ fun ProfileStatusScreen(
                                 StatItem(
                                     title = "Hari Beruntun",
                                     value = streak.toString(),
-                                    color = Color(0xFF9C27B0)
+                                    color = MaterialTheme.colorScheme.tertiary
                                 )
                             }
                         }

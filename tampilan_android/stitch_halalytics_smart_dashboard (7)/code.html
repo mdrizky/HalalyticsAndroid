@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Halalytics - AI Health Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00A86B",
+                        "background-light": "#F4F7F5",
+                        "glass-white": "rgba(255, 255, 255, 0.4)",
+                        "emerald-soft": "rgba(0, 168, 107, 0.1)",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1.25rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        .glass-effect {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04);
+        }
+        .vibrant-shadow {
+            box-shadow: 0 15px 35px -10px rgba(0, 168, 107, 0.3);
+        }
+        .emerald-glow {
+            box-shadow: 0 0 20px rgba(0, 168, 107, 0.25);
+        }
+        .wavy-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 0;
+        }
+        body {
+            min-height: 100dvh;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light font-display text-[#101815] pb-32 overflow-x-hidden">
+<header class="flex items-center bg-transparent p-6 pb-2 justify-between sticky top-0 z-50 backdrop-blur-md">
+<button class="flex size-10 items-center justify-center rounded-full bg-white glass-effect text-[#101815]">
+<span class="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+</button>
+<h1 class="text-xl font-extrabold tracking-tight">Your Weekly Insights</h1>
+<button class="flex size-10 items-center justify-center rounded-full bg-white glass-effect text-[#101815]">
+<span class="material-symbols-outlined text-2xl">share</span>
+</button>
+</header>
+<main class="max-w-md mx-auto px-5 space-y-6 mt-4">
+<section class="flex flex-col items-center justify-center py-4">
+<div class="relative size-44 flex items-center justify-center">
+<div class="absolute inset-0 rounded-full bg-primary/5 emerald-glow animate-pulse"></div>
+<svg class="size-full transform -rotate-90 scale-110">
+<circle class="text-white" cx="88" cy="88" fill="transparent" r="78" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-primary" cx="88" cy="88" fill="transparent" r="78" stroke="currentColor" stroke-dasharray="490" stroke-dashoffset="58" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<div class="absolute flex flex-col items-center justify-center">
+<span class="text-5xl font-black text-primary leading-none">88</span>
+<span class="text-xs font-bold text-[#5e8d7c] uppercase tracking-widest mt-1">Health Score</span>
+</div>
+</div>
+<div class="bg-primary/10 text-primary px-4 py-1.5 rounded-full mt-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm font-bold">trending_up</span>
+<span class="text-xs font-bold uppercase tracking-wider">Top 5% of users this week</span>
+</div>
+</section>
+<section class="glass-effect bg-white/50 rounded-2xl p-5 flex items-start gap-4">
+<div class="relative">
+<div class="size-12 bg-primary rounded-full flex items-center justify-center text-white vibrant-shadow">
+<span class="material-symbols-outlined text-2xl">smart_toy</span>
+</div>
+<div class="absolute -bottom-1 -right-1 size-5 bg-white rounded-full flex items-center justify-center border-2 border-background-light">
+<div class="size-2 bg-primary rounded-full animate-ping"></div>
+</div>
+</div>
+<div class="flex-1 space-y-1">
+<div class="flex items-center justify-between">
+<h4 class="text-xs font-bold text-primary uppercase tracking-widest">AI Health Insight</h4>
+<span class="text-[10px] font-medium text-gray-400">Just Now</span>
+</div>
+<p class="text-[15px] leading-relaxed text-[#101815]/80 font-medium">
+                    "Ahmed, your recovery rate is 12% higher after morning Fajr walks. Consider increasing your protein intake by 15g to maintain this momentum."
+                </p>
+</div>
+</section>
+<section class="glass-effect bg-white/60 rounded-3xl p-6 overflow-hidden">
+<div class="flex justify-between items-end mb-8">
+<div>
+<p class="text-[#5e8d7c] text-xs font-bold uppercase tracking-widest mb-1">Energy Metabolism</p>
+<h3 class="text-2xl font-bold tracking-tight">Active Recovery</h3>
+</div>
+<div class="flex gap-2">
+<div class="px-3 py-1 bg-[#101815] text-white text-[10px] font-bold rounded-lg uppercase">Week</div>
+<div class="px-3 py-1 bg-gray-200 text-gray-500 text-[10px] font-bold rounded-lg uppercase">Month</div>
+</div>
+</div>
+<div class="relative h-48 w-full">
+<svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 400 200">
+<line stroke="#f0f0f0" stroke-width="1" x1="0" x2="400" y1="50" y2="50"></line>
+<line stroke="#f0f0f0" stroke-width="1" x1="0" x2="400" y1="100" y2="100"></line>
+<line stroke="#f0f0f0" stroke-width="1" x1="0" x2="400" y1="150" y2="150"></line>
+<defs>
+<linearGradient id="line-grad" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#00A86B" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#00A86B" stop-opacity="0"></stop>
+</linearGradient>
+</defs>
+<path d="M0,150 C50,140 80,60 120,80 C160,100 200,40 250,60 C300,80 350,10 400,30 L400,200 L0,200 Z" fill="url(#line-grad)"></path>
+<path class="wavy-path" d="M0,150 C50,140 80,60 120,80 C160,100 200,40 250,60 C300,80 350,10 400,30" fill="none" filter="drop-shadow(0 8px 10px rgba(0,168,107,0.3))" stroke="#00A86B" stroke-linecap="round" stroke-width="4"></path>
+<circle cx="250" cy="60" fill="#00A86B" r="6" stroke="white" stroke-width="3"></circle>
+<circle cx="400" cy="30" fill="#00A86B" r="6" stroke="white" stroke-width="3"></circle>
+</svg>
+</div>
+<div class="flex justify-between mt-6 px-1">
+<span class="text-[10px] font-bold text-[#5e8d7c]">MON</span>
+<span class="text-[10px] font-bold text-[#5e8d7c]">TUE</span>
+<span class="text-[10px] font-bold text-[#5e8d7c]">WED</span>
+<span class="text-[10px] font-bold text-[#5e8d7c] text-primary">THU</span>
+<span class="text-[10px] font-bold text-[#5e8d7c]">FRI</span>
+<span class="text-[10px] font-bold text-[#5e8d7c]">SAT</span>
+<span class="text-[10px] font-bold text-[#5e8d7c]">SUN</span>
+</div>
+</section>
+<section class="grid grid-cols-2 gap-4">
+<div class="glass-effect bg-white/60 p-5 rounded-2xl flex flex-col gap-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">favorite</span>
+<span class="text-[10px] font-bold text-[#5e8d7c] uppercase tracking-wider">Avg Heart Rate</span>
+</div>
+<div>
+<span class="text-2xl font-black">72</span>
+<span class="text-xs font-medium text-gray-500 ml-1">bpm</span>
+</div>
+<div class="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+<div class="h-full w-[65%] bg-primary"></div>
+</div>
+</div>
+<div class="glass-effect bg-white/60 p-5 rounded-2xl flex flex-col gap-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-blue-500 text-xl">bedtime</span>
+<span class="text-[10px] font-bold text-[#5e8d7c] uppercase tracking-wider">Sleep Quality</span>
+</div>
+<div>
+<span class="text-2xl font-black">92</span>
+<span class="text-xs font-medium text-gray-500 ml-1">%</span>
+</div>
+<div class="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+<div class="h-full w-[92%] bg-blue-500"></div>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm h-16 bg-white shadow-xl rounded-full flex items-center justify-around px-4 z-[100] border border-white/50 backdrop-blur-xl">
+<button class="flex flex-col items-center justify-center text-[#5e8d7c]">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary">
+<span class="material-symbols-outlined font-bold" style="font-variation-settings: 'FILL' 1">analytics</span>
+<span class="text-[10px] font-bold">Stats</span>
+</button>
+<div class="relative -top-6">
+<button class="size-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center border-4 border-background-light">
+<span class="material-symbols-outlined text-3xl">barcode_scanner</span>
+</button>
+</div>
+<button class="flex flex-col items-center justify-center text-[#5e8d7c]">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="text-[10px] font-medium">Meals</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#5e8d7c]">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</button>
+</nav>
+
+</body></html>

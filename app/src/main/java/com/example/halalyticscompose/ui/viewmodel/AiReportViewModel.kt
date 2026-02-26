@@ -1,0 +1,102 @@
+package com.example.halalyticscompose.ui.viewmodel
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.halalyticscompose.Data.API.ApiService
+import com.example.halalyticscompose.Data.Model.AiReportResponse
+import com.example.halalyticscompose.Data.Model.WeeklyStats
+import com.example.halalyticscompose.Data.Model.AiInsight
+import com.example.halalyticscompose.utils.SessionManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import android.util.Log
+import javax.inject.Inject
+
+data class AiReportUiState(
+    val isLoading: Boolean = false,
+    val stats: WeeklyStats? = null,
+    val insight: AiInsight? = null,
+    val errorMessage: String? = null
+)
+
+@HiltViewModel
+class AiReportViewModel @Inject constructor(
+    private val apiService: ApiService,
+    private val sessionManager: SessionManager
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(AiReportUiState())
+    val uiState: StateFlow<AiReportUiState> = _uiState.asStateFlow()
+
+    fun fetchWeeklyReport(days: Int = 7) {
+        viewModelScope.launch {
+            _uiState.value = AiReportUiState(isLoading = true)
+            
+            try {
+                val token = sessionManager.getBearerToken() 
+                    ?: sessionManager.getAuthToken()?.let { "Bearer $it" } 
+                    ?: throw Exception("No authentication token")
+                
+                Log.d("AiReportVM", "Fetching weekly report with token: ${token.take(20)}...")
+                
+                val response = apiService.getWeeklyReport(token, days)
+                
+                if (response.success) {
+                    // Check if insight has an error
+                    val insightData = if (response.insight?.error != null || response.insight?.summary == null) {
+                        // Provide fallback insight
+                        AiInsight(
+                            summary = "Analisis AI tidak tersedia saat ini. Silakan coba lagi nanti.",
+                            tips = listOf("Terus pindai produk untuk data yang lebih akurat."),
+                            highlight = "Tetap Semangat!"
+                        )
+                    } else {
+                        response.insight
+                    }
+                    
+                    _uiState.value = AiReportUiState(
+                        isLoading = false,
+                        stats = response.stats,
+                        insight = insightData
+                    )
+                    Log.d("AiReportVM", "Report loaded successfully")
+                } else {
+                    _uiState.value = AiReportUiState(
+                        isLoading = false,
+                        errorMessage = response.message ?: "Failed to load report"
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("AiReportVM", "Error fetching report", e)
+                
+                // Provide fallback data so the screen always shows something
+                _uiState.value = AiReportUiState(
+                    isLoading = false,
+                    stats = WeeklyStats(
+                        totalScans = 0,
+                        halalCount = 0,
+                        haramCount = 0,
+                        syubhatCount = 0,
+                        healthyCount = 0,
+                        unhealthyCount = 0,
+                        healthScore = 0,
+                        topCategories = emptyMap()
+                    ),
+                    insight = AiInsight(
+                        summary = "Belum ada data scan minggu ini. Mulai scan produk untuk mendapatkan laporan AI yang akurat!",
+                        tips = listOf(
+                            "Scan produk makanan untuk cek status halal",
+                            "Periksa komposisi bahan untuk keamanan kesehatan",
+                            "Gunakan fitur analisis AI untuk rekomendasi personal"
+                        ),
+                        highlight = "Mulai Perjalanan Sehat Anda!"
+                    ),
+                    errorMessage = null
+                )
+            }
+        }
+    }
+}

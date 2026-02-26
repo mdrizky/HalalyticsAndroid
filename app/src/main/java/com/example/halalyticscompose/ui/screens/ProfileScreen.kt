@@ -1,434 +1,300 @@
 package com.example.halalyticscompose.ui.screens
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.halalyticscompose.Data.Model.LoginModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 
-// Color Palette sesuai design
-private val PrimaryCyan = Color(0xFF06B6D4)
-private val PrimaryBlue = Color(0xFF3B82F6)
-private val LightCyan = Color(0xFFE0F7FA)
-private val BackgroundGray = Color(0xFFF8FAFC)
-private val TextDark = Color(0xFF1E293B)
-private val TextGray = Color(0xFF64748B)
-private val CardWhite = Color.White
-private val RedLogout = Color(0xFFEF4444)
+private val ProfileBg = Color(0xFFF7FAFC)
+private val ProfilePrimary = Color(0xFF00C896)
+private val ProfilePrimaryDark = Color(0xFF00A878)
+private val ProfileText = Color(0xFF0A2540)
+private val ProfileMuted = Color(0xFF64748B)
+private val Danger = Color(0xFFFF4757)
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun ProfileScreen(
-    user: LoginModel.LoginContent? = null,
-    onHistoryClick: () -> Unit = {},
-    onSettingsClick: () -> Unit = {},
-    onHelpClick: () -> Unit = {},
-    onLogoutClick: () -> Unit = {}
+    navController: NavController,
+    viewModel: MainViewModel = hiltViewModel()
 ) {
-    var offlineMode by remember { mutableStateOf(false) }
-    
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BackgroundGray)
-    ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // Header with gradient background
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(280.dp)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color(0xFF67E8F9), // Light cyan
-                                    Color(0xFF22D3EE), // Cyan
-                                    Color(0xFF06B6D4)  // Darker cyan
-                                )
-                            )
-                        )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 40.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        // Header Title
-                        Text(
-                            text = "Profil Pengguna",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        
-                        Spacer(modifier = Modifier.height(24.dp))
-                        
-                        // Avatar
-                        Box(
-                            modifier = Modifier
-                                .size(100.dp)
-                                .clip(CircleShape)
-                                .background(Color.White)
-                                .border(4.dp, Color.White, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(92.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        Brush.verticalGradient(
-                                            colors = listOf(
-                                                Color(0xFFE0E7FF),
-                                                Color(0xFFC7D2FE)
-                                            )
-                                        )
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Default.Person,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(48.dp),
-                                    tint = Color(0xFF6366F1)
-                                )
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // User Name
-                        Text(
-                            text = user?.full_name ?: "Budi Santoso",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        
-                        // User Email
-                        Text(
-                            text = user?.email ?: "budi.santoso@email.com",
-                            fontSize = 14.sp,
-                            color = Color.White.copy(alpha = 0.8f)
-                        )
+    val currentUser by viewModel.currentUser.collectAsState()
+    val userData by viewModel.userData.collectAsState()
+    val totalScans by viewModel.totalScans.collectAsState()
+    val halalProducts by viewModel.halalProducts.collectAsState()
+    val currentStreak by viewModel.currentStreak.collectAsState()
+    val isDarkMode by viewModel.isDarkMode.collectAsState()
+    val isNotifEnabled by viewModel.isNotifEnabled.collectAsState()
+
+    Scaffold(
+        containerColor = ProfileBg,
+        topBar = {
+            TopAppBar(
+                title = { Text("Profil", color = Color.White, fontWeight = FontWeight.ExtraBold) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
                     }
-                }
-            }
-            
-            // Stats Card - overlapping header
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = ProfilePrimary)
+            )
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
             item {
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .offset(y = (-30).dp),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(CardWhite),
-                    elevation = CardDefaults.cardElevation(8.dp)
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Brush.linearGradient(listOf(ProfilePrimary, ProfilePrimaryDark)))
+                            .padding(16.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(58.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.25f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.Person, null, tint = Color.White, modifier = Modifier.size(30.dp))
+                            }
+                            Spacer(modifier = Modifier.size(12.dp))
+                            Column {
+                                Text(
+                                    userData?.fullName ?: currentUser ?: "Pengguna",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 18.sp
+                                )
+                                Text(
+                                    userData?.email ?: "Akun Halalytics",
+                                    color = Color.White.copy(alpha = 0.9f),
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    }
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // Total Scan Stat
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "TOTAL SCAN",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = TextGray
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = user?.total_scan?.toString() ?: "142",
-                                fontSize = 32.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = PrimaryBlue
-                            )
-                        }
-                        
-                        // Divider
-                        Box(
-                            modifier = Modifier
-                                .width(1.dp)
-                                .height(60.dp)
-                                .background(Color(0xFFE2E8F0))
-                        )
-                        
-                        // Halal Check Stat
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "HALAL CHECK",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = TextGray
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = user?.halal_count?.toString() ?: "89",
-                                fontSize = 32.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF10B981)
-                            )
-                        }
+                        MiniStat("Total Scan", totalScans.toString())
+                        MiniStat("Halal", halalProducts.toString())
+                        MiniStat("Streak", "$currentStreak hari")
                     }
                 }
             }
-            
-            // Menu Items
+
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .offset(y = (-10).dp)
-                ) {
-                    // Mode Offline Toggle
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(CardWhite),
-                        elevation = CardDefaults.cardElevation(2.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp, vertical = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(44.dp)
-                                        .background(
-                                            LightCyan,
-                                            RoundedCornerShape(12.dp)
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        Icons.Default.WifiOff,
-                                        contentDescription = null,
-                                        tint = PrimaryCyan,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(16.dp))
-                                Column {
-                                    Text(
-                                        text = "Mode Offline",
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = TextDark
-                                    )
-                                    Text(
-                                        text = "Simpan data untuk akses offline",
-                                        fontSize = 12.sp,
-                                        color = TextGray
-                                    )
-                                }
-                            }
-                            Switch(
-                                checked = offlineMode,
-                                onCheckedChange = { offlineMode = it },
-                                colors = SwitchDefaults.colors(
-                                    checkedTrackColor = PrimaryCyan,
-                                    checkedThumbColor = Color.White
-                                )
-                            )
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    // Regular Menu Items
-                    MenuItemCard(
-                        icon = Icons.Default.History,
-                        title = "Riwayat Scan",
-                        subtitle = null,
-                        color = Color(0xFF8B5CF6),
-                        onClick = onHistoryClick
-                    )
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    MenuItemCard(
-                        icon = Icons.Default.Settings,
-                        title = "Pengaturan Akun",
-                        subtitle = null,
-                        color = Color(0xFFF59E0B),
-                        onClick = onSettingsClick
-                    )
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    MenuItemCard(
-                        icon = Icons.Default.HelpOutline,
-                        title = "Bantuan & FAQ",
-                        subtitle = null,
-                        color = Color(0xFF10B981),
-                        onClick = onHelpClick
-                    )
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    // Logout Button
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onLogoutClick() },
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(CardWhite),
-                        elevation = CardDefaults.cardElevation(2.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp, vertical = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .background(
-                                        RedLogout.copy(alpha = 0.1f),
-                                        RoundedCornerShape(12.dp)
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Default.Logout,
-                                    contentDescription = null,
-                                    tint = RedLogout,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                text = "Keluar",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = RedLogout
-                            )
-                        }
-                    }
-                }
-            }
-            
-            // App Version
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = "Versi Aplikasi 1.0.0",
-                    fontSize = 12.sp,
-                    color = TextGray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    text = "Pengaturan",
+                    color = ProfileText,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                 )
             }
-            
-            // Bottom spacing for navigation bar
+
             item {
-                Spacer(modifier = Modifier.height(100.dp))
+                SettingCard(
+                    icon = Icons.Default.Settings,
+                    title = "Kelola Akun",
+                    subtitle = "Edit profil dan data pribadi"
+                ) { navController.navigate("account_management") }
+            }
+
+            item {
+                ToggleCard(
+                    icon = Icons.Default.DarkMode,
+                    title = "Mode Gelap",
+                    subtitle = "Tampilan aplikasi"
+                    ,checked = isDarkMode,
+                    onChecked = { viewModel.toggleDarkMode() }
+                )
+            }
+
+            item {
+                ToggleCard(
+                    icon = Icons.Default.Notifications,
+                    title = "Notifikasi",
+                    subtitle = "Pengingat dan update"
+                    ,checked = isNotifEnabled,
+                    onChecked = { viewModel.setNotifEnabled(it) }
+                )
+            }
+
+            item {
+                Card(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                        .clickable { viewModel.logout(navController) },
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Danger.copy(alpha = 0.12f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Logout, null, tint = Danger)
+                        }
+                        Spacer(modifier = Modifier.size(10.dp))
+                        Column {
+                            Text("Keluar", color = Danger, fontWeight = FontWeight.Bold)
+                            Text("Logout dari aplikasi", color = ProfileMuted, fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
+
+            item { Spacer(modifier = Modifier.height(14.dp)) }
+        }
+    }
+}
+
+@Composable
+private fun MiniStat(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(value, color = ProfileText, fontWeight = FontWeight.ExtraBold)
+        Text(label, color = ProfileMuted, fontSize = 11.sp)
+    }
+}
+
+@Composable
+private fun SettingCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(ProfilePrimary.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, null, tint = ProfilePrimary)
+            }
+            Spacer(modifier = Modifier.size(10.dp))
+            Column {
+                Text(title, color = ProfileText, fontWeight = FontWeight.Bold)
+                Text(subtitle, color = ProfileMuted, fontSize = 12.sp)
             }
         }
     }
 }
 
 @Composable
-private fun MenuItemCard(
-    icon: ImageVector,
+private fun ToggleCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
-    subtitle: String?,
-    color: Color,
-    onClick: () -> Unit
+    subtitle: String,
+    checked: Boolean,
+    onChecked: (Boolean) -> Unit
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(CardWhite),
-        elevation = CardDefaults.cardElevation(2.dp)
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(ProfilePrimary.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(
-                            color.copy(alpha = 0.1f),
-                            RoundedCornerShape(12.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        icon,
-                        contentDescription = null,
-                        tint = color,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        text = title,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = TextDark
-                    )
-                    subtitle?.let {
-                        Text(
-                            text = it,
-                            fontSize = 12.sp,
-                            color = TextGray
-                        )
-                    }
-                }
+                Icon(icon, null, tint = ProfilePrimary)
             }
-            Icon(
-                Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = TextGray,
-                modifier = Modifier.size(24.dp)
-            )
+            Spacer(modifier = Modifier.size(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(title, color = ProfileText, fontWeight = FontWeight.Bold)
+                Text(subtitle, color = ProfileMuted, fontSize = 12.sp)
+            }
+            Switch(checked = checked, onCheckedChange = onChecked)
         }
     }
 }

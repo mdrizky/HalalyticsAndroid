@@ -1,22 +1,44 @@
 package com.example.halalyticscompose.Data.Model
 
+import com.google.gson.annotations.SerializedName
+
 data class LoginModel(
-    val access_token: String,
-    val content: LoginContent,
-    val message: String,
-    val response_code: Int,
-    val token_type: String
+    @SerializedName("status", alternate = ["message"])
+    val status: String?,
+    
+    @SerializedName("user", alternate = ["content"])
+    val user: LoginContent?,
+    
+    val role: String?,
+    
+    @SerializedName("token", alternate = ["access_token"])
+    val token: String?,
+
+    @SerializedName("response_code")
+    val responseCode: Int? = null
 ) {
+    // Helper property to check if login is successful
+    val isSuccess: Boolean
+        get() = status == "success" || responseCode == 200
+
+    // Helper property to get error message
+    val errorMessage: String?
+        get() = when {
+            status?.contains("Invalid", ignoreCase = true) == true -> status
+            status?.contains("error", ignoreCase = true) == true -> status
+            responseCode == 401 -> "Invalid credentials"
+            else -> status
+        }
 
     data class LoginContent(
         val id_user: Int,
         val username: String,
-        val full_name: Any?,
+        val full_name: String?,
         val email: String,
-        val phone: Any?,
-        val blood_type: Any?,
-        val allergy: Any?,
-        val medical_history: Any?,
+        val phone: String?,
+        val blood_type: String?,
+        val allergy: String?,
+        val medical_history: String?,
         val role: String,
         val active: Boolean,
         val created_at: String,
@@ -40,7 +62,9 @@ data class LoginModel(
         val syubhat_count: Int?,         // Total hasil scan syubhat
         val streak: Int?,                // Streak penggunaan (hari berturut)
         val notif_enabled: Boolean?,     // Status notifikasi aktif / tidak
-        val dark_mode: Boolean?          // Mode gelap aktif / tidak
+        val dark_mode: Boolean?,         // Mode gelap aktif / tidak
+        val bio: String?,                // Biografi user
+        val gender: String?              // Jenis kelamin user
 
     )
 }

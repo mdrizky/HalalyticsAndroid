@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Halalytics</string>
+    <string name="settings_title">Tetapan</string>
+    <string name="dark_mode">Mod Gelap</string>
+    <string name="language">Bahasa</string>
+    <string name="notifications">Pemberitahuan</string>
+    <string name="watchlist">Senarai Pantau Alahan</string>
+    <string name="scan">Imbas</string>
+    <string name="profile">Profil</string>
+    <string name="home">Laman Utama</string>
+    <string name="achievements">Pencapaian</string>
+    <string name="health_score">Skor Kesihatan</string>
+    <string name="streak">Berturut-turut</string>
+</resources>

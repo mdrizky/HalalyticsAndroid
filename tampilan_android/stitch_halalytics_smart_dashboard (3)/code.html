@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Health Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00a86b",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0a0f0d",
+                        "emerald-glass": "rgba(0, 168, 107, 0.1)",
+                        "border-glass": "rgba(255, 255, 255, 0.1)",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+        }
+        .emerald-glow {
+            box-shadow: 0 0 20px rgba(0, 168, 67, 0.3);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen">
+<div class="max-w-md mx-auto min-h-screen relative flex flex-col pb-20">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-50 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md p-4 justify-between">
+<div class="flex size-10 items-center justify-center rounded-full glass-effect">
+<span class="material-symbols-outlined text-white">arrow_back_ios_new</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Halalytics AI</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex size-10 cursor-pointer items-center justify-center rounded-full glass-effect text-white">
+<span class="material-symbols-outlined">ios_share</span>
+</button>
+</div>
+</div>
+<!-- Headline Text -->
+<div class="px-6 pt-8 pb-4">
+<h1 class="text-white tracking-tight text-[36px] font-extrabold leading-tight">Your Weekly Insights</h1>
+<p class="text-primary font-medium text-sm mt-1 tracking-wider uppercase">AI Generation Complete</p>
+</div>
+<!-- Health Score Circle -->
+<div class="flex justify-center py-8">
+<div class="relative flex items-center justify-center w-48 h-48">
+<!-- Outer Progress Ring -->
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-white/5" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-primary emerald-glow" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" stroke-dasharray="552.92" stroke-dashoffset="66.35" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<!-- Inner Score -->
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-5xl font-black text-white tracking-tighter">88</span>
+<span class="text-sm font-bold text-primary/80 uppercase tracking-widest">Score</span>
+</div>
+</div>
+</div>
+<!-- Featured Chart Section -->
+<div class="px-4 py-2">
+<div class="glass-effect rounded-xl p-6 relative overflow-hidden">
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="text-white/60 text-xs font-semibold uppercase tracking-widest">Wellness Synergy</p>
+<p class="text-white text-3xl font-bold mt-1 tracking-tight">Optimizing</p>
+</div>
+<div class="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-bold border border-primary/30">
+                        +5.2%
+                    </div>
+</div>
+<div class="h-[160px] w-full flex flex-col">
+<svg class="drop-shadow-[0_0_8px_rgba(0,168,107,0.5)]" fill="none" height="120" preserveaspectratio="none" viewbox="0 0 400 120" width="100%">
+<path d="M0 80 Q 25 20, 50 50 T 100 30 T 150 70 T 200 40 T 250 85 T 300 15 T 350 65 T 400 25" fill="none" stroke="#00a86b" stroke-linecap="round" stroke-width="4"></path>
+<path d="M0 80 Q 25 20, 50 50 T 100 30 T 150 70 T 200 40 T 250 85 T 300 15 T 350 65 T 400 25 V120 H0 Z" fill="url(#grad)" opacity="0.15"></path>
+<defs>
+<lineargradient id="grad" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#00a86b;stop-opacity:1"></stop>
+<stop offset="100%" style="stop-color:#00a86b;stop-opacity:0"></stop>
+</lineargradient>
+</defs>
+</svg>
+<div class="flex justify-between mt-4">
+<span class="text-white/40 text-[10px] font-bold">MON</span>
+<span class="text-white/40 text-[10px] font-bold">TUE</span>
+<span class="text-white/40 text-[10px] font-bold">WED</span>
+<span class="text-white/40 text-[10px] font-bold">THU</span>
+<span class="text-white/40 text-[10px] font-bold">FRI</span>
+<span class="text-white/40 text-[10px] font-bold">SAT</span>
+<span class="text-white/40 text-[10px] font-bold text-primary">SUN</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Stats Grid -->
+<div class="flex gap-4 p-4">
+<div class="flex flex-1 flex-col gap-2 rounded-xl p-5 glass-effect">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">verified</span>
+<p class="text-white/60 text-xs font-bold uppercase tracking-wider">Halal Index</p>
+</div>
+<p class="text-white text-2xl font-bold">94%</p>
+</div>
+<div class="flex flex-1 flex-col gap-2 rounded-xl p-5 glass-effect">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">bolt</span>
+<p class="text-white/60 text-xs font-bold uppercase tracking-wider">Metabolism</p>
+</div>
+<p class="text-white text-2xl font-bold">High</p>
+</div>
+</div>
+<!-- AI Assistant Card -->
+<div class="px-4 pb-12">
+<div class="flex flex-col gap-4 rounded-xl bg-primary/10 border border-primary/20 p-5 relative overflow-hidden">
+<!-- Subtle background icon -->
+<div class="absolute -right-4 -bottom-4 text-primary/5 select-none">
+<span class="material-symbols-outlined !text-[120px]">psychology</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-full bg-primary text-white emerald-glow">
+<span class="material-symbols-outlined">waves</span>
+</div>
+<div>
+<p class="text-white text-base font-bold leading-tight">AI Assistant Voice</p>
+<p class="text-primary/80 text-[10px] font-bold uppercase tracking-widest">Active Analysis</p>
+</div>
+</div>
+<div class="relative z-10">
+<p class="text-white/90 text-sm font-medium leading-relaxed italic">
+                        "Your metabolism has improved by 4% since switching to organic Halal supplements. Keep maintaining your magnesium intake during evening hours."
+                    </p>
+</div>
+<div class="flex gap-2 relative z-10">
+<button class="flex-1 bg-primary text-white rounded-full h-10 px-4 text-sm font-bold flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">chat</span>
+                        Ask Details
+                    </button>
+<button class="size-10 bg-white/10 text-white rounded-full flex items-center justify-center backdrop-blur-md">
+<span class="material-symbols-outlined text-sm">volume_up</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Spacer -->
+<div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-20 bg-background-dark/90 backdrop-blur-xl border-t border-white/10 flex items-center justify-around px-8">
+<span class="material-symbols-outlined text-white/40">home</span>
+<span class="material-symbols-outlined text-primary">bar_chart</span>
+<div class="size-12 rounded-full bg-primary flex items-center justify-center emerald-glow -mt-8 border-4 border-background-dark">
+<span class="material-symbols-outlined text-white !text-2xl">add</span>
+</div>
+<span class="material-symbols-outlined text-white/40">restaurant</span>
+<span class="material-symbols-outlined text-white/40">person</span>
+</div>
+</div>
+</body></html>

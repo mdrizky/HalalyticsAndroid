@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1ff9a9",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231c",
+                        "danger": "#ff4d4d"
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-sheet {
+            background: rgba(15, 35, 28, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(31, 249, 169, 0.2);
+        }
+        .scanning-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #1ff9a9, transparent);
+            box-shadow: 0 0 15px #1ff9a9;
+            position: absolute;
+            width: 100%;
+            top: 40%;
+            z-index: 10;
+        }
+        .ar-box {
+            border: 2px solid #ff4d4d;
+            box-shadow: 0 0 10px rgba(255, 77, 77, 0.8);
+            background: rgba(255, 77, 77, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white overflow-hidden h-screen">
+<!-- Camera Viewport Container -->
+<div class="relative h-screen w-full flex flex-col">
+<!-- Background Camera Simulation -->
+<div class="absolute inset-0 z-0">
+<img alt="Ingredient list background" class="w-full h-full object-cover" data-alt="Close up photo of ingredient list on a food package label" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDl5_mx6yZOzkQayp4_kPPr9ntdbX51ZDdGTdIjxi1svIrlpVqroHVlt6kPjEkNr_8nSvpK9fwCaOCiC01k3PP8HuiTnbyiRcTFHTmWgOyBb4txIxahPuW9qyZ_StRrVFlza7yezj72PDaiCCQAuSBdyQSGjvb8WwD-1INn0ZSVXM3oOu0hj32f74qvANd9zGlopAKOGbzZsrXJT4Ue2D2eL2SqXLThkrDUb0nsdqLz_b4F9DYLhJ7w2dC0ffxBKEJ7nyjSJA5jGgp"/>
+<div class="absolute inset-0 bg-black/30"></div>
+</div>
+<!-- Scanning Animation Line -->
+<div class="scanning-line"></div>
+<!-- AR Overlays (Bounding Boxes) -->
+<div class="absolute inset-0 z-10 pointer-events-none">
+<!-- Box for Gelatin -->
+<div class="ar-box absolute top-[38%] left-[25%] w-32 h-8 rounded flex items-center justify-center">
+<span class="text-[10px] font-bold text-danger absolute -top-5 left-0 uppercase tracking-widest">Haram Detected</span>
+</div>
+<!-- Box for E120 -->
+<div class="ar-box absolute top-[45%] left-[55%] w-24 h-8 rounded flex items-center justify-center">
+<span class="text-[10px] font-bold text-danger absolute -top-5 left-0 uppercase tracking-widest">Haram Detected</span>
+</div>
+</div>
+<!-- Top Navigation -->
+<div class="relative z-20 flex items-center bg-gradient-to-b from-black/60 to-transparent p-4 pb-12 justify-between">
+<div class="text-white flex size-12 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined">close</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Halalytics OCR</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex size-12 cursor-pointer items-center justify-center rounded-lg bg-black/20 text-white border border-white/10">
+<span class="material-symbols-outlined">flashlight_on</span>
+</button>
+</div>
+</div>
+<!-- Camera Controls -->
+<div class="relative z-20 mt-auto flex items-center justify-center gap-8 p-8 mb-48">
+<button class="flex shrink-0 items-center justify-center rounded-full size-12 bg-black/40 text-white border border-white/10">
+<span class="material-symbols-outlined">photo_library</span>
+</button>
+<button class="flex shrink-0 items-center justify-center rounded-full size-20 bg-primary/20 text-primary border-4 border-primary shadow-[0_0_20px_rgba(31,249,169,0.4)]">
+<div class="bg-primary size-14 rounded-full flex items-center justify-center text-background-dark">
+<span class="material-symbols-outlined !text-4xl fill-1">sensors</span>
+</div>
+</button>
+<button class="flex shrink-0 items-center justify-center rounded-full size-12 bg-black/40 text-white border border-white/10">
+<span class="material-symbols-outlined">history</span>
+</button>
+</div>
+<!-- Bottom Sheet Layer -->
+<div class="fixed inset-x-0 bottom-0 z-30">
+<!-- Glassmorphism Bottom Sheet -->
+<div class="glass-sheet rounded-t-[2.5rem] flex flex-col items-stretch max-h-[70vh] shadow-2xl">
+<!-- Bottom Sheet Handle -->
+<button class="flex h-8 w-full items-center justify-center">
+<div class="h-1.5 w-12 rounded-full bg-primary/30"></div>
+</button>
+<!-- Headline -->
+<div class="px-6 py-4">
+<div class="flex items-center justify-center gap-2 mb-1">
+<span class="material-symbols-outlined text-danger fill-1 text-3xl">warning</span>
+<h3 class="text-danger tracking-tight text-xl font-bold leading-tight text-center uppercase">
+                            Haram Ingredients Detected
+                        </h3>
+</div>
+<p class="text-[#9bbbaf] text-sm text-center">Product scanning complete. 2 issues found.</p>
+</div>
+<!-- List of Ingredients -->
+<div class="overflow-y-auto px-4 pb-6 space-y-2">
+<!-- Item 1 -->
+<div class="flex items-center gap-4 bg-white/5 border border-white/5 rounded-xl px-4 min-h-[80px] py-3 justify-between">
+<div class="flex items-center gap-4">
+<div class="text-danger flex items-center justify-center rounded-xl bg-danger/10 shrink-0 size-12 border border-danger/20">
+<span class="material-symbols-outlined">science</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-bold leading-normal">Gelatin</p>
+<p class="text-[#9bbbaf] text-xs font-normal leading-relaxed line-clamp-2">
+                                    Derived from non-Zabiha animal skin/bones. Common in gummies and yogurts.
+                                </p>
+</div>
+</div>
+<div class="shrink-0">
+<span class="bg-danger/20 text-danger text-[10px] font-bold px-2 py-1 rounded-full border border-danger/30 uppercase">Haram</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-4 bg-white/5 border border-white/5 rounded-xl px-4 min-h-[80px] py-3 justify-between">
+<div class="flex items-center gap-4">
+<div class="text-danger flex items-center justify-center rounded-xl bg-danger/10 shrink-0 size-12 border border-danger/20">
+<span class="material-symbols-outlined">bug_report</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-bold leading-normal">E120 (Carmine)</p>
+<p class="text-[#9bbbaf] text-xs font-normal leading-relaxed line-clamp-2">
+                                    Red dye extracted from cochineal insects. Prohibited in most schools of thought.
+                                </p>
+</div>
+</div>
+<div class="shrink-0">
+<span class="bg-danger/20 text-danger text-[10px] font-bold px-2 py-1 rounded-full border border-danger/30 uppercase">Haram</span>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<div class="p-6 pt-2 bg-gradient-to-t from-background-dark/80 to-transparent">
+<button class="w-full bg-primary hover:bg-primary/90 text-background-dark font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(31,249,169,0.3)] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">search_insights</span>
+                        See Halal Alternatives
+                    </button>
+<button class="w-full mt-3 text-white/60 font-medium py-2 text-sm">
+                        Report incorrect detection
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Halalytics - Store Locator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1ff9a9",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231c",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111815]">
+<div class="relative flex h-screen w-full flex-col overflow-hidden mx-auto max-w-[430px] shadow-2xl bg-white">
+<!-- Full-screen Map Background -->
+<div class="absolute inset-0 z-0 h-full w-full bg-cover bg-center" data-alt="Modern minimalist city map with light gray streets" data-location="London" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCxmhgsuoVQrU3_jFDswq3ElvdSr6JxU3v6od3rfSSYVtO4eg5O1zXePUrxhBwzg7wOnN5VXfKsS1E1yp7KMBcKVmwSK_A9cSLfrVpkQx3GUhZ-XqTAxS5OthBDr5ZroM4RksALwot7-5Yff2TzOawq5Ey7E52m0aAgoyJarp0RWkYnlXWFteTwVi2sxsT01r5UHfuREkm4VI_9Mg6mhoPuDrMvfL1vSeA7EAw8H3ORYc_jPO60AXNmuzAC0KTrRHSqho7YiwKXSEK8");'>
+<!-- Custom Map Pins (Simulated) -->
+<div class="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2">
+<div class="flex flex-col items-center">
+<div class="bg-primary text-background-dark p-2 rounded-full shadow-lg border-2 border-white flex items-center justify-center">
+<span class="material-symbols-outlined text-lg font-bold">restaurant</span>
+</div>
+<div class="w-1 h-2 bg-primary"></div>
+</div>
+</div>
+<div class="absolute top-[45%] left-[60%] -translate-x-1/2 -translate-y-1/2">
+<div class="flex flex-col items-center">
+<div class="bg-primary text-background-dark p-2 rounded-full shadow-lg border-2 border-white flex items-center justify-center">
+<span class="material-symbols-outlined text-lg font-bold">shopping_basket</span>
+</div>
+<div class="w-1 h-2 bg-primary"></div>
+</div>
+</div>
+<div class="absolute top-[60%] left-[20%] -translate-x-1/2 -translate-y-1/2">
+<div class="flex flex-col items-center">
+<div class="bg-primary text-background-dark p-2 rounded-full shadow-lg border-2 border-white flex items-center justify-center scale-110">
+<span class="material-symbols-outlined text-lg font-bold">medical_services</span>
+</div>
+<div class="w-1 h-2 bg-primary"></div>
+</div>
+</div>
+</div>
+<!-- Top Header & Search Area -->
+<div class="relative z-10 px-4 pt-4 pb-2">
+<div class="flex items-center justify-between mb-4">
+<button class="bg-white/90 backdrop-blur-md size-10 flex items-center justify-center rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-[#111815]">arrow_back_ios_new</span>
+</button>
+<h2 class="text-[#111815] text-lg font-bold">Halal Locator</h2>
+<button class="bg-white/90 backdrop-blur-md size-10 flex items-center justify-center rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-[#111815]">account_circle</span>
+</button>
+</div>
+<!-- Search Bar with Frost Effect -->
+<div class="glass-panel rounded-xl shadow-lg p-1.5 flex items-center">
+<div class="flex items-center flex-1 px-3">
+<span class="material-symbols-outlined text-primary mr-2">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-sm font-medium placeholder:text-gray-400 py-2" placeholder="Search halal stores..." type="text"/>
+</div>
+<div class="h-6 w-[1px] bg-gray-200"></div>
+<button class="px-3 flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-xl">tune</span>
+</button>
+</div>
+<!-- Chips Horizontal Scroll -->
+<div class="flex gap-2 py-3 overflow-x-auto no-scrollbar">
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary text-background-dark px-4 font-semibold text-sm shadow-sm">
+<span class="material-symbols-outlined text-lg">all_inclusive</span>
+<span>All</span>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg glass-panel px-4 font-medium text-sm text-[#111815]">
+<span class="material-symbols-outlined text-lg">shopping_basket</span>
+<span>Groceries</span>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg glass-panel px-4 font-medium text-sm text-[#111815]">
+<span class="material-symbols-outlined text-lg">restaurant</span>
+<span>Dining</span>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg glass-panel px-4 font-medium text-sm text-[#111815]">
+<span class="material-symbols-outlined text-lg">medication</span>
+<span>Health</span>
+</div>
+</div>
+</div>
+<!-- Floating Action Buttons -->
+<div class="absolute right-4 bottom-[320px] z-10 flex flex-col gap-3">
+<button class="size-12 rounded-lg bg-white shadow-lg flex items-center justify-center text-[#111815]">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="size-12 rounded-lg bg-white shadow-lg flex items-center justify-center text-[#111815]">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<button class="size-12 rounded-lg bg-white shadow-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">my_location</span>
+</button>
+</div>
+<!-- Bottom Sheet Drawer -->
+<div class="absolute inset-x-0 bottom-0 z-20 flex flex-col items-stretch bg-white rounded-t-[32px] shadow-[0_-8px_24px_rgba(0,0,0,0.08)] max-h-[300px]">
+<!-- Handle -->
+<button class="flex h-8 w-full items-center justify-center shrink-0">
+<div class="h-1.5 w-12 rounded-full bg-gray-200"></div>
+</button>
+<!-- Content Area -->
+<div class="flex-1 overflow-y-auto px-4 pb-8 no-scrollbar">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold text-[#111815]">32 locations nearby</h3>
+<span class="text-primary text-sm font-semibold">View List</span>
+</div>
+<!-- Store Cards List -->
+<div class="space-y-4">
+<!-- Store Item 1 -->
+<div class="flex gap-4 p-3 rounded-xl bg-background-light/50 border border-gray-100">
+<div class="size-16 shrink-0 rounded-lg overflow-hidden bg-white border border-gray-100 flex items-center justify-center">
+<img alt="Green Valley Logo" class="w-full h-full object-cover" data-alt="Abstract emerald store logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHfhjsv1ZjaTA-jYcbueK3NWwWTiPxeuChWjAslrq_BeRrc-BYIK4JNPZvgqr0-_eHAr8zsJEzSQlFZmu1JSuvvyOn5O6wKoFuB8a03BiRw_DSseUhxiQONj-z3g-HzJOlfjspu4IfCN0TmHYrCQ-pIDKZ1UNgj0b-n4u3gnkW9Wsl2ohgwqRNurJNXsoHokjx17VvqBoedWeJt4Nq0ydBO4-SydJ4QfmfTyCytAa-tgxBzu3AvIKIz8v_0cHLOB7f2sDRpdNG3xFE"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between">
+<h4 class="font-bold text-[#111815] truncate">Green Valley Organics</h4>
+<span class="text-xs font-medium text-gray-400 shrink-0">0.4 mi</span>
+</div>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-primary text-[16px] fill-current">verified</span>
+<span class="text-[11px] font-bold text-primary tracking-tight uppercase">Halal Certified</span>
+</div>
+<div class="flex items-center gap-3 mt-2">
+<div class="flex items-center gap-1 text-xs text-gray-500">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span>Open until 10 PM</span>
+</div>
+<div class="flex items-center gap-1 text-xs text-gray-500">
+<span class="material-symbols-outlined text-[14px] text-amber-400 fill-current">star</span>
+<span>4.9 (1.2k)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Store Item 2 -->
+<div class="flex gap-4 p-3 rounded-xl bg-background-light/50 border border-gray-100">
+<div class="size-16 shrink-0 rounded-lg overflow-hidden bg-white border border-gray-100 flex items-center justify-center">
+<img alt="Saffron Dining" class="w-full h-full object-cover" data-alt="Minimalist S initial logo for a restaurant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwgI0EpaZtUsfmnoVPWIzTRLVk0_jti72mo4dGU_XIVsKDjU3-PTSSAJQWNGcSfzw8W3dp0rEAM6cSt26dG59F71gdaIA69U74zY7KPT6DTu79BioRkRKqMDhD2HBH_IJe-GQSoapO2jqAodoKaqBQx-LuPuKt_xdqfZE9paPDYCY7ZQzkRUpW20d-mu9BwJH9DVVNu5b9ydjjUlNgxIunD1H4x01kXtgCq27Q7GPmMkYkq5wyK92pWlvmtM5dE3eHN0SeEh6xz9wD"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between">
+<h4 class="font-bold text-[#111815] truncate">Saffron Fine Dining</h4>
+<span class="text-xs font-medium text-gray-400 shrink-0">1.2 mi</span>
+</div>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-primary text-[16px] fill-current">verified</span>
+<span class="text-[11px] font-bold text-primary tracking-tight uppercase">Halal Certified</span>
+</div>
+<div class="flex items-center gap-3 mt-2">
+<div class="flex items-center gap-1 text-xs text-gray-500">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span>Closes soon · 11 PM</span>
+</div>
+<div class="flex items-center gap-1 text-xs text-gray-500">
+<span class="material-symbols-outlined text-[14px] text-amber-400 fill-current">star</span>
+<span>4.7 (850)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Store Item 3 -->
+<div class="flex gap-4 p-3 rounded-xl bg-background-light/50 border border-gray-100">
+<div class="size-16 shrink-0 rounded-lg overflow-hidden bg-white border border-gray-100 flex items-center justify-center">
+<img alt="Cure Health" class="w-full h-full object-cover" data-alt="Blue and white medical logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyIRiV7JFbelc3qh8Z-siCRXKMjhOXWNHP6MYnAuEr5cjgOcZgbqmqN7mOJUXZxBaZdCZR5gRaI0ks8ikCAXOYVzSeU6BQVOXVnnmgUA_U0nNgzgFh0ljsPPVhReE8Ku1T9ursjuX_3laVVWLeuD0voONuGGUtgi0lzwuQnQgfyTbFVaNV_hUMAQNiQP0nlnvaz8540U_NPjKZ6FRmBhOjwrvGeyfvfVD48iPyaTUaruJ-L_WGge1xoe3isNOkQ2xIpeD-oYR05erA"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between">
+<h4 class="font-bold text-[#111815] truncate">Cure Health Pharmacy</h4>
+<span class="text-xs font-medium text-gray-400 shrink-0">1.8 mi</span>
+</div>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-primary text-[16px] fill-current">verified</span>
+<span class="text-[11px] font-bold text-primary tracking-tight uppercase">Halal Certified</span>
+</div>
+<div class="flex items-center gap-3 mt-2">
+<div class="flex items-center gap-1 text-xs text-gray-500">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span>Open 24/7</span>
+</div>
+<div class="flex items-center gap-1 text-xs text-gray-500">
+<span class="material-symbols-outlined text-[14px] text-amber-400 fill-current">star</span>
+<span>4.8 (430)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom iOS Navbar -->
+<div class="absolute bottom-0 inset-x-0 h-20 bg-white/90 backdrop-blur-xl border-t border-gray-100 z-30 px-6 flex items-center justify-between pb-4">
+<div class="flex flex-col items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined fill-current">explore</span>
+<span class="text-[10px] font-bold">Locator</span>
+</div>
+<div class="flex flex-col items-center justify-center -mt-8">
+<div class="size-14 rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center text-background-dark">
+<span class="material-symbols-outlined text-3xl font-bold">scan_delete</span>
+</div>
+</div>
+<div class="flex flex-col items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-[10px] font-medium">Insights</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Profile</span>
+</div>
+</div>
+<!-- iOS Home Indicator -->
+<div class="absolute bottom-1 w-full flex justify-center z-40 pointer-events-none">
+<div class="w-32 h-1 rounded-full bg-black/20"></div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,82 @@
+package com.example.halalyticscompose.ui.viewmodel
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.halalyticscompose.Data.API.ApiService
+import com.example.halalyticscompose.Data.Model.MedicalRecordData
+import com.example.halalyticscompose.Data.Model.MedicalRecordRequest
+import com.example.halalyticscompose.utils.SessionManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class MedicalRecordsViewModel @Inject constructor(
+    private val apiService: ApiService,
+    private val sessionManager: SessionManager
+) : ViewModel() {
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _records = MutableStateFlow<List<MedicalRecordData>>(emptyList())
+    val records: StateFlow<List<MedicalRecordData>> = _records.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
+    fun loadRecords() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val userIdPattern = sessionManager.getUserId()
+                if (userIdPattern <= 0) {
+                    _error.value = "User not logged in"
+                    return@launch
+                }
+                val token = sessionManager.getBearerToken()
+                if (token.isNullOrBlank()) {
+                    _error.value = "Sesi login tidak valid"
+                    return@launch
+                }
+                
+                val response = apiService.getMedicalRecords(token, userIdPattern)
+                if (response.isSuccessful && response.body() != null) {
+                    _records.value = response.body()!!.data
+                } else {
+                    _error.value = "Failed to load records (${response.code()})"
+                }
+            } catch (e: Exception) {
+                _error.value = "Network Error: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun addRecord(request: MedicalRecordRequest) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val token = sessionManager.getBearerToken()
+                if (token.isNullOrBlank()) {
+                    _error.value = "Sesi login tidak valid"
+                    return@launch
+                }
+                val response = apiService.addMedicalRecord(token, request)
+                if (response.isSuccessful && response.body() != null) {
+                    loadRecords() // Refresh
+                } else {
+                    _error.value = "Failed to add record: ${response.message()}"
+                }
+            } catch (e: Exception) {
+                _error.value = "Network Error: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+}

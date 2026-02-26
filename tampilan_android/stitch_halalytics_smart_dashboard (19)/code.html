@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Halal Alternatives - Halalytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1ff9a9",
+                        "background-light": "#F4F7F5",
+                        "background-dark": "#0f231c",
+                        "emerald-deep": "#0e6b4e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark min-h-screen text-[#111815]">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 bg-background-light/80 backdrop-blur-md px-4 py-4 flex items-center justify-between border-b border-gray-200/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#111815]">arrow_back_ios</span>
+</div>
+<h1 class="text-lg font-bold tracking-tight">Halal Alternatives</h1>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#111815]">notifications</span>
+</div>
+</header>
+<main class="max-w-md mx-auto pb-24">
+<!-- Search & Context Section -->
+<div class="px-4 pt-6">
+<div class="mb-2">
+<h2 class="text-2xl font-bold">Better for you</h2>
+<p class="text-gray-500 text-sm">Suggested based on your recent scan</p>
+</div>
+<div class="mt-4">
+<div class="relative flex items-center">
+<div class="absolute left-3 text-[#5f8c7b] material-symbols-outlined" style="font-size: 20px;">search</div>
+<input class="w-full pl-10 pr-4 py-3 bg-white border-none rounded-xl shadow-sm focus:ring-2 focus:ring-primary text-sm placeholder:text-gray-400" placeholder="Search halal alternatives..." type="text"/>
+</div>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-3 px-4 py-6 overflow-x-auto no-scrollbar">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary px-4 shadow-sm">
+<p class="text-[#0f231c] text-sm font-semibold">Certified Halal</p>
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white px-4 shadow-sm">
+<p class="text-[#111815] text-sm font-medium">Organic</p>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white px-4 shadow-sm">
+<p class="text-[#111815] text-sm font-medium">Gluten-Free</p>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+<!-- Alternative Product Cards -->
+<div class="px-4 space-y-4">
+<!-- Card 1 -->
+<div class="glass-card rounded-xl p-4 shadow-sm flex flex-col gap-4">
+<div class="flex gap-4">
+<div class="w-24 h-24 bg-cover bg-center rounded-lg shadow-inner shrink-0" data-alt="Modern organic almond milk carton packaging" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAblWV3CYXyT4op1Zo-6VYNiUh2KyyRb65Lmtejs56guWpgJsLFcJI5zRMToIujo2rYEkq33UpzfYNfV9GYhasb0XYOZocp4RFWh93-NGb6jQOBVbkYk1zbNWs2HG9syiWlC2evub3vDW7ubiZpPD2tzLK6aQPtyQr2pLP06oYstewAex52Xl5X9QquYiGvxxR-hPAug3-tTZ9zAc-mTm8xAGLS3plFoPvGI4UCzjE16gHrAqHDSGZA9ZA2ZNAQoSKgbTA9NbKd782j');">
+</div>
+<div class="flex flex-col justify-between py-1 flex-1">
+<div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px; font-variation-settings: 'FILL' 1">verified</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-emerald-deep/70">Halal Certified</span>
+</div>
+<h3 class="text-base font-bold text-[#111815] leading-tight">PurelyPlant Almond Milk</h3>
+<p class="text-xs text-gray-500">Unsweetened • 1 Litre</p>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-lg font-bold text-[#111815]">$4.99</span>
+<span class="text-[10px] text-gray-400 line-through">$5.49</span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 border-t border-white/50 pt-3">
+<div class="bg-primary/10 px-2 py-1 rounded text-[10px] font-semibold text-emerald-deep uppercase">80 Cal</div>
+<div class="bg-primary/10 px-2 py-1 rounded text-[10px] font-semibold text-emerald-deep uppercase">0g Sugar</div>
+<div class="bg-primary/10 px-2 py-1 rounded text-[10px] font-semibold text-emerald-deep uppercase">High Calcium</div>
+</div>
+<div class="flex items-center justify-between gap-3 pt-1">
+<button class="flex-1 bg-primary hover:bg-primary/90 text-[#0f231c] font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-lg">add</span>
+<span class="text-sm">Add to List</span>
+</button>
+<button class="w-11 h-11 border border-gray-200 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50">
+<span class="material-symbols-outlined">location_on</span>
+</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card rounded-xl p-4 shadow-sm flex flex-col gap-4">
+<div class="flex gap-4">
+<div class="w-24 h-24 bg-cover bg-center rounded-lg shadow-inner shrink-0" data-alt="Pack of artisanal whole grain bread" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBUL1_hdkSg3p91liReZvHLy5NCk2EbXaskOHAkfH5392qmArWVev5JsLfpz9okxFqHmtqptbJMyqu2X3hH4DuIKnUNtiZuFNT8Iz0LsA0KSKbP0uK1zB4OG5PzZUuau_juJi_IHdNJxqlugg0gom2Eil4DVF89QGEzwRQRO-YCsp3RYk2OrfVutWMY8b2ZyI2urglNttZ8-VBxezN-AgDbYpuCdGQ3mdiIxI-f8lkgzB_d2PuB9JvcogTF0iQKCHUBqqUIZ0h5Atz7');">
+</div>
+<div class="flex flex-col justify-between py-1 flex-1">
+<div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px; font-variation-settings: 'FILL' 1">verified</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-emerald-deep/70">Halal Certified</span>
+</div>
+<h3 class="text-base font-bold text-[#111815] leading-tight">Artisan Whole Grain</h3>
+<p class="text-xs text-gray-500">Seed &amp; Nut Blend • 450g</p>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-lg font-bold text-[#111815]">$3.45</span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 border-t border-white/50 pt-3">
+<div class="bg-primary/10 px-2 py-1 rounded text-[10px] font-semibold text-emerald-deep uppercase">120 Cal</div>
+<div class="bg-primary/10 px-2 py-1 rounded text-[10px] font-semibold text-emerald-deep uppercase">Vegan</div>
+<div class="bg-primary/10 px-2 py-1 rounded text-[10px] font-semibold text-emerald-deep uppercase">6g Fiber</div>
+</div>
+<div class="flex items-center justify-between gap-3 pt-1">
+<button class="flex-1 bg-primary hover:bg-primary/90 text-[#0f231c] font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-lg">add</span>
+<span class="text-sm">Add to List</span>
+</button>
+<button class="w-11 h-11 border border-gray-200 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50">
+<span class="material-symbols-outlined">location_on</span>
+</button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-card rounded-xl p-4 shadow-sm flex flex-col gap-4">
+<div class="flex gap-4">
+<div class="w-24 h-24 bg-cover bg-center rounded-lg shadow-inner shrink-0" data-alt="Container of natural greek yogurt" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBps2s5YMzbp5HkMUTKdwxAC7Ye40t3wgcwQOzPdSx1Zo-Nv1_VzC5dapTVFbemZiTQmudC1GJCDmRyJKHswrPo-f10RKSTDw_gUXzQp2NHExpRekam9CkRUKfAh_P5KG_1FZt9mfy0c94CLatRTS_LNjwbSvubKF6-0mGjJF5wSI6cJFcjhYlNq8inXOSu1vRHgcNcttdi1IiCG3UPhMrxlHxe1O5OQ88Xxoqv62Xa-XqMF8ieyYRdkEm2aaLCShLHC4Gv1RlHSrC0');">
+</div>
+<div class="flex flex-col justify-between py-1 flex-1">
+<div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px; font-variation-settings: 'FILL' 1">verified</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-emerald-deep/70">Halal Certified</span>
+</div>
+<h3 class="text-base font-bold text-[#111815] leading-tight">Skyr Greek Yogurt</h3>
+<p class="text-xs text-gray-500">Fat-Free Plain • 500g</p>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-lg font-bold text-[#111815]">$5.20</span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 border-t border-white/50 pt-3">
+<div class="bg-primary/10 px-2 py-1 rounded text-[10px] font-semibold text-emerald-deep uppercase">15g Protein</div>
+<div class="bg-primary/10 px-2 py-1 rounded text-[10px] font-semibold text-emerald-deep uppercase">Low Fat</div>
+</div>
+<div class="flex items-center justify-between gap-3 pt-1">
+<button class="flex-1 bg-primary hover:bg-primary/90 text-[#0f231c] font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-lg">add</span>
+<span class="text-sm">Add to List</span>
+</button>
+<button class="w-11 h-11 border border-gray-200 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50">
+<span class="material-symbols-outlined">location_on</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Floating Empty Space For Scrolling -->
+<div class="h-12"></div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-200 pb-8 pt-3 px-6 z-50">
+<div class="max-w-md mx-auto flex justify-between items-center">
+<div class="flex flex-col items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">eco</span>
+<span class="text-[10px] font-bold">Alternatives</span>
+</div>
+<div class="relative -mt-10">
+<div class="w-16 h-16 bg-primary rounded-full shadow-lg border-4 border-background-light flex items-center justify-center">
+<span class="material-symbols-outlined text-[#0f231c] text-3xl">barcode_scanner</span>
+</div>
+</div>
+<div class="flex flex-col items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined">list_alt</span>
+<span class="text-[10px] font-medium">Lists</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-[10px] font-medium">Profile</span>
+</div>
+</div>
+</nav>
+</body></html>

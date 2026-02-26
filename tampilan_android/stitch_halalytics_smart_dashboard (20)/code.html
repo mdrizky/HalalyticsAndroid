@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Halalytics Certificate Verifier</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1ff9a9",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231c",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-morphism {
+            background: rgba(15, 35, 28, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(31, 249, 169, 0.2);
+        }
+        .data-grid-overlay {
+            background-image: 
+                linear-gradient(rgba(31, 249, 169, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(31, 249, 169, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        .scan-frame-glow {
+            box-shadow: 0 0 20px rgba(31, 249, 169, 0.4), inset 0 0 20px rgba(31, 249, 169, 0.4);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-white selection:bg-primary/30">
+<div class="relative flex h-screen w-full flex-col overflow-hidden">
+<!-- Live Camera Viewfinder Layer -->
+<div class="absolute inset-0 z-0">
+<div class="h-full w-full bg-cover bg-center" data-alt="Dark futuristic camera view of a document" style='background-image: linear-gradient(rgba(15, 35, 28, 0.6), rgba(15, 35, 28, 0.6)), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAMhRK7DnV5P8ECAPZ0l-7-1O6AEkIPmIV9K7Qdc9Kpf8b-W_rhesJVw4LafhnmYVA-c4S433qXP8kTODn2Jc-CNZCXmjTCQBIhYH7O6h7caejWq_1GbI4kp6MoIgSxZtf6bBcQQ6ximJ8ajVPd3jE9vtrHAA8DZ22R-KRVYA9-L1sMiX7hBtRtdS6Uao5kKqSSu3buNqVZtrHnYGH9k2UoYNNdPwE4OGzOEH_cLqaKtolDKfG5uyBsVliYhyhEbKh9EYh2tqItC9yI");'>
+</div>
+<!-- High-tech Data Grid Overlay -->
+<div class="absolute inset-0 data-grid-overlay opacity-40"></div>
+</div>
+<!-- Top Navigation -->
+<div class="relative z-20 flex items-center bg-transparent p-4 justify-between">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-black/20 backdrop-blur-md border border-white/10">
+<span class="material-symbols-outlined text-white">arrow_back_ios_new</span>
+</div>
+<div class="flex flex-col items-center">
+<h2 class="text-white text-sm font-bold tracking-widest uppercase">HALALYTICS CORE</h2>
+<p class="text-primary text-[10px] font-medium tracking-[0.2em]">VERIFIER v2.0.26</p>
+</div>
+<div class="flex size-12 items-center justify-end">
+<button class="flex size-10 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40">
+<span class="material-symbols-outlined text-[20px]">shield</span>
+</button>
+</div>
+</div>
+<!-- AR Scanning Interface -->
+<div class="relative z-10 flex-1 flex flex-col items-center justify-center px-8">
+<!-- Pulsing Emerald Frame -->
+<div class="relative w-full aspect-square max-w-[320px] rounded-xl border-2 border-primary/50 scan-frame-glow flex items-center justify-center">
+<!-- Corner Accents -->
+<div class="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-lg"></div>
+<div class="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-lg"></div>
+<div class="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-lg"></div>
+<div class="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
+<!-- Scanning Line -->
+<div class="absolute top-0 left-0 w-full h-[2px] bg-primary/60 shadow-[0_0_15px_#1ff9a9] animate-pulse"></div>
+<!-- Center Target -->
+<div class="text-primary/30">
+<span class="material-symbols-outlined text-6xl">qr_code_scanner</span>
+</div>
+</div>
+<p class="mt-8 text-primary/80 text-sm font-medium tracking-widest uppercase bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm border border-primary/20">
+                Aligning Certificate...
+            </p>
+</div>
+<!-- Floating Glassmorphism Result Card -->
+<div class="absolute inset-x-0 bottom-32 z-30 px-6">
+<div class="glass-morphism rounded-2xl p-5 shadow-2xl relative overflow-hidden">
+<!-- Golden Seal Background Decoration -->
+<div class="absolute -right-8 -top-8 size-32 opacity-20 bg-primary rounded-full blur-3xl"></div>
+<div class="flex items-start justify-between gap-4">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg">verified</span>
+<p class="text-primary text-[10px] font-bold tracking-[0.2em] uppercase">Scan Complete</p>
+</div>
+<h3 class="text-white text-xl font-bold leading-tight tracking-tight uppercase mt-1">Certificate Authenticated</h3>
+</div>
+<!-- 3D Golden Halal Seal Placeholder -->
+<div class="relative size-16 shrink-0 bg-gradient-to-br from-yellow-300 via-yellow-600 to-yellow-900 rounded-full flex items-center justify-center border-2 border-yellow-200 shadow-[0_0_15px_rgba(234,179,8,0.4)]" data-alt="3D Golden Halal Seal icon">
+<span class="text-[10px] font-black text-black leading-none text-center">HALAL<br/>CERT</span>
+</div>
+</div>
+<!-- Certificate Meta Details -->
+<div class="mt-4 grid grid-cols-2 gap-4 border-t border-white/10 pt-4">
+<div class="flex flex-col">
+<span class="text-white/40 text-[9px] uppercase tracking-widest">Issuer</span>
+<span class="text-white text-xs font-semibold">MUI / BPJPH</span>
+</div>
+<div class="flex flex-col">
+<span class="text-white/40 text-[9px] uppercase tracking-widest">Expiry Date</span>
+<span class="text-white text-xs font-semibold">24 OCT 2028</span>
+</div>
+<div class="flex flex-col">
+<span class="text-white/40 text-[9px] uppercase tracking-widest">Serial Number</span>
+<span class="text-primary/80 text-[10px] font-mono">ID00110000213450522</span>
+</div>
+<div class="flex flex-col items-end justify-center">
+<button class="bg-primary text-background-dark text-[10px] font-bold px-3 py-1.5 rounded uppercase tracking-tighter hover:bg-white transition-colors">
+                            Full Report
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Camera Controls -->
+<div class="relative z-20 flex items-center justify-between gap-6 p-6 pb-10 bg-gradient-to-t from-background-dark via-background-dark/90 to-transparent">
+<button class="flex shrink-0 items-center justify-center rounded-full size-12 bg-white/5 border border-white/10 text-white backdrop-blur-lg">
+<span class="material-symbols-outlined">image</span>
+</button>
+<div class="relative">
+<div class="absolute -inset-2 bg-primary/20 rounded-full blur-lg"></div>
+<button class="relative flex shrink-0 items-center justify-center rounded-full size-20 bg-primary text-background-dark border-4 border-background-dark shadow-lg">
+<span class="material-symbols-outlined text-4xl font-bold">camera</span>
+</button>
+</div>
+<button class="flex shrink-0 items-center justify-center rounded-full size-12 bg-white/5 border border-white/10 text-white backdrop-blur-lg">
+<span class="material-symbols-outlined">flash_on</span>
+</button>
+</div>
+<!-- Bottom Sheet Handle (Indicator) -->
+<div class="absolute bottom-1 left-0 w-full flex justify-center z-30">
+<div class="h-1.5 w-12 rounded-full bg-white/20"></div>
+</div>
+</div>
+<!-- HUD Elements Overlay -->
+<div class="fixed top-20 right-4 z-40 flex flex-col items-end gap-2 opacity-60">
+<div class="text-[8px] font-mono text-primary flex items-center gap-1 bg-black/40 px-2 py-1 border border-primary/20 rounded">
+<div class="size-1 bg-primary animate-ping rounded-full"></div>
+            SYSTEM: LINKED
+        </div>
+<div class="text-[8px] font-mono text-primary bg-black/40 px-2 py-1 border border-primary/20 rounded">
+            ENCRYPTION: AES-256
+        </div>
+<div class="text-[8px] font-mono text-white/50 bg-black/40 px-2 py-1 border border-white/10 rounded">
+            LATENCY: 14MS
+        </div>
+</div>
+</body></html>

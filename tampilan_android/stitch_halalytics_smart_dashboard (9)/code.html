@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Halalytics Profile Registration</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec9c",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#10221b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .ios-shadow {
+            box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111815] transition-colors duration-300">
+<div class="relative flex h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto">
+<!-- TopAppBar -->
+<header class="flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-50 p-4 pb-2 justify-between">
+<div class="text-[#111815] dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 transition-colors cursor-pointer">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</div>
+<h2 class="text-[#111815] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">Health Profile</h2>
+</header>
+<main class="flex-1 overflow-y-auto pb-32">
+<!-- ProgressBar -->
+<div class="flex flex-col gap-3 p-4">
+<div class="flex gap-6 justify-between items-center">
+<p class="text-[#111815] dark:text-white/90 text-sm font-semibold leading-normal uppercase tracking-wider">Step 2 of 4</p>
+<p class="text-primary text-sm font-bold leading-normal">50% Complete</p>
+</div>
+<div class="rounded-full bg-black/5 dark:bg-white/10 h-2.5 overflow-hidden">
+<div class="h-full rounded-full bg-primary shadow-[0_0_10px_rgba(19,236,156,0.5)] transition-all duration-500" style="width: 50%;"></div>
+</div>
+</div>
+<!-- Headline & Body -->
+<div class="px-4 pt-4">
+<h1 class="text-[#111815] dark:text-white tracking-tight text-[28px] font-bold leading-tight">Physical Metrics</h1>
+<p class="text-[#111815]/70 dark:text-white/60 text-base font-normal leading-relaxed mt-2">
+                    Enter your metrics for precise nutrient tracking and Halal-certified supplement recommendations.
+                </p>
+</div>
+<!-- Form Section with Glassmorphism -->
+<div class="flex flex-col gap-4 p-4 mt-4">
+<!-- Weight Input Card -->
+<div class="glass-card ios-shadow rounded-xl p-5 flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<label class="text-[#111815] dark:text-white font-bold text-lg">Current Weight</label>
+<div class="flex bg-black/5 dark:bg-white/10 p-1 rounded-lg">
+<button class="px-3 py-1 bg-white dark:bg-background-dark shadow-sm rounded-md text-sm font-bold">KG</button>
+<button class="px-3 py-1 text-sm font-medium text-[#111815]/50 dark:text-white/50">LB</button>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex-1">
+<input class="w-full bg-transparent border-none text-4xl font-bold p-0 focus:ring-0 text-[#111815] dark:text-white placeholder:text-[#111815]/20" placeholder="75.0" type="number"/>
+</div>
+<div class="flex items-center justify-center size-12 rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined">monitor_weight</span>
+</div>
+</div>
+</div>
+<!-- Height Input Card -->
+<div class="glass-card ios-shadow rounded-xl p-5 flex flex-col gap-4">
+<label class="text-[#111815] dark:text-white font-bold text-lg">Height</label>
+<div class="relative flex items-center justify-between">
+<div class="flex-1 flex items-baseline gap-1">
+<span class="text-4xl font-bold dark:text-white">182</span>
+<span class="text-xl font-medium text-[#111815]/40 dark:text-white/40">cm</span>
+</div>
+<div class="w-1/2 h-1 bg-black/5 dark:bg-white/10 rounded-full relative">
+<div class="absolute top-1/2 left-3/4 -translate-y-1/2 size-5 rounded-full bg-primary border-4 border-white dark:border-background-dark shadow-lg"></div>
+</div>
+</div>
+</div>
+<!-- Halal Preference Section -->
+<div class="mt-4 px-1">
+<h3 class="text-[#111815] dark:text-white text-lg font-bold mb-3">Halal Strictness</h3>
+<div class="grid grid-cols-2 gap-3">
+<div class="glass-card border-primary/50 border-2 rounded-xl p-4 flex flex-col gap-2 relative overflow-hidden">
+<div class="absolute top-2 right-2 text-primary">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<span class="material-symbols-outlined text-primary mb-1">verified_user</span>
+<p class="font-bold text-sm">Strict Halal</p>
+<p class="text-[10px] text-[#111815]/60 dark:text-white/50 leading-tight">Hand-slaughtered &amp; enzyme checked.</p>
+</div>
+<div class="glass-card rounded-xl p-4 flex flex-col gap-2 opacity-60">
+<span class="material-symbols-outlined text-[#111815]/50 dark:text-white/50 mb-1">health_metrics</span>
+<p class="font-bold text-sm">Standard</p>
+<p class="text-[10px] text-[#111815]/60 dark:text-white/50 leading-tight">General Halal certifications only.</p>
+</div>
+</div>
+</div>
+<!-- Health Goal Card -->
+<div class="p-4 @container">
+<div class="flex flex-col items-stretch justify-start rounded-xl glass-card overflow-hidden ios-shadow">
+<div class="w-full bg-center bg-no-repeat aspect-[21/9] bg-cover" data-alt="Abstract emerald green and teal gradient pattern" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB0r-I3ytyKrspOU6-kcXt9yi-5rf0UdJddwRIIF-Lphk9_UX-ijqUaaVF5bHAsYjliX2QJiiYvHgBqbAnGPvtywmIwY3mqLZEGlRZj-MMxlXDEiHXc_Pqhhsn3J37MOA5RPbAlwW6Z01u4hyxXOXXdMDrxF_o-RKCb8bKN4uridEQdwdamoDOQwkjSnSXH_aMEi7giP1amv3h0S5g9VTPMWwYsSc5c2F3lM_jJOTdGe5VH3aV4z2_lc_sq1nO0tEboZAFs2wD2nCvR");'></div>
+<div class="flex w-full grow flex-col items-stretch justify-center gap-1 p-4">
+<p class="text-[#111815] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Personalized Coaching</p>
+<div class="flex items-end gap-3 justify-between">
+<p class="text-primary text-sm font-medium leading-normal">Our AI aligns your goals with your values</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation / Action Button -->
+<footer class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light/95 dark:via-background-dark/95 to-transparent">
+<div class="max-w-md mx-auto">
+<button class="w-full bg-primary text-background-dark font-bold text-lg py-4 rounded-xl shadow-[0_8px_30px_rgb(19,236,156,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                    Continue
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</footer>
+</div>
+</body></html>

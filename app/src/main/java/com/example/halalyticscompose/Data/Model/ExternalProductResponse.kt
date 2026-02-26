@@ -1,5 +1,7 @@
 package com.example.halalyticscompose.Data.Model
 
+import androidx.compose.ui.graphics.Color
+import com.example.halalyticscompose.ui.theme.*
 import com.google.gson.annotations.SerializedName
 
 /**
@@ -43,6 +45,12 @@ data class ExternalSearchResponse(
  * Product Item dari OpenFoodFacts
  */
 data class ProductItem(
+    @SerializedName("source")
+    val source: String? = null,
+
+    @SerializedName("barcode")
+    val barcode: String? = null,
+
     @SerializedName("_id")
     val id: String?,
     
@@ -126,6 +134,12 @@ data class ProductItem(
     
     @SerializedName("stores")
     val stores: String?,
+
+    @SerializedName("nutriments")
+    val nutriments: Map<String, Any?>? = null,
+
+    @SerializedName("synced_at")
+    val syncedAt: String? = null,
     
     @SerializedName("halal_analysis")
     val halalAnalysis: HalalAnalysis?
@@ -147,6 +161,18 @@ data class ProductItem(
         return productName?.takeIf { it.isNotBlank() }
             ?: productNameEn?.takeIf { it.isNotBlank() }
             ?: "Unknown Product"
+    }
+
+    fun getNutrimentNumber(vararg keys: String): String? {
+        val map = nutriments ?: return null
+        for (key in keys) {
+            val value = map[key] ?: continue
+            when (value) {
+                is Number -> return if (value.toDouble() % 1.0 == 0.0) value.toInt().toString() else String.format("%.2f", value.toDouble())
+                is String -> if (value.isNotBlank()) return value
+            }
+        }
+        return null
     }
     
     /**
@@ -180,18 +206,29 @@ data class ProductItem(
     }
     
     /**
-     * Get nutriscore color
+     * Get unified halal status - used across search and detail screens
      */
-    fun getNutriscoreColor(): android.graphics.Color? {
-        return when (nutriscoreGrade?.uppercase()) {
-            "A" -> android.graphics.Color.valueOf(0f, 0.627f, 0f, 1f) // Green
-            "B" -> android.graphics.Color.valueOf(0.522f, 0.765f, 0.243f, 1f) // Light Green
-            "C" -> android.graphics.Color.valueOf(1f, 0.843f, 0f, 1f) // Yellow
-            "D" -> android.graphics.Color.valueOf(1f, 0.549f, 0f, 1f) // Orange
-            "E" -> android.graphics.Color.valueOf(1f, 0f, 0f, 1f) // Red
-            else -> null
+    fun getHalalStatus(): String {
+        return when {
+            isHalal() -> "Halal"
+            halalAnalysis?.isPotentiallyHalal == true -> "Likely Halal"
+            halalAnalysis?.isPotentiallyHalal == false -> "Check Required"
+            else -> "Unknown"
         }
     }
+    
+    /**
+     * Get halal status color
+     */
+    fun getHalalStatusColor(): Color {
+        return when {
+            isHalal() -> HalalColor
+            halalAnalysis?.isPotentiallyHalal == true -> HalalGreen
+            halalAnalysis?.isPotentiallyHalal == false -> HaramColor
+            else -> TextMuted
+        }
+    }
+
 }
 
 /**

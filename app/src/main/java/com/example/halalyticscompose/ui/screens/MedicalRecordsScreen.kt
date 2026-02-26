@@ -1,0 +1,254 @@
+package com.example.halalyticscompose.ui.screens
+
+import android.graphics.Bitmap
+import android.net.Uri
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.example.halalyticscompose.Data.Model.MedicalRecordRequest
+import com.example.halalyticscompose.ui.theme.DarkBackground
+import com.example.halalyticscompose.ui.theme.DarkCard
+import com.example.halalyticscompose.ui.theme.HalalGreen
+import com.example.halalyticscompose.ui.theme.TextGray
+import com.example.halalyticscompose.ui.viewmodel.MedicalRecordsViewModel
+import com.example.halalyticscompose.utils.SessionManager
+import java.io.ByteArrayOutputStream
+import java.text.SimpleDateFormat
+import java.util.*
+import android.util.Base64
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MedicalRecordsScreen(
+    navController: NavController,
+    viewModel: MedicalRecordsViewModel = hiltViewModel()
+) {
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager.getInstance(context) }
+    
+    val isLoading by viewModel.isLoading.collectAsState()
+    val records by viewModel.records.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    var showAddDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadRecords()
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Rekam Medis Digital") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = DarkBackground,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                )
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showAddDialog = true },
+                containerColor = HalalGreen
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Record")
+            }
+        },
+        containerColor = DarkBackground
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            
+            if (isLoading && records.isEmpty()) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = HalalGreen)
+            } else if (records.isEmpty()) {
+                Text(
+                    "Belum ada histori rekam medis.",
+                    color = TextGray,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(records) { record ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth().clickable { /* Show Detail */ },
+                            colors = CardDefaults.cardColors(containerColor = DarkCard),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier.size(50.dp).background(Color(0xFF2A2A2A), RoundedCornerShape(8.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.Description, contentDescription = "Doc", tint = HalalGreen)
+                                }
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Column {
+                                    Text(record.title, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Text("${record.recordType} • ${record.recordDate}", color = TextGray, style = MaterialTheme.typography.bodySmall)
+                                    if (!record.hospitalName.isNullOrEmpty()) {
+                                        Text(record.hospitalName, color = HalalGreen, style = MaterialTheme.typography.bodySmall)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showAddDialog) {
+        AddMedicalRecordDialog(
+            onDismiss = { showAddDialog = false },
+            onSave = { title, type, date, hospital, doctor, desc, base64Image ->
+                val userId = sessionManager.getUserId()
+                if(userId <= 0) return@AddMedicalRecordDialog
+                viewModel.addRecord(
+                    MedicalRecordRequest(
+                        userId = userId,
+                        recordType = type,
+                        recordDate = date,
+                        title = title,
+                        hospitalName = hospital,
+                        doctorName = doctor,
+                        description = desc,
+                        imageBase64 = base64Image
+                    )
+                )
+                showAddDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun AddMedicalRecordDialog(
+    onDismiss: () -> Unit,
+    onSave: (String, String, String, String, String, String, String?) -> Unit
+) {
+    var title by remember { mutableStateOf("") }
+    var type by remember { mutableStateOf("Resep") }
+    var hospital by remember { mutableStateOf("") }
+    var doctor by remember { mutableStateOf("") }
+    var desc by remember { mutableStateOf("") }
+    
+    val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    val currentDate = sdf.format(Date())
+
+    var selectedImageBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    val context = LocalContext.current
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
+            selectedImageBitmap = bitmap
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Tambah Rekam Medis") },
+        text = {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Judul Dokumen") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Simplified type selection for brevity
+                OutlinedTextField(
+                    value = type,
+                    onValueChange = { type = it },
+                    label = { Text("Tipe (Lab, Resep, Diagnosis, Vaksinasi)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                OutlinedTextField(
+                    value = hospital,
+                    onValueChange = { hospital = it },
+                    label = { Text("Rumah Sakit / Klinik") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                OutlinedTextField(
+                    value = doctor,
+                    onValueChange = { doctor = it },
+                    label = { Text("Nama Dokter") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(onClick = { galleryLauncher.launch("image/*") }) {
+                    Text("Upload Foto Dokumen")
+                }
+                
+                if (selectedImageBitmap != null) {
+                    Text("Foto dipilih", color = HalalGreen, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    var base64: String? = null
+                    selectedImageBitmap?.let { bmp ->
+                        val stream = ByteArrayOutputStream()
+                        bmp.compress(Bitmap.CompressFormat.JPEG, 70, stream)
+                        base64 = Base64.encodeToString(stream.toByteArray(), Base64.DEFAULT)
+                    }
+                    onSave(title, type, currentDate, hospital, doctor, desc, base64)
+                },
+                enabled = title.isNotBlank() && type.isNotBlank()
+            ) {
+                Text("Simpan")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Batal")
+            }
+        }
+    )
+}

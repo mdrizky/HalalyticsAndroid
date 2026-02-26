@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Emergency SOS &amp; Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00a86b",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231c",
+                        "emergency-red": "#ff3b30",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-red {
+            background: rgba(255, 59, 48, 0.1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 2px solid rgba(255, 59, 48, 0.4);
+            box-shadow: 0 0 20px rgba(255, 59, 48, 0.2);
+        }
+        .emerald-glow {
+            box-shadow: 0 0 15px rgba(0, 168, 107, 0.3);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white transition-colors duration-300">
+<div class="relative min-h-screen max-w-md mx-auto overflow-hidden bg-background-light dark:bg-background-dark pb-24">
+<!-- Top App Bar -->
+<div class="flex items-center p-6 justify-between sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="flex items-center justify-center size-10 rounded-full glass cursor-pointer">
+<span class="material-symbols-outlined text-white text-2xl">arrow_back_ios_new</span>
+</div>
+<h2 class="text-white text-xl font-bold tracking-tight">Emergency &amp; Profile</h2>
+<div class="size-10"></div> <!-- Spacer -->
+</div>
+<!-- QR Code Section -->
+<div class="px-6 py-4 flex flex-col items-center">
+<div class="glass-red rounded-xl p-6 mb-4 w-64 h-64 flex flex-col items-center justify-center relative">
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-emergency-red text-white text-[10px] font-bold px-3 py-1 rounded-full tracking-widest uppercase">
+                    SOS Identity
+                </div>
+<!-- Mock QR Code with abstract geometric pattern -->
+<div class="bg-white p-2 rounded-lg w-full h-full flex items-center justify-center">
+<div class="w-full h-full bg-no-repeat bg-center bg-contain" data-alt="High contrast medical QR code for emergency responders" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBkVWYclHFhMHOJOQwZ21ej-N6DSwGQWp5q_zSd8Xz5IfWWd6IX3mQ5LJzfzmgw4o50bquVedSQmucJY5vTl0Kp2J4PCSFpmUuHMfHOfifcQiGOE58s4ht1V2T205VPh9LJq6vLfZHp0TDhKqNBIeWbkSrJPicoXJpfUAK0eMr9g4Dv4OKbJsk-8gWidbHvWUwThxNhDePLQJIyxvrKCLu-msPd7D7nvUkyWz613YPCqSAAqoxoqL5uUflcVY6VecoXd2wbO1X-dOk5');">
+</div>
+</div>
+</div>
+<p class="text-sm text-[#9abcaf] font-medium tracking-wide">SCAN FOR INSTANT MEDICAL ACCESS</p>
+</div>
+<!-- Section Header: Emergency Data -->
+<div class="px-6 pt-8 pb-4">
+<h3 class="text-white text-sm font-bold tracking-[0.2em] uppercase opacity-70">Emergency Data</h3>
+</div>
+<!-- Emergency Info List -->
+<div class="px-4 space-y-3">
+<!-- Blood Type -->
+<div class="flex items-center gap-4 glass rounded-2xl px-4 min-h-[72px] justify-between border-l-4 border-l-primary">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-xl bg-primary/10 shrink-0 size-12">
+<span class="material-symbols-outlined">water_drop</span>
+</div>
+<div class="flex flex-col">
+<p class="text-white text-base font-semibold leading-tight">Blood Type</p>
+<p class="text-[#9abcaf] text-xs font-normal">Verified medical record</p>
+</div>
+</div>
+<div class="shrink-0 bg-primary/20 px-4 py-1.5 rounded-full emerald-glow">
+<p class="text-primary text-xl font-black">O+</p>
+</div>
+</div>
+<!-- Allergies -->
+<div class="flex items-center gap-4 glass rounded-2xl px-4 min-h-[72px] justify-between border-l-4 border-l-emergency-red">
+<div class="flex items-center gap-4">
+<div class="text-emergency-red flex items-center justify-center rounded-xl bg-emergency-red/10 shrink-0 size-12">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<div class="flex flex-col">
+<p class="text-white text-base font-semibold leading-tight">Allergies</p>
+<p class="text-[#9abcaf] text-xs font-normal">Critical warning</p>
+</div>
+</div>
+<div class="shrink-0">
+<p class="text-white text-sm font-medium">Seafood, Nuts</p>
+</div>
+</div>
+</div>
+<!-- Section Header: Settings -->
+<div class="px-6 pt-10 pb-4">
+<h3 class="text-white text-sm font-bold tracking-[0.2em] uppercase opacity-70">App Preferences</h3>
+</div>
+<!-- Settings List -->
+<div class="px-4 space-y-1">
+<!-- Dark Mode Toggle -->
+<div class="flex items-center gap-4 bg-transparent px-4 py-4 justify-between border-b border-white/5">
+<div class="flex items-center gap-4">
+<div class="text-[#9abcaf] flex items-center justify-center size-6">
+<span class="material-symbols-outlined">dark_mode</span>
+</div>
+<p class="text-white text-base font-medium">Dark Mode</p>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<div class="w-11 h-6 bg-primary rounded-full"></div>
+<div class="absolute left-6 top-1 bg-white w-4 h-4 rounded-full transition-all"></div>
+</div>
+</div>
+<!-- Private Profile Toggle -->
+<div class="flex items-center gap-4 bg-transparent px-4 py-4 justify-between border-b border-white/5">
+<div class="flex items-center gap-4">
+<div class="text-[#9abcaf] flex items-center justify-center size-6">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<p class="text-white text-base font-medium">Private Profile</p>
+</div>
+<div class="relative inline-flex items-center cursor-pointer opacity-50">
+<div class="w-11 h-6 bg-white/20 rounded-full"></div>
+<div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-all"></div>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<div class="px-6 mt-12 mb-8">
+<button class="w-full glass py-4 rounded-2xl flex items-center justify-center gap-2 border border-emergency-red/20 group">
+<span class="material-symbols-outlined text-emergency-red text-xl">logout</span>
+<span class="text-emergency-red font-bold text-lg">Log Out</span>
+</button>
+</div>
+<!-- Bottom Navigation Spacer -->
+<div class="h-10"></div>
+</div>
+<!-- Sticky Floating Navigation Bar -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm glass rounded-full px-8 py-4 flex justify-between items-center z-50 border border-white/10 shadow-2xl">
+<span class="material-symbols-outlined text-[#9abcaf] hover:text-primary transition-colors cursor-pointer">home</span>
+<span class="material-symbols-outlined text-[#9abcaf] hover:text-primary transition-colors cursor-pointer">explore</span>
+<div class="bg-primary size-12 rounded-full flex items-center justify-center -mt-10 emerald-glow border-4 border-background-dark">
+<span class="material-symbols-outlined text-white text-3xl">qr_code_scanner</span>
+</div>
+<span class="material-symbols-outlined text-[#9abcaf] hover:text-primary transition-colors cursor-pointer">analytics</span>
+<span class="material-symbols-outlined text-primary font-bold transition-colors cursor-pointer">person</span>
+</div>
+</body></html>

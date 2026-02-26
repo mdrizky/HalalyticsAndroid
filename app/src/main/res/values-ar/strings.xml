@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Halalytics</string>
+    <string name="settings_title">إعدادات</string>
+    <string name="dark_mode">الوضع المظلم</string>
+    <string name="language">اللغة</string>
+    <string name="notifications">إشعارات</string>
+    <string name="watchlist">قائمة مراقبة الحساسية</string>
+    <string name="scan">مسح</string>
+    <string name="profile">حساب تعريفي</string>
+    <string name="home">القائمة الرئيسية</string>
+    <string name="achievements">الإنجازات</string>
+    <string name="health_score">النتيجة الصحية</string>
+    <string name="streak">توالي</string>
+</resources>

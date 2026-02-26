@@ -1,0 +1,142 @@
+package com.example.halalyticscompose.Data.Model
+
+import com.google.gson.annotations.SerializedName
+
+data class MedicineCheckResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("source") val source: String, // database vs ai_generated
+    @SerializedName("data") val data: MedicineData?
+)
+
+data class MedicineData(
+    @SerializedName("id") val id: Int? = null,
+    @SerializedName("id_medicine") val idMedicine: Int? = null,
+    @SerializedName("name") val name: String,
+    @SerializedName("generic_name") val genericName: String? = null,
+    @SerializedName("brand_name") val brandName: String? = null,
+    @SerializedName("barcode") val barcode: String? = null,
+    @SerializedName("image_url") val imageUrl: String? = null,
+    @SerializedName("description") val description: String? = null,
+    @SerializedName("indications") val indications: String? = null,
+    @SerializedName("ingredients") val ingredients: List<String>? = null,
+    @SerializedName("dosage_info") val dosageInfo: String? = null,
+    @SerializedName("frequency_per_day") val frequencyPerDay: Int? = null,
+    @SerializedName("max_daily_dose") val maxDailyDose: String? = null,
+    @SerializedName("side_effects") val sideEffects: String? = null,
+    @SerializedName("warnings") val warnings: String? = null,
+    @SerializedName("contraindications") val contraindications: String? = null,
+    @SerializedName("route") val route: String? = null,
+    @SerializedName("halal_status") val halalStatus: String = "syubhat",
+    @SerializedName("halal_certificate_number") val halalCertNumber: String? = null,
+    @SerializedName("manufacturer") val manufacturer: String? = null,
+    @SerializedName("country_origin") val countryOrigin: String? = null,
+    @SerializedName("dosage_form") val dosageForm: String? = null,
+    @SerializedName("category") val kategori: String? = null,
+    @SerializedName("source") val source: String? = "local",
+    @SerializedName("is_prescription_required") val isPrescriptionRequired: Boolean? = false,
+    @SerializedName("is_verified_by_admin") val isVerifiedByAdmin: Boolean? = false,
+    @SerializedName("active") val active: Boolean? = true
+)
+
+// Medication Reminder Item for Lists & Details
+data class MedicationReminderItem(
+    @SerializedName(value = "id", alternate = ["id_reminder"]) val id: Int = 0,
+    @SerializedName(value = "user_id", alternate = ["id_user"]) val userId: Int = 0,
+    @SerializedName(value = "drug_id", alternate = ["id_medicine"]) val drugId: Int = 0,
+    @SerializedName("dosage") val dosage: String = "",
+    @SerializedName("frequency") val frequency: String = "",
+    @SerializedName(value = "time_slots", alternate = ["schedule_times"]) val timeSlots: List<String>? = null,
+    @SerializedName("start_date") val startDate: String = "",
+    @SerializedName("end_date") val endDate: String? = null,
+    @SerializedName("is_active") val isActive: Boolean = true,
+    @SerializedName("medicine_name") val medicineName: String = "",
+    @SerializedName("symptoms") val symptoms: String? = null,
+    @SerializedName("frequency_per_day") val frequencyPerDay: Int = 1,
+    @SerializedName(value = "schedule_times", alternate = ["time_slots"]) val scheduleTimes: List<String>? = null,
+    @SerializedName("taken_times") val takenTimes: List<String>? = null,
+    @SerializedName("notes") val notes: String? = null,
+    @SerializedName("voice_message") val voiceMessage: VoiceMessages? = null,
+    @SerializedName(value = "drug", alternate = ["medicine"]) val drug: MedicineData? = null
+)
+
+data class VoiceMessages(
+    @SerializedName("formal") val formal: String?,
+    @SerializedName("casual") val casual: String?,
+    @SerializedName("motivational") val motivational: String?
+)
+
+// Drug Interaction Models
+data class DrugInteractionData(
+    @SerializedName("has_interaction") val hasInteraction: Boolean,
+    @SerializedName("severity") val severity: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("recommendation") val recommendation: String?,
+    @SerializedName("scientific_basis") val scientificBasis: String?,
+    @SerializedName("sources") val sources: List<String>? = null,
+    @SerializedName("disclaimer") val disclaimer: String? = null
+)
+
+// Pill Identification Models
+data class PillIdentifyData(
+    @SerializedName("possible_drugs") val possibleDrugs: List<PossibleDrug>,
+    @SerializedName("visual_features") val visualFeatures: VisualFeatures
+)
+
+data class PossibleDrug(
+    @SerializedName("name") val name: String,
+    @SerializedName("confidence") val confidence: Double,
+    @SerializedName("generic_name") val genericName: String?,
+    @SerializedName("description") val description: String?
+)
+
+data class VisualFeatures(
+    @SerializedName("shape") val shape: String?,
+    @SerializedName("color") val color: String?,
+    @SerializedName("imprint") val imprint: String?
+)
+
+// Lab Analysis Models
+data class LabAnalysisData(
+    @SerializedName("detected_tests") val detectedTests: List<DetectedTest>,
+    @SerializedName("overall_assessment") val overallAssessment: String,
+    @SerializedName("lifestyle_recommendations") val lifestyleRecommendations: List<String>
+)
+
+data class DetectedTest(
+    @SerializedName("test_name") val testName: String,
+    @SerializedName("value") val value: Double,
+    @SerializedName("unit") val unit: String,
+    @SerializedName("status") val status: String,
+    @SerializedName("interpretation") val interpretation: String?
+)
+
+// Health Metrics Models
+data class HealthMetricData(
+    @SerializedName("id") val id: Int,
+    @SerializedName("metric_type") val metricType: String,
+    @SerializedName("value") val value: String,
+    @SerializedName("recorded_at") val recordedAt: String,
+    @SerializedName("notes") val notes: String?
+)
+
+// Halal Alternatives Models
+data class HalalAlternativeData(
+    @SerializedName("problematic_ingredients") val problematicIngredients: List<String>?,
+    @SerializedName("halal_alternatives") val halalAlternatives: List<HalalAlternativeItem>?,
+    @SerializedName("explanation") val explanation: String?
+)
+
+data class HalalAlternativeItem(
+    @SerializedName("name") val name: String,
+    @SerializedName("manufacturer") val manufacturer: String?,
+    @SerializedName("halal_cert") val halalCert: String?,
+    @SerializedName("confidence") val confidence: Double?
+)
+
+// Original/Legacy classes for backward compatibility if needed
+data class MedicineScheduleRequest(
+    @SerializedName("medicine_id") val medicineId: Int?,
+    @SerializedName("custom_name") val customName: String?,
+    @SerializedName("dosage") val dosage: String,
+    @SerializedName("reminder_time") val reminderTime: String
+)

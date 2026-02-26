@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00a86b",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#05100d",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-button {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .emerald-glow {
+            box-shadow: 0 0 40px rgba(0, 168, 107, 0.15);
+        }
+        .mesh-gradient {
+            background-color: #05100d;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(160, 100%, 15%, 1) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(158, 100%, 10%, 1) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, hsla(162, 100%, 5%, 1) 0px, transparent 50%),
+                radial-gradient(at 80% 50%, hsla(160, 100%, 20%, 0.4) 0px, transparent 50%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white overflow-x-hidden">
+<!-- Background Layer with Depth -->
+<div class="fixed inset-0 z-0 mesh-gradient"></div>
+<!-- Main Container -->
+<div class="relative z-10 min-h-screen flex flex-col items-center justify-between px-6 py-12">
+<!-- Splash Logo Area -->
+<div class="w-full flex flex-col items-center mt-8">
+<div class="size-20 bg-primary/20 rounded-full flex items-center justify-center border border-primary/40 emerald-glow mb-4">
+<span class="material-symbols-outlined text-primary text-5xl">shield_moon</span>
+</div>
+<h2 class="text-3xl font-bold tracking-tight text-white">Halalytics</h2>
+<p class="text-primary/80 text-sm font-medium tracking-[0.2em] uppercase mt-1">Health &amp; Purity 2026</p>
+</div>
+<!-- Authentication Card -->
+<div class="w-full max-w-[400px] glass-card rounded-xl p-8 shadow-2xl">
+<div class="mb-8">
+<h1 class="text-2xl font-semibold text-white mb-2">Welcome Back</h1>
+<p class="text-white/60 text-sm">Securely access your wellness insights.</p>
+</div>
+<form class="space-y-5">
+<!-- Email Field -->
+<div class="space-y-2">
+<label class="block text-xs font-medium text-white/40 uppercase tracking-widest pl-1">Email Address</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-white/30 text-xl group-focus-within:text-primary transition-colors">mail</span>
+</div>
+<input class="block w-full bg-white/5 border border-white/10 rounded-full py-4 pl-12 pr-4 text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all" placeholder="name@halalytics.io" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<label class="block text-xs font-medium text-white/40 uppercase tracking-widest pl-1">Password</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-white/30 text-xl group-focus-within:text-primary transition-colors">lock</span>
+</div>
+<input class="block w-full bg-white/5 border border-white/10 rounded-full py-4 pl-12 pr-12 text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all" placeholder="••••••••" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-4 flex items-center" type="button">
+<span class="material-symbols-outlined text-white/30 hover:text-white transition-colors">visibility</span>
+</button>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center justify-end">
+<a class="text-xs text-primary font-medium hover:underline" href="#">Forgot your password?</a>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-full transition-all shadow-lg shadow-primary/20 active:scale-[0.98]">
+                    Sign In
+                </button>
+</form>
+<!-- Divider -->
+<div class="relative my-8">
+<div aria-hidden="true" class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-white/10"></div>
+</div>
+<div class="relative flex justify-center text-xs uppercase">
+<span class="bg-transparent px-2 text-white/30 tracking-widest">Or Continue With</span>
+</div>
+</div>
+<!-- Social Auth -->
+<button class="w-full glass-button hover:bg-white/10 text-white font-medium py-4 rounded-full flex items-center justify-center gap-3 transition-all active:scale-[0.98]">
+<svg fill="none" height="20" viewbox="0 0 48 48" width="20" xmlns="http://www.w3.org/2000/svg">
+<path d="M47.532 24.5528C47.532 22.9214 47.396 21.2899 47.1245 19.6912H24.4805V28.919H37.4421C36.9067 31.8914 35.1745 34.5296 32.6439 36.2388V42.2721H40.3801C44.9217 38.1134 47.532 31.8914 47.532 24.5528Z" fill="#4285F4"></path>
+<path d="M24.48 48.0016C30.9529 48.0016 36.4116 45.8764 40.3806 42.2721L32.6444 36.2388C30.4951 37.6873 27.712 38.5045 24.4827 38.5045C18.2275 38.5045 12.9187 34.2614 11.0139 28.6003H3.03296V34.7825C7.05071 42.7393 15.2533 48.0016 24.48 48.0016Z" fill="#34A853"></path>
+<path d="M11.0142 28.6001C10.0216 25.666 10.0216 22.484 11.0142 19.5499V13.3677H3.03319C-0.313498 20.0112 -0.313498 27.9565 3.03319 34.6001L11.0142 28.6001Z" fill="#FBBC04"></path>
+<path d="M24.48 9.49736C27.9077 9.44777 31.2086 10.7439 33.66 13.1112L40.5401 6.22183C36.1956 2.15324 30.4194 -0.0629612 24.48 0.00181754C15.2533 0.00181754 7.05071 5.26418 3.03296 13.221L11.0139 19.4031C12.9159 13.7393 18.2247 9.49736 24.48 9.49736Z" fill="#EA4335"></path>
+</svg>
+                Google
+            </button>
+</div>
+<!-- Footer -->
+<div class="mt-8 text-center">
+<p class="text-white/40 text-sm">
+                New to the platform? 
+                <a class="text-primary font-semibold ml-1" href="#">Join the movement</a>
+</p>
+<div class="mt-6 flex justify-center space-x-4">
+<div class="h-1 w-12 bg-primary/20 rounded-full"></div>
+<div class="h-1 w-12 bg-white/10 rounded-full"></div>
+<div class="h-1 w-12 bg-white/10 rounded-full"></div>
+</div>
+</div>
+<!-- Decorative Elements -->
+<div class="absolute bottom-10 right-10 opacity-10 pointer-events-none">
+<span class="material-symbols-outlined text-[200px] text-primary rotate-12">spa</span>
+</div>
+</div>
+</body></html>

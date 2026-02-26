@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notification Center - Halalytics</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#1ff9a9",
+                "background-light": "#f5f8f7",
+                "background-dark": "#0f231c",
+              },
+              fontFamily: {
+                "display": ["Inter", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+          },
+        }
+      </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .ios-notch {
+            height: 44px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen">
+<div class="max-w-[430px] mx-auto min-h-screen flex flex-col relative overflow-x-hidden">
+<!-- iOS Status Bar Placeholder -->
+<div class="ios-notch w-full flex items-center justify-between px-8 pt-4">
+<span class="text-sm font-semibold">9:41</span>
+<div class="flex gap-1.5 items-center">
+<span class="material-symbols-outlined text-sm">signal_cellular_4_bar</span>
+<span class="material-symbols-outlined text-sm">wifi</span>
+<span class="material-symbols-outlined text-sm rotate-90">battery_full</span>
+</div>
+</div>
+<!-- Top Navigation Bar -->
+<div class="flex items-center px-4 py-4 justify-between sticky top-0 z-10 bg-background-light/80 backdrop-blur-md">
+<div class="flex items-center gap-2">
+<div class="text-[#111815] flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 cursor-pointer">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</div>
+<h2 class="text-[#111815] text-xl font-bold leading-tight tracking-tight">Notifications</h2>
+</div>
+<button class="text-primary font-bold text-sm tracking-tight px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
+                Clear All
+            </button>
+</div>
+<!-- Search Bar -->
+<div class="px-4 py-2">
+<label class="flex flex-col min-w-40 h-11 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full shadow-sm">
+<div class="text-primary flex border-none bg-white items-center justify-center pl-4 rounded-l-xl border-r-0">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-xl text-[#111815] focus:outline-0 focus:ring-0 border-none bg-white focus:border-none h-full placeholder:text-[#5f8c7b]/60 px-4 pl-2 text-base font-normal leading-normal" placeholder="Search history..." value=""/>
+</div>
+</label>
+</div>
+<!-- Notification List -->
+<div class="flex-1 px-4 space-y-2 pb-24">
+<!-- Section Header -->
+<div class="flex items-center justify-between pt-6 pb-2">
+<h3 class="text-[#111815] text-lg font-bold leading-tight tracking-tight">Today</h3>
+<span class="text-xs font-medium text-[#5f8c7b] bg-[#f0f5f3] px-2 py-0.5 rounded-full">3 New</span>
+</div>
+<!-- Glass Notification Card 1 -->
+<div class="glass-card flex items-start gap-4 p-4 rounded-xl relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="text-white flex items-center justify-center rounded-lg bg-primary shrink-0 size-11 shadow-sm shadow-primary/40">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex justify-between items-center mb-0.5">
+<p class="text-[#111815] text-base font-semibold leading-normal">Scan Complete: 100% Halal</p>
+<p class="text-[#5f8c7b] text-[11px] font-medium leading-normal">2m ago</p>
+</div>
+<p class="text-[#5f8c7b] text-sm font-normal leading-tight line-clamp-2">Ingredients verified by Halalytics AI. No additives detected. High protein content.</p>
+</div>
+</div>
+<!-- Glass Notification Card 2 -->
+<div class="glass-card flex items-start gap-4 p-4 rounded-xl relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="text-white flex items-center justify-center rounded-lg bg-primary shrink-0 size-11 shadow-sm shadow-primary/40">
+<span class="material-symbols-outlined">water_drop</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex justify-between items-center mb-0.5">
+<p class="text-[#111815] text-base font-semibold leading-normal">Hydration Alert</p>
+<p class="text-[#5f8c7b] text-[11px] font-medium leading-normal">15m ago</p>
+</div>
+<p class="text-[#5f8c7b] text-sm font-normal leading-tight line-clamp-2">Time for your mid-day hydration. You are 400ml behind your daily goal.</p>
+</div>
+</div>
+<!-- Glass Notification Card 3 -->
+<div class="glass-card flex items-start gap-4 p-4 rounded-xl">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">mosque</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex justify-between items-center mb-0.5">
+<p class="text-[#111815] text-base font-semibold leading-normal">Dhuhr Prayer</p>
+<p class="text-[#5f8c7b] text-[11px] font-medium leading-normal">45m ago</p>
+</div>
+<p class="text-[#5f8c7b] text-sm font-normal leading-tight line-clamp-2">Prayer starts in 15 minutes. Nearest prayer room is 200m away at Tech Plaza.</p>
+</div>
+</div>
+<!-- Section Header -->
+<div class="flex items-center justify-between pt-8 pb-2">
+<h3 class="text-[#111815] text-lg font-bold leading-tight tracking-tight">Yesterday</h3>
+</div>
+<!-- Glass Notification Card 4 -->
+<div class="glass-card flex items-start gap-4 p-4 rounded-xl opacity-80">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">sync</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex justify-between items-center mb-0.5">
+<p class="text-[#111815] text-base font-semibold leading-normal">Biometric Sync</p>
+<p class="text-[#5f8c7b] text-[11px] font-medium leading-normal">1d ago</p>
+</div>
+<p class="text-[#5f8c7b] text-sm font-normal leading-tight line-clamp-2">Health data synced successfully with your wearable. New recovery report available.</p>
+</div>
+</div>
+<!-- Glass Notification Card 5 -->
+<div class="glass-card flex items-start gap-4 p-4 rounded-xl opacity-80">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">analytics</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex justify-between items-center mb-0.5">
+<p class="text-[#111815] text-base font-semibold leading-normal">Weekly Summary</p>
+<p class="text-[#5f8c7b] text-[11px] font-medium leading-normal">1d ago</p>
+</div>
+<p class="text-[#5f8c7b] text-sm font-normal leading-tight line-clamp-2">Your Halal compliance was 100% last week. View your nutritional breakdown.</p>
+</div>
+</div>
+<!-- Empty State Suggestion (Hidden but ready for JS toggle) -->
+<div class="hidden flex flex-col items-center justify-center pt-20 text-center px-8">
+<div class="size-24 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-primary text-5xl">task_alt</span>
+</div>
+<h4 class="text-xl font-bold text-[#111815]">All Caught Up!</h4>
+<p class="text-[#5f8c7b] text-sm mt-2">Enjoy your day. We'll notify you when something important happens.</p>
+</div>
+</div>
+<!-- iOS Home Indicator -->
+<div class="fixed bottom-0 left-0 right-0 flex justify-center pb-2 bg-gradient-to-t from-background-light to-transparent h-12 pointer-events-none">
+<div class="w-32 h-1.5 bg-black/10 rounded-full mt-auto"></div>
+</div>
+</div>
+</body></html>
