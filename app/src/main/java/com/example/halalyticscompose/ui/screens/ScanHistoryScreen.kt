@@ -55,11 +55,6 @@ import com.example.halalyticscompose.ui.viewmodel.ScanHistoryViewModel
 import com.example.halalyticscompose.utils.SessionManager
 import android.widget.Toast
 
-private val HistoryBg = Color(0xFFF7FAFC)
-private val HistoryPrimary = Color(0xFF00C896)
-private val HistoryPrimaryDark = Color(0xFF00A878)
-private val HistoryText = Color(0xFF0A2540)
-private val HistoryMuted = Color(0xFF64748B)
 private val Danger = Color(0xFFFF4757)
 private val Warning = Color(0xFFF5A623)
 
@@ -94,16 +89,26 @@ fun ScanHistoryScreen(
     }
 
     Scaffold(
-        containerColor = HistoryBg,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Riwayat Scan", color = Color.White, fontWeight = FontWeight.ExtraBold) },
+                title = {
+                    Text(
+                        "Riwayat Scan",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = HistoryPrimary)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
             )
         }
     ) { padding ->
@@ -132,12 +137,12 @@ fun ScanHistoryScreen(
             if (!errorMessage.isNullOrBlank()) {
                 item {
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEE8E8)),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
                             errorMessage ?: "",
-                            color = Danger,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
                             fontSize = 12.sp,
                             modifier = Modifier.padding(12.dp)
                         )
@@ -148,7 +153,7 @@ fun ScanHistoryScreen(
             if (loading && filteredHistory.isEmpty()) {
                 item {
                     Box(modifier = Modifier.fillMaxWidth().padding(vertical = 28.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = HistoryPrimary)
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 }
             } else if (filteredHistory.isEmpty()) {
@@ -160,11 +165,10 @@ fun ScanHistoryScreen(
                     HistoryCard(
                         item = item,
                         onClick = {
-                            val barcode = item.barcode.orEmpty()
-                            if (barcode.isNotBlank()) {
-                                navController.navigate("product_detail/$barcode")
+                            if (item.id > 0) {
+                                navController.navigate("scan_history_detail/${item.id}")
                             } else {
-                                Toast.makeText(context, "Detail barcode tidak tersedia pada riwayat ini", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Detail riwayat tidak tersedia", Toast.LENGTH_SHORT).show()
                             }
                         },
                         onDelete = { deleteId = item.id }
@@ -196,12 +200,19 @@ fun ScanHistoryScreen(
 private fun StatsHeader(total: Int, halal: Int, today: Int) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Brush.linearGradient(listOf(HistoryPrimary, HistoryPrimaryDark)))
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.primaryContainer
+                        )
+                    )
+                )
                 .padding(14.dp)
         ) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -230,13 +241,16 @@ private fun FilterRow(selected: String, onSelect: (String) -> Unit) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(100.dp))
-                    .background(if (isSelected) HistoryPrimary.copy(alpha = 0.14f) else Color(0xFFF1F5F9))
+                    .background(
+                        if (isSelected) MaterialTheme.colorScheme.secondaryContainer
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    )
                     .clickable { onSelect(filter) }
                     .padding(horizontal = 12.dp, vertical = 7.dp)
             ) {
                 Text(
                     filter,
-                    color = if (isSelected) HistoryPrimary else HistoryMuted,
+                    color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 11.sp,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                 )
@@ -249,9 +263,9 @@ private fun FilterRow(selected: String, onSelect: (String) -> Unit) {
 private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: () -> Unit) {
     val status = (item.halalStatus ?: "unknown").lowercase()
     val statusColor = when (status) {
-        "halal" -> HistoryPrimary
-        "haram" -> Danger
-        else -> Warning
+        "halal" -> MaterialTheme.colorScheme.primary
+        "haram" -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.tertiary
     }
 
     Card(
@@ -259,7 +273,7 @@ private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: ()
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -269,7 +283,7 @@ private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: ()
                 modifier = Modifier
                     .size(44.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF1F5F9)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 Text("📦")
@@ -278,13 +292,13 @@ private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: ()
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     item.productName ?: "Produk",
-                    color = HistoryText,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(item.createdAt ?: "-", color = HistoryMuted, fontSize = 10.sp)
+                Text(item.createdAt ?: "-", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp)
             }
             Column(horizontalAlignment = Alignment.End) {
                 Box(
@@ -296,7 +310,7 @@ private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: ()
                     Text(status.uppercase(), color = statusColor, fontWeight = FontWeight.Bold, fontSize = 10.sp)
                 }
                 IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
-                    Icon(Icons.Default.Delete, contentDescription = null, tint = HistoryMuted)
+                    Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -307,7 +321,7 @@ private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: ()
 private fun EmptyHistoryCard() {
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier
@@ -315,8 +329,8 @@ private fun EmptyHistoryCard() {
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Belum ada riwayat scan", color = HistoryText, fontWeight = FontWeight.Bold)
-            Text("Scan produk pertama untuk melihat histori.", color = HistoryMuted, fontSize = 12.sp)
+            Text("Belum ada riwayat scan", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+            Text("Scan produk pertama untuk melihat histori.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         }
     }
 }

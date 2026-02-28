@@ -41,6 +41,12 @@ class EmergencyP3KViewModel @Inject constructor(
                     _isLoading.value = false
                     return@launch
                 }
+                val bearer = sessionManager.getBearerToken()
+                if (bearer.isNullOrBlank()) {
+                    _error.value = "Unauthorized"
+                    _isLoading.value = false
+                    return@launch
+                }
                 
                 val req = EmergencyRequest(
                     userId = userIdPattern,
@@ -49,7 +55,7 @@ class EmergencyP3KViewModel @Inject constructor(
                     longitude = lng
                 )
                 
-                val res = apiService.triggerEmergency(req)
+                val res = apiService.triggerEmergency(bearer, req)
                 if (res.isSuccessful && res.body() != null) {
                     _guidance.value = res.body()!!.guidance
                 } else {

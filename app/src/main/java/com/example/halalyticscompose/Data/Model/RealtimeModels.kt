@@ -37,6 +37,12 @@ data class RealtimeScanHistoryResponse(
     val message: String? = null
 )
 
+data class ScanHistoryDetailResponse(
+    val success: Boolean,
+    val data: ScanHistoryDetail? = null,
+    val message: String? = null
+)
+
 data class PaginatedScanHistories(
     val data: List<ScanHistoryItem> = emptyList()
 )
@@ -53,6 +59,21 @@ data class ScanHistoryItem(
     // Legacy support fields (aliases)
     val status: String = halalStatus ?: "unknown",
     val timestamp: Long = 0L
+)
+
+data class ScanHistoryDetail(
+    val id: Int,
+    @SerializedName("product_name") val productName: String? = null,
+    @SerializedName("product_image") val productImage: String? = null,
+    @SerializedName("barcode") val barcode: String? = null,
+    @SerializedName("halal_status") val halalStatus: String? = "unknown",
+    val source: String? = "unknown",
+    @SerializedName("scan_method") val scanMethod: String? = "unknown",
+    @SerializedName("created_at") val createdAt: String? = null,
+    @SerializedName("confidence_score") val confidenceScore: Int? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    @SerializedName("nutrition_snapshot") val nutritionSnapshot: Map<String, Any>? = null
 )
 
 data class ScanStats(
@@ -87,7 +108,9 @@ data class NotificationUpdate(
     val message: String = "",
     val type: String = "",
     val is_read: Boolean = false,
-    val created_at: Long = 0
+    val created_at: Long = 0,
+    val action_type: String? = null,
+    val action_value: String? = null
 )
 
 data class ScanHistoryUpdate(

@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -34,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.halalyticscompose.R
 import com.example.halalyticscompose.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,7 +85,7 @@ fun SimpleRegisterScreen(
                 ) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.common_back),
                         tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(28.dp)
                     )
@@ -109,7 +111,7 @@ fun SimpleRegisterScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Create Account",
+                        text = stringResource(R.string.register_create_account),
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -122,11 +124,11 @@ fun SimpleRegisterScreen(
                         value = fullName,
                         onValueChange = { fullName = it },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Full Name") },
+                        label = { Text(stringResource(R.string.register_full_name)) },
                         leadingIcon = {
                             Icon(
                                 Icons.Default.Person,
-                                contentDescription = "Full Name",
+                                contentDescription = stringResource(R.string.register_full_name),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
@@ -144,11 +146,11 @@ fun SimpleRegisterScreen(
                         value = username,
                         onValueChange = { username = it },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Username") },
+                        label = { Text(stringResource(R.string.register_username)) },
                         leadingIcon = {
                             Icon(
                                 Icons.Default.Person,
-                                contentDescription = "Username",
+                                contentDescription = stringResource(R.string.register_username),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
@@ -166,11 +168,11 @@ fun SimpleRegisterScreen(
                         value = email,
                         onValueChange = { email = it },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Email") },
+                        label = { Text(stringResource(R.string.register_email)) },
                         leadingIcon = {
                             Icon(
                                 Icons.Default.Email,
-                                contentDescription = "Email",
+                                contentDescription = stringResource(R.string.register_email),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
@@ -191,11 +193,11 @@ fun SimpleRegisterScreen(
                         value = password,
                         onValueChange = { password = it },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Password") },
+                        label = { Text(stringResource(R.string.register_password)) },
                         leadingIcon = {
                             Icon(
                                 Icons.Default.Lock,
-                                contentDescription = "Password",
+                                contentDescription = stringResource(R.string.register_password),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
@@ -206,7 +208,7 @@ fun SimpleRegisterScreen(
                                 Icon(
                                     if (isPasswordVisible) Icons.Default.Visibility 
                                     else Icons.Default.VisibilityOff,
-                                    contentDescription = if (isPasswordVisible) "Hide password" else "Show password",
+                                    contentDescription = if (isPasswordVisible) stringResource(R.string.register_hide_password) else stringResource(R.string.register_show_password),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -231,11 +233,11 @@ fun SimpleRegisterScreen(
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Confirm Password") },
+                        label = { Text(stringResource(R.string.register_confirm_password)) },
                         leadingIcon = {
                             Icon(
                                 Icons.Default.Lock,
-                                contentDescription = "Confirm Password",
+                                contentDescription = stringResource(R.string.register_confirm_password),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
@@ -246,7 +248,7 @@ fun SimpleRegisterScreen(
                                 Icon(
                                     if (isConfirmPasswordVisible) Icons.Default.Visibility 
                                     else Icons.Default.VisibilityOff,
-                                    contentDescription = if (isConfirmPasswordVisible) "Hide password" else "Show password",
+                                    contentDescription = if (isConfirmPasswordVisible) stringResource(R.string.register_hide_password) else stringResource(R.string.register_show_password),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -271,11 +273,11 @@ fun SimpleRegisterScreen(
                         value = phone,
                         onValueChange = { phone = it },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Phone Number") },
+                        label = { Text(stringResource(R.string.register_phone_number)) },
                         leadingIcon = {
                             Icon(
                                 Icons.Default.Phone,
-                                contentDescription = "Phone Number",
+                                contentDescription = stringResource(R.string.register_phone_number),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
@@ -306,18 +308,18 @@ fun SimpleRegisterScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
-                            label = { Text("Blood Type") },
+                            label = { Text(stringResource(R.string.register_blood_type)) },
                             leadingIcon = {
                                 Icon(
                                     Icons.Default.LocalHospital,
-                                    contentDescription = "Blood Type",
+                                    contentDescription = stringResource(R.string.register_blood_type),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             },
                             trailingIcon = {
                                 Icon(
                                     Icons.Default.ArrowDropDown,
-                                    contentDescription = "Dropdown",
+                                    contentDescription = stringResource(R.string.common_dropdown),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             },
@@ -371,18 +373,18 @@ fun SimpleRegisterScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
-                            label = { Text("Allergies") },
+                            label = { Text(stringResource(R.string.register_allergies)) },
                             leadingIcon = {
                                 Icon(
                                     Icons.Default.Warning,
-                                    contentDescription = "Allergies",
+                                    contentDescription = stringResource(R.string.register_allergies),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             },
                             trailingIcon = {
                                 Icon(
                                     Icons.Default.ArrowDropDown,
-                                    contentDescription = "Dropdown",
+                                    contentDescription = stringResource(R.string.common_dropdown),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             },
@@ -418,15 +420,15 @@ fun SimpleRegisterScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp),
-                        label = { Text("Medical History") },
+                        label = { Text(stringResource(R.string.register_medical_history)) },
                         leadingIcon = {
                             Icon(
                                 Icons.Default.MedicalServices,
-                                contentDescription = "Medical History",
+                                contentDescription = stringResource(R.string.register_medical_history),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
-                        placeholder = { Text("Enter any medical conditions or history...") },
+                        placeholder = { Text(stringResource(R.string.register_medical_history_placeholder)) },
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -456,6 +458,19 @@ fun SimpleRegisterScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
                     
+                    val fullNameError = stringResource(R.string.register_error_full_name)
+                    val usernameError = stringResource(R.string.register_error_username)
+                    val emailError = stringResource(R.string.register_error_email)
+                    val invalidEmailError = stringResource(R.string.register_error_invalid_email)
+                    val passwordError = stringResource(R.string.register_error_password)
+                    val passwordShortError = stringResource(R.string.register_error_password_short)
+                    val confirmPasswordError = stringResource(R.string.register_error_confirm_password)
+                    val passwordMismatchError = stringResource(R.string.register_error_password_mismatch)
+                    val phoneError = stringResource(R.string.register_error_phone)
+                    val bloodTypeError = stringResource(R.string.register_error_blood_type)
+                    val allergyError = stringResource(R.string.register_error_allergy)
+                    val medicalHistoryError = stringResource(R.string.register_error_medical_history)
+
                     // Register button
                     Button(
                         onClick = {
@@ -464,62 +479,62 @@ fun SimpleRegisterScreen(
                             
                             // Validate all required fields
                             if (fullName.isEmpty()) {
-                                errorMessage = "Please enter your full name"
+                                errorMessage = fullNameError
                                 return@Button
                             }
                             
                             if (username.isEmpty()) {
-                                errorMessage = "Please enter a username"
+                                errorMessage = usernameError
                                 return@Button
                             }
                             
                             if (email.isEmpty()) {
-                                errorMessage = "Please enter your email"
+                                errorMessage = emailError
                                 return@Button
                             }
                             
                             if (!email.contains("@")) {
-                                errorMessage = "Please enter a valid email address"
+                                errorMessage = invalidEmailError
                                 return@Button
                             }
                             
                             if (password.isEmpty()) {
-                                errorMessage = "Please enter a password"
+                                errorMessage = passwordError
                                 return@Button
                             }
                             
                             if (password.length < 6) {
-                                errorMessage = "Password must be at least 6 characters"
+                                errorMessage = passwordShortError
                                 return@Button
                             }
                             
                             if (confirmPassword.isEmpty()) {
-                                errorMessage = "Please confirm your password"
+                                errorMessage = confirmPasswordError
                                 return@Button
                             }
                             
                             if (password != confirmPassword) {
-                                errorMessage = "Passwords do not match"
+                                errorMessage = passwordMismatchError
                                 return@Button
                             }
                             
                             if (phone.isEmpty()) {
-                                errorMessage = "Please enter your phone number"
+                                errorMessage = phoneError
                                 return@Button
                             }
                             
                             if (bloodType.isEmpty()) {
-                                errorMessage = "Please select your blood type"
+                                errorMessage = bloodTypeError
                                 return@Button
                             }
                             
                             if (allergy.isEmpty()) {
-                                errorMessage = "Please select your allergy status"
+                                errorMessage = allergyError
                                 return@Button
                             }
                             
                             if (medicalHistory.isEmpty()) {
-                                errorMessage = "Please enter your medical history"
+                                errorMessage = medicalHistoryError
                                 return@Button
                             }
                             
@@ -569,7 +584,7 @@ fun SimpleRegisterScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 
                                 Text(
-                                    text = "Creating Account...",
+                                    text = stringResource(R.string.register_creating_account),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -577,7 +592,7 @@ fun SimpleRegisterScreen(
                             }
                         } else {
                             Text(
-                                text = "Create Account",
+                                text = stringResource(R.string.register_create_account),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White

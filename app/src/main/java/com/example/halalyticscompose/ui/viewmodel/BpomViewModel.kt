@@ -45,6 +45,15 @@ class BpomViewModel @Inject constructor(
         return when (throwable) {
             is HttpException -> {
                 val body = throwable.response()?.errorBody()?.string()?.take(220)
+                val lowerBody = body?.lowercase().orEmpty()
+                if (throwable.code() == 422 && (
+                        lowerBody.contains("include_a") ||
+                            lowerBody.contains("include_ai") ||
+                            lowerBody.contains("must be true or false")
+                        )
+                ) {
+                    return "Permintaan verifikasi BPOM tidak valid. Coba ulang pencarian tanpa karakter khusus."
+                }
                 if (!body.isNullOrBlank()) {
                     "$prefix (${throwable.code()}): $body"
                 } else {
@@ -65,7 +74,7 @@ class BpomViewModel @Inject constructor(
                     bearer = "Bearer ${getToken()}",
                     query = query,
                     familyId = familyId,
-                    includeAi = false
+                    includeAi = null
                 )
                 if (response.success) {
                     _searchResults.value = response.data ?: emptyList()
@@ -94,7 +103,7 @@ class BpomViewModel @Inject constructor(
                     bearer = "Bearer ${getToken()}",
                     code = code,
                     familyId = familyId,
-                    includeAi = false
+                    includeAi = null
                 )
                 if (response.success && response.data != null) {
                     _selectedProduct.value = response.data

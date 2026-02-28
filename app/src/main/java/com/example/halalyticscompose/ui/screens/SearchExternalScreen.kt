@@ -34,7 +34,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.halalyticscompose.Data.Model.ProductItem
-import com.example.halalyticscompose.ui.theme.*
 import com.example.halalyticscompose.ui.viewmodel.ProductExternalViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,6 +43,7 @@ fun SearchExternalScreen(
     viewModel: ProductExternalViewModel = hiltViewModel()
 ) {
     val focusManager = LocalFocusManager.current
+    val colors = MaterialTheme.colorScheme
     
     // States from ViewModel
     val searchResults by viewModel.searchResults.collectAsState()
@@ -61,7 +61,7 @@ fun SearchExternalScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(colors.background)
     ) {
         Column(
             modifier = Modifier
@@ -78,7 +78,7 @@ fun SearchExternalScreen(
                     text = "Global Search",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextWhite
+                    color = colors.onBackground
                 )
                 
                 Spacer(modifier = Modifier.weight(1f))
@@ -87,14 +87,14 @@ fun SearchExternalScreen(
                 if (totalCount > 0) {
                     Box(
                         modifier = Modifier
-                            .background(HalalGreen, RoundedCornerShape(12.dp))
+                            .background(colors.primary, RoundedCornerShape(12.dp))
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
                             text = "$totalCount found",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DarkBackground
+                            color = colors.onPrimary
                         )
                     }
                 }
@@ -111,7 +111,7 @@ fun SearchExternalScreen(
                 placeholder = {
                     Text(
                         "Search products worldwide...",
-                        color = TextMuted,
+                        color = colors.onSurfaceVariant,
                         fontSize = 14.sp
                     )
                 },
@@ -119,7 +119,7 @@ fun SearchExternalScreen(
                     Icon(
                         Icons.Outlined.Search,
                         contentDescription = "Search",
-                        tint = TextGray
+                        tint = colors.onSurfaceVariant
                     )
                 },
                 trailingIcon = {
@@ -131,7 +131,7 @@ fun SearchExternalScreen(
                             Icon(
                                 Icons.Default.Close,
                                 contentDescription = "Clear",
-                                tint = TextGray,
+                                tint = colors.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -139,13 +139,13 @@ fun SearchExternalScreen(
                 },
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = HalalGreen,
-                    unfocusedBorderColor = DarkBorder,
-                    focusedContainerColor = DarkCard,
-                    unfocusedContainerColor = DarkCard,
-                    cursorColor = HalalGreen,
-                    focusedTextColor = TextWhite,
-                    unfocusedTextColor = TextWhite
+                    focusedBorderColor = colors.primary,
+                    unfocusedBorderColor = colors.outlineVariant,
+                    focusedContainerColor = colors.surface,
+                    unfocusedContainerColor = colors.surface,
+                    cursorColor = colors.primary,
+                    focusedTextColor = colors.onSurface,
+                    unfocusedTextColor = colors.onSurface
                 ),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -205,12 +205,12 @@ fun SearchExternalScreen(
                             }
                         },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = HalalGreen,
-                            selectedLabelColor = DarkBackground,
-                            selectedLeadingIconColor = DarkBackground,
-                            containerColor = DarkCard,
-                            labelColor = TextGray,
-                            iconColor = TextGray
+                            selectedContainerColor = colors.primaryContainer,
+                            selectedLabelColor = colors.onPrimaryContainer,
+                            selectedLeadingIconColor = colors.onPrimaryContainer,
+                            containerColor = colors.surfaceVariant,
+                            labelColor = colors.onSurfaceVariant,
+                            iconColor = colors.onSurfaceVariant
                         )
                     )
                 }
@@ -232,14 +232,14 @@ fun SearchExternalScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             CircularProgressIndicator(
-                                color = HalalGreen,
+                                color = colors.primary,
                                 strokeWidth = 3.dp
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text = "Searching products...",
                                 fontSize = 14.sp,
-                                color = TextGray
+                                color = colors.onSurfaceVariant
                             )
                         }
                     }
@@ -260,22 +260,22 @@ fun SearchExternalScreen(
                             Icon(
                                 Icons.Outlined.ErrorOutline,
                                 contentDescription = null,
-                                tint = HaramColor,
+                                tint = colors.error,
                                 modifier = Modifier.size(48.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text = searchError,
                                 fontSize = 14.sp,
-                                color = TextGray,
+                                color = colors.onSurfaceVariant,
                                 textAlign = TextAlign.Center
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(
                                 onClick = { viewModel.applyFilter(selectedFilter, searchQuery) },
-                                colors = ButtonDefaults.buttonColors(containerColor = HalalGreen)
+                                colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                             ) {
-                                Text("Retry", color = DarkBackground)
+                                Text("Retry", color = colors.onPrimary)
                             }
                         }
                     }
@@ -296,7 +296,7 @@ fun SearchExternalScreen(
                             Icon(
                                 Icons.Outlined.Public,
                                 contentDescription = null,
-                                tint = TextMuted,
+                                tint = colors.onSurfaceVariant,
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -304,13 +304,13 @@ fun SearchExternalScreen(
                                 text = "Search Global Products",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = TextWhite
+                                color = colors.onBackground
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Search millions of products from\nOpenFoodFacts database worldwide",
                                 fontSize = 13.sp,
-                                color = TextGray,
+                                color = colors.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
                                 lineHeight = 18.sp
                             )
@@ -321,7 +321,7 @@ fun SearchExternalScreen(
                             Text(
                                 text = "Try searching:",
                                 fontSize = 12.sp,
-                                color = TextMuted
+                                color = colors.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             Row(
@@ -335,8 +335,8 @@ fun SearchExternalScreen(
                                         },
                                         label = { Text(suggestion, fontSize = 12.sp) },
                                         colors = SuggestionChipDefaults.suggestionChipColors(
-                                            containerColor = DarkCard,
-                                            labelColor = TextGray
+                                            containerColor = colors.surfaceVariant,
+                                            labelColor = colors.onSurfaceVariant
                                         )
                                     )
                                 }
@@ -359,7 +359,7 @@ fun SearchExternalScreen(
                             Icon(
                                 Icons.Outlined.SearchOff,
                                 contentDescription = null,
-                                tint = TextMuted,
+                                tint = colors.onSurfaceVariant,
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -367,12 +367,12 @@ fun SearchExternalScreen(
                                 text = "Produk tidak ditemukan",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = TextWhite
+                                color = colors.onBackground
                             )
                             Text(
                                 text = "Bantu kami dengan melaporkan produk ini.",
                                 fontSize = 14.sp,
-                                color = TextGray
+                                color = colors.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(24.dp))
                             Button(
@@ -380,7 +380,7 @@ fun SearchExternalScreen(
                                     val encodedName = Uri.encode(searchQuery)
                                     navController.navigate("contribution?barcode=&name=$encodedName")
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = HalalGreen),
+                                colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
                                 Icon(Icons.Default.CloudUpload, contentDescription = null)
@@ -426,6 +426,7 @@ private fun ProductItemCard(
     product: ProductItem,
     onClick: () -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
     val halalStatus = product.getHalalStatus()
     val statusColor = product.getHalalStatusColor()
     
@@ -434,7 +435,7 @@ private fun ProductItemCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkCard)
+        colors = CardDefaults.cardColors(containerColor = colors.surface)
     ) {
         Row(
             modifier = Modifier
@@ -447,7 +448,7 @@ private fun ProductItemCard(
                 modifier = Modifier
                     .size(70.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(DarkCardLight),
+                    .background(colors.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 val imageUrl = product.getBestImageUrl()
@@ -462,7 +463,7 @@ private fun ProductItemCard(
                     Icon(
                         Icons.Outlined.Inventory2,
                         contentDescription = null,
-                        tint = TextMuted,
+                        tint = colors.onSurfaceVariant,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -500,7 +501,7 @@ private fun ProductItemCard(
                     text = product.getDisplayName(),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = TextWhite,
+                    color = colors.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -509,7 +510,7 @@ private fun ProductItemCard(
                     Text(
                         text = brands,
                         fontSize = 12.sp,
-                        color = TextGray,
+                        color = colors.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -583,7 +584,7 @@ private fun ProductItemCard(
             Icon(
                 Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = TextMuted,
+                tint = colors.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
         }

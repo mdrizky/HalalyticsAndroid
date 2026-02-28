@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,8 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.halalyticscompose.ui.theme.DarkBackground
-import com.example.halalyticscompose.ui.theme.DarkCard
 import com.example.halalyticscompose.ui.viewmodel.EmergencyP3KViewModel
 import kotlinx.coroutines.delay
 
@@ -55,13 +53,13 @@ fun EmergencyP3KScreen(
                 title = { Text("Pusat Gawat Darurat AI") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = backgroundColor,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
         },
@@ -152,15 +150,15 @@ fun EmergencyP3KScreen(
                                 Row(verticalAlignment = Alignment.Top) {
                                     Box(
                                         modifier = Modifier
-                                            .size(28.dp)
-                                            .clip(CircleShape)
-                                            .background(Color.Red),
-                                        contentAlignment = Alignment.Center
+                                .size(28.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.error),
+                                    contentAlignment = Alignment.Center
                                     ) {
                                         Text("${index + 1}", color = Color.White, fontWeight = FontWeight.Bold)
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
-                                    Text(step, color = Color.White, fontSize = 16.sp)
+                                    Text(step, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
                                 }
                             }
                         }

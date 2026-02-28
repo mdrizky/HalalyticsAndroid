@@ -28,6 +28,9 @@ import coil.compose.AsyncImage
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.halalyticscompose.ui.viewmodel.HealthAiViewModel
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +40,8 @@ fun LabAnalysisScreen(
 ) {
     val context = LocalContext.current
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-    var testDate by remember { mutableStateOf("2026-02-10") }
+    var testDate by remember { mutableStateOf(SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())) }
+    val color = MaterialTheme.colorScheme
     
     val analysisResult by viewModel.labAnalysisResult.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -57,12 +61,13 @@ fun LabAnalysisScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF0F172A),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = color.surface,
+                    titleContentColor = color.onSurface,
+                    navigationIconContentColor = color.onSurface
                 )
             )
-        }
+        },
+        containerColor = color.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -80,7 +85,7 @@ fun LabAnalysisScreen(
             )
             Text(
                 "Unggah foto hasil lab (darah, urin, dll) untuk mendapatkan ringkasan yang mudah dipahami.",
-                color = Color.Gray,
+                color = color.onSurfaceVariant,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
@@ -92,8 +97,8 @@ fun LabAnalysisScreen(
                     .height(200.dp)
                     .clickable { galleryLauncher.launch("image/*") },
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                colors = CardDefaults.cardColors(containerColor = color.surface),
+                border = BorderStroke(1.dp, color.outlineVariant.copy(alpha = 0.5f))
             ) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     if (selectedImageUri != null) {
@@ -109,9 +114,9 @@ fun LabAnalysisScreen(
                                 Icons.Default.UploadFile, 
                                 contentDescription = null, 
                                 modifier = Modifier.size(48.dp), 
-                                tint = Color(0xFF3B82F6)
+                                tint = color.primary
                             )
-                            Text("Klik untuk Unggah Foto", color = Color(0xFF3B82F6), fontWeight = FontWeight.Bold)
+                            Text("Klik untuk Unggah Foto", color = color.primary, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -131,10 +136,10 @@ fun LabAnalysisScreen(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 enabled = selectedImageUri != null && !isLoading,
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
+                colors = ButtonDefaults.buttonColors(containerColor = color.primary)
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = color.onPrimary)
                 } else {
                     Icon(Icons.Default.Analytics, contentDescription = null)
                     Spacer(modifier = Modifier.width(12.dp))
@@ -143,7 +148,7 @@ fun LabAnalysisScreen(
             }
 
             error?.let {
-                Text(it, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
+                Text(it, color = color.error, modifier = Modifier.padding(top = 8.dp))
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -170,19 +175,20 @@ private fun uriToTempFile(context: android.content.Context, uri: Uri): File? {
 
 @Composable
 fun LabResultView(data: com.example.halalyticscompose.Data.Model.LabAnalysisData) {
+    val color = MaterialTheme.colorScheme
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text("Interpretasi Hasil:", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text("Interpretasi Hasil:", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = color.onBackground)
         
         Spacer(modifier = Modifier.height(16.dp))
         
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F9FF)),
+            colors = CardDefaults.cardColors(containerColor = color.primaryContainer.copy(alpha = 0.35f)),
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Ringkasan Umum", fontWeight = FontWeight.Bold, color = Color(0xFF0C4A6E))
-                Text(data.overallAssessment, fontSize = 14.sp, color = Color(0xFF0C4A6E), modifier = Modifier.padding(top = 4.dp))
+                Text("Ringkasan Umum", fontWeight = FontWeight.Bold, color = color.onSurface)
+                Text(data.overallAssessment, fontSize = 14.sp, color = color.onSurface, modifier = Modifier.padding(top = 4.dp))
             }
         }
 
@@ -195,17 +201,17 @@ fun LabResultView(data: com.example.halalyticscompose.Data.Model.LabAnalysisData
             ) {
                 Box(
                     modifier = Modifier.size(8.dp).clip(CircleShape).background(
-                        if (test.status.lowercase() == "normal") Color(0xFF10B981) else Color(0xFFEF4444)
+                        if (test.status.lowercase() == "normal") color.primary else color.error
                     )
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(test.testName, fontWeight = FontWeight.SemiBold)
-                    Text("${test.value} ${test.unit}", fontSize = 12.sp, color = Color.Gray)
+                    Text(test.testName, fontWeight = FontWeight.SemiBold, color = color.onSurface)
+                    Text("${test.value} ${test.unit}", fontSize = 12.sp, color = color.onSurfaceVariant)
                 }
                 Text(
                     test.status.uppercase(),
-                    color = if (test.status.lowercase() == "normal") Color(0xFF10B981) else Color(0xFFEF4444),
+                    color = if (test.status.lowercase() == "normal") color.primary else color.error,
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp
                 )
@@ -213,11 +219,11 @@ fun LabResultView(data: com.example.halalyticscompose.Data.Model.LabAnalysisData
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-        Text("Rekomendasi Gaya Hidup:", fontWeight = FontWeight.Bold)
+        Text("Rekomendasi Gaya Hidup:", fontWeight = FontWeight.Bold, color = color.onBackground)
         data.lifestyleRecommendations.forEach { rec ->
             Row(modifier = Modifier.padding(top = 8.dp)) {
-                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFF3B82F6), modifier = Modifier.size(16.dp))
-                Text(rec, fontSize = 13.sp, color = Color(0xFF475569))
+                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = color.primary, modifier = Modifier.size(16.dp))
+                Text(rec, fontSize = 13.sp, color = color.onSurfaceVariant)
             }
         }
     }

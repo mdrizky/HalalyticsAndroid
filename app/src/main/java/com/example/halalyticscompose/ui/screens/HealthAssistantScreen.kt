@@ -187,6 +187,24 @@ fun HealthAssistantScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            errorMessage?.takeIf { it.isNotBlank() }?.let { message ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(MaterialTheme.colorScheme.error.copy(alpha = 0.10f))
+                        .border(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.25f), RoundedCornerShape(14.dp))
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        text = message,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+
             // Results Section
             val analysis = symptomsAnalysis
             if (showResults && analysis != null) {
@@ -273,7 +291,15 @@ fun HealthAssistantScreen(
                                 }
                                 Spacer(modifier = Modifier.height(20.dp))
                             }
-                            
+
+                            if (analysis.gejala_terkait.isNotEmpty()) {
+                                SectionTitle("Gejala Terkait", Icons.Outlined.MonitorHeart, MaterialTheme.colorScheme.secondary)
+                                analysis.gejala_terkait.forEach { symptom ->
+                                    Text("• $symptom", color = MaterialTheme.colorScheme.onSurface.copy(0.75f), fontSize = 13.sp, lineHeight = 20.sp)
+                                }
+                                Spacer(modifier = Modifier.height(20.dp))
+                            }
+
                             SectionTitle("Halal & Safety Verification", Icons.Default.VerifiedUser, MaterialTheme.colorScheme.primary)
                             Text(analysis.halal_check?.notes ?: "Processing halal check...", color = MaterialTheme.colorScheme.onSurface.copy(0.7f), fontSize = 14.sp, lineHeight = 22.sp)
                             
@@ -293,6 +319,36 @@ fun HealthAssistantScreen(
                                 ) {
                                     Text(analysis.dosage_guidelines!!, color = MaterialTheme.colorScheme.onSurface.copy(0.9f), fontSize = 13.sp, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
                                 }
+                            }
+
+                            if (analysis.recommended_ingredients.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                SectionTitle("Bahan Aktif Disarankan", Icons.Outlined.Medication, MaterialTheme.colorScheme.primary)
+                                analysis.recommended_ingredients.forEach { ingredient ->
+                                    Text("• $ingredient", color = MaterialTheme.colorScheme.onSurface.copy(0.75f), fontSize = 13.sp, lineHeight = 20.sp)
+                                }
+                            }
+
+                            if (!analysis.triage_action.isNullOrBlank()) {
+                                Spacer(modifier = Modifier.height(20.dp))
+                                SectionTitle("Tindakan Saat Ini", Icons.Outlined.Flag, MaterialTheme.colorScheme.primary)
+                                Text(
+                                    text = analysis.triage_action ?: "",
+                                    color = MaterialTheme.colorScheme.onSurface.copy(0.8f),
+                                    fontSize = 13.sp,
+                                    lineHeight = 20.sp
+                                )
+                            }
+
+                            if (!analysis.lifestyle_advice.isNullOrBlank()) {
+                                Spacer(modifier = Modifier.height(20.dp))
+                                SectionTitle("Saran Gaya Hidup", Icons.Outlined.Spa, MaterialTheme.colorScheme.secondary)
+                                Text(
+                                    text = analysis.lifestyle_advice ?: "",
+                                    color = MaterialTheme.colorScheme.onSurface.copy(0.8f),
+                                    fontSize = 13.sp,
+                                    lineHeight = 20.sp
+                                )
                             }
 
                             if (!analysis.doctor_recommendation.isNullOrBlank()) {
@@ -319,9 +375,36 @@ fun HealthAssistantScreen(
                                             fontSize = 13.sp,
                                             modifier = Modifier.padding(top = 4.dp)
                                         )
+                                        Spacer(modifier = Modifier.height(10.dp))
+                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            if (analysis.should_seek_doctor) {
+                                                Button(
+                                                    onClick = { navController.navigate("pharmacy") },
+                                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                                                ) {
+                                                    Icon(Icons.Default.LocalHospital, null)
+                                                    Spacer(modifier = Modifier.width(6.dp))
+                                                    Text("Ke Dokter/RS")
+                                                }
+                                            } else {
+                                                OutlinedButton(onClick = { navController.navigate("medicine_reminders") }) {
+                                                    Icon(Icons.Default.Alarm, null)
+                                                    Spacer(modifier = Modifier.width(6.dp))
+                                                    Text("Atur Pengingat")
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
+
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Text(
+                                text = "Disclaimer: Analisis AI ini hanya edukasi awal, bukan diagnosis dokter.",
+                                color = MaterialTheme.colorScheme.onSurface.copy(0.6f),
+                                fontSize = 12.sp,
+                                lineHeight = 18.sp
+                            )
                         }
                     }
                     

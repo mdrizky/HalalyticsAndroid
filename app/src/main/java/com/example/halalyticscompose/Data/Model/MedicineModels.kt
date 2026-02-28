@@ -67,11 +67,11 @@ data class VoiceMessages(
 
 // Drug Interaction Models
 data class DrugInteractionData(
-    @SerializedName("has_interaction") val hasInteraction: Boolean,
-    @SerializedName("severity") val severity: String,
-    @SerializedName("description") val description: String,
-    @SerializedName("recommendation") val recommendation: String?,
-    @SerializedName("scientific_basis") val scientificBasis: String?,
+    @SerializedName("has_interaction") val hasInteraction: Boolean = false,
+    @SerializedName("severity") val severity: String = "minor",
+    @SerializedName("description") val description: String = "Belum ada data interaksi.",
+    @SerializedName("recommendation") val recommendation: String? = null,
+    @SerializedName("scientific_basis") val scientificBasis: String? = null,
     @SerializedName("sources") val sources: List<String>? = null,
     @SerializedName("disclaimer") val disclaimer: String? = null
 )

@@ -9,6 +9,8 @@ plugins {
     id("kotlin-parcelize")
 }
 
+import java.util.Properties
+
 // Workaround for intermittent KSP duplicate-generated-file crashes on some environments.
 // This keeps generated Java stubs deterministic per variant before each KSP run.
 tasks.matching { it.name.startsWith("ksp") && it.name.endsWith("Kotlin") }.configureEach {
@@ -30,11 +32,29 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val localProperties = Properties().apply {
+            val file = rootProject.file("local.properties")
+            if (file.exists()) {
+                file.inputStream().use { load(it) }
+            }
+        }
+        val geminiApiKey = (localProperties.getProperty("GEMINI_API_KEY") ?: "").replace("\"", "\\\"")
+        val apiBaseUrl = (localProperties.getProperty("API_BASE_URL") ?: "http://10.0.2.2:8000/api/").replace("\"", "\\\"")
+        val apiCertPin = (localProperties.getProperty("API_CERT_PIN") ?: "").replace("\"", "\\\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
+        buildConfigField("String", "API_CERT_PIN", "\"$apiCertPin\"")
     }
 
     buildTypes {
-        release {
+        debug {
             isMinifyEnabled = false
+            isShrinkResources = false
+        }
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -56,6 +76,7 @@ android {
     // ✅ Aktifkan Compose
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
@@ -148,6 +169,10 @@ dependencies {
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
+
+    // 🔹 SQLCipher (Database Encryption)
+    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
+    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
 
     // 🔹 DataStore
     implementation("androidx.datastore:datastore-preferences:1.0.0")

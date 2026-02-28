@@ -79,6 +79,14 @@ class MedicineViewModel @Inject constructor(
             try {
                 _isLoading.value = true
                 _errorMessage.value = null
+                _symptomsAnalysis.value = null
+                _recommendedMedicines.value = emptyList()
+
+                val cleanedSymptoms = symptoms.trim()
+                if (cleanedSymptoms.length < 8) {
+                    _errorMessage.value = "Keluhan terlalu singkat. Jelaskan gejala lebih detail."
+                    return@launch
+                }
 
                 val token = sessionManager.getBearerToken() ?: sessionManager.getAuthToken()?.let { "Bearer $it" } ?: ""
                 val userId = sessionManager.getUserId()
@@ -87,21 +95,29 @@ class MedicineViewModel @Inject constructor(
                     _errorMessage.value = "Sesi berakhir, silakan login kembali"
                     return@launch
                 }
+                if (token.isBlank()) {
+                    _errorMessage.value = "Token autentikasi tidak ditemukan. Silakan login ulang."
+                    return@launch
+                }
 
-                val response = apiService.analyzeSymptoms(token, symptoms, userId.toString(), familyId)
-
-                if (response.body()?.success == true) {
-                    Log.d("MedicineVM", "Symptom analysis success: ${response.body()?.symptoms_analysis?.condition}")
-                    _symptomsAnalysis.value = response.body()?.symptoms_analysis
-                    _recommendedMedicines.value = response.body()?.recommended_medicines ?: emptyList()
+                val response = apiService.analyzeSymptoms(token, cleanedSymptoms, userId.toString(), familyId)
+                val body = response.body()
+                if (response.isSuccessful && body?.success == true && body.symptoms_analysis != null) {
+                    Log.d("MedicineVM", "Symptom analysis success: ${body.symptoms_analysis.condition}")
+                    _symptomsAnalysis.value = body.symptoms_analysis
+                    _recommendedMedicines.value = body.recommended_medicines ?: emptyList()
                 } else {
-                    val msg = response.body()?.message ?: "Failed to analyze symptoms"
+                    val apiMsg = parseApiErrorMessage(response.errorBody()?.string())
+                    val msg = apiMsg
+                        ?: body?.message
+                        ?: if (response.code() == 422) "Format keluhan belum valid. Coba tulis gejala lebih rinci."
+                        else "Analisis keluhan gagal (${response.code()})"
                     Log.e("MedicineVM", "Symptom analysis failure: $msg")
                     _errorMessage.value = msg
                 }
             } catch (e: Exception) {
                 Log.e("MedicineVM", "Symptom analysis error: ${e.message}", e)
-                _errorMessage.value = "Error: ${e.message}"
+                _errorMessage.value = e.localizedMessage ?: "Terjadi kendala saat analisis keluhan"
             } finally {
                 _isLoading.value = false
             }

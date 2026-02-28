@@ -34,25 +34,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.halalyticscompose.R
 
 private val FabGradientStart = Color(0xFF00C896)
 private val FabGradientEnd = Color(0xFF00A878)
 
 sealed class BottomNavItem(
     val route: String,
-    val title: String,
+    val titleRes: Int,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 ) {
-    object Home : BottomNavItem("home", "Beranda", Icons.Filled.Home, Icons.Outlined.Home)
-    object Search : BottomNavItem("search_hub", "Cari", Icons.Filled.Search, Icons.Outlined.Search)
-    object History : BottomNavItem("history", "Riwayat", Icons.Outlined.History, Icons.Outlined.History)
-    object Profile : BottomNavItem("profile", "Profil", Icons.Filled.Person, Icons.Outlined.Person)
+    object Home : BottomNavItem("home", R.string.home, Icons.Filled.Home, Icons.Outlined.Home)
+    object Search : BottomNavItem("search_hub", R.string.bottom_nav_search, Icons.Filled.Search, Icons.Outlined.Search)
+    object History : BottomNavItem("history", R.string.bottom_nav_history, Icons.Outlined.History, Icons.Outlined.History)
+    object Profile : BottomNavItem("profile", R.string.profile, Icons.Filled.Person, Icons.Outlined.Person)
 }
 
 @Composable
@@ -150,9 +152,18 @@ fun BottomNavBar(
         ) {
             Icon(
                 imageVector = Icons.Filled.QrCodeScanner,
-                contentDescription = "Scan",
+                contentDescription = stringResource(R.string.scan),
                 tint = Color.White,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = "H",
+                color = Color.White.copy(alpha = 0.9f),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 10.dp, bottom = 8.dp)
             )
         }
 
@@ -167,6 +178,7 @@ private fun NavItem(
 ) {
     val activeColor = MaterialTheme.colorScheme.primary
     val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val title = stringResource(item.titleRes)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -175,12 +187,12 @@ private fun NavItem(
     ) {
         Icon(
             imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-            contentDescription = item.title,
+            contentDescription = title,
             tint = if (selected) activeColor else inactiveColor,
             modifier = Modifier.size(21.dp)
         )
         Text(
-            text = item.title,
+            text = title,
             color = if (selected) activeColor else inactiveColor,
             style = MaterialTheme.typography.labelSmall,
             fontSize = 10.sp,

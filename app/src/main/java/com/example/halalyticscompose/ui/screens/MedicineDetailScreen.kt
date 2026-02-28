@@ -24,14 +24,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.halalyticscompose.ui.viewmodel.MedicineViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MedicineDetailScreen(
     navController: NavController,
     medicineId: Int,
-    viewModel: MedicineViewModel = viewModel()
+    viewModel: MedicineViewModel = hiltViewModel()
 ) {
     val medicine by viewModel.selectedMedicine.collectAsState()
     val safeSchedule by viewModel.safeSchedule.collectAsState()
@@ -69,9 +69,9 @@ fun MedicineDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
         },

@@ -2,7 +2,6 @@ package com.example.halalyticscompose.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,72 +13,124 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.LocalPharmacy
+import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.example.halalyticscompose.Data.API.BeautyProduct
+import com.example.halalyticscompose.Data.API.bestIngredientsText
+import com.example.halalyticscompose.Data.Model.MedicineData
+import com.example.halalyticscompose.Data.Model.ProductItem
+import com.example.halalyticscompose.ui.viewmodel.MedicineViewModel
+import com.example.halalyticscompose.ui.viewmodel.ProductExternalViewModel
+import com.example.halalyticscompose.ui.viewmodel.SkincareViewModel
 
-private val SearchBg = Color(0xFFF7FAFC)
-private val SearchPrimary = Color(0xFF00C896)
-private val SearchText = Color(0xFF0A2540)
-private val SearchMuted = Color(0xFF64748B)
-private val BpomNavy = Color(0xFF1A237E)
+private enum class SearchTab(val title: String) {
+    MEDICINE("Obat"),
+    FOOD("Food"),
+    COSMETIC("Kosmetik")
+}
 
-@Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun SearchHubScreen(navController: NavController) {
+@Composable
+fun SearchHubScreen(
+    navController: NavController,
+    foodViewModel: ProductExternalViewModel = viewModel(),
+    medicineViewModel: MedicineViewModel = hiltViewModel(),
+    skincareViewModel: SkincareViewModel = hiltViewModel()
+) {
+    val color = MaterialTheme.colorScheme
+    val focusManager = LocalFocusManager.current
+
     var query by remember { mutableStateOf("") }
-    var filter by remember { mutableStateOf("Semua") }
-    val chips = listOf("Semua", "Makanan", "Obat", "Kosmetik")
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val selectedTab = SearchTab.entries[selectedTabIndex]
+
+    val foodResults by foodViewModel.searchResults.collectAsState()
+    val foodLoading by foodViewModel.isSearching.collectAsState()
+    val foodError by foodViewModel.searchError.collectAsState()
+
+    val medicineResults by medicineViewModel.medicines.collectAsState()
+    val medicineLoading by medicineViewModel.isLoading.collectAsState()
+    val medicineError by medicineViewModel.errorMessage.collectAsState()
+
+    val cosmeticResults by skincareViewModel.searchResults.collectAsState()
+    val cosmeticLoading by skincareViewModel.isLoading.collectAsState()
+    val cosmeticError by skincareViewModel.errorMessage.collectAsState()
+
+    fun submitSearch() {
+        val q = query.trim()
+        if (q.length < 2) return
+        focusManager.clearFocus()
+        when (selectedTab) {
+            SearchTab.MEDICINE -> medicineViewModel.searchMedicine(q)
+            SearchTab.FOOD -> foodViewModel.searchProducts(q)
+            SearchTab.COSMETIC -> skincareViewModel.searchSkincare(q)
+        }
+    }
 
     Scaffold(
-        containerColor = SearchBg,
+        containerColor = color.background,
         topBar = {
             TopAppBar(
-                title = { Text("Cari Produk", color = SearchText, fontWeight = FontWeight.ExtraBold) },
+                title = {
+                    Text(
+                        text = "Cari Obat, Food, Kosmetik",
+                        fontWeight = FontWeight.Bold,
+                        color = color.onBackground
+                    )
+                },
                 navigationIcon = {
-                    Box(
-                        modifier = Modifier
-                            .padding(start = 12.dp)
-                            .size(34.dp)
-                            .clip(RoundedCornerShape(100.dp))
-                            .background(Color.White)
-                            .clickable { navController.navigateUp() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = SearchText)
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = SearchBg)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = color.background)
             )
         }
     ) { padding ->
@@ -95,138 +146,292 @@ fun SearchHubScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp),
-                placeholder = { Text("Cari makanan, obat, kosmetik...", fontSize = 13.sp, color = SearchMuted) },
-                leadingIcon = { Icon(Icons.Default.Search, null, tint = SearchMuted) },
+                placeholder = { Text("Cari nama produk, obat, atau kosmetik...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 singleLine = true,
                 shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedBorderColor = SearchPrimary,
-                    unfocusedBorderColor = Color(0xFFE2E8F0)
+                    focusedContainerColor = color.surface,
+                    unfocusedContainerColor = color.surface,
+                    focusedBorderColor = color.primary,
+                    unfocusedBorderColor = color.outlineVariant
                 ),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(
-                    onSearch = {
-                        when (filter) {
-                            "Obat" -> navController.navigate("international_medicine")
-                            "Kosmetik" -> navController.navigate("skincare_scanner")
-                            else -> navController.navigate("search_external")
-                        }
-                    }
-                )
+                keyboardActions = KeyboardActions(onSearch = { submitSearch() })
             )
 
-            Row(
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
                     .padding(top = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                containerColor = color.background
             ) {
-                chips.forEach { item ->
-                    FilterChip(
-                        selected = filter == item,
-                        onClick = { filter = item },
-                        label = { Text(item, fontSize = 12.sp) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = SearchPrimary.copy(alpha = 0.15f),
-                            selectedLabelColor = SearchPrimary,
-                            containerColor = Color(0xFFF1F5F9),
-                            labelColor = SearchMuted
-                        )
+                SearchTab.entries.forEachIndexed { index, tab ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(tab.title, fontWeight = FontWeight.SemiBold) },
+                        icon = {
+                            val icon = when (tab) {
+                                SearchTab.MEDICINE -> Icons.Default.LocalPharmacy
+                                SearchTab.FOOD -> Icons.Default.CheckCircle
+                                SearchTab.COSMETIC -> Icons.Default.Spa
+                            }
+                            Icon(icon, contentDescription = null)
+                        }
                     )
                 }
             }
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 14.dp)
-                    .clickable { navController.navigate("bpom_scanner") },
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = BpomNavy)
-            ) {
-                Row(
-                    modifier = Modifier.padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.White.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("BPOM", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(10.dp))
+
+            when (selectedTab) {
+                SearchTab.MEDICINE -> {
+                    SearchHeader(
+                        title = "Database Obat (BPOM/FDA)",
+                        subtitle = "Hasil real-time untuk obat, generik, dan status halal"
+                    )
+                    when {
+                        medicineLoading -> LoadingState("Mencari obat...")
+                        !medicineError.isNullOrBlank() -> ErrorState(medicineError ?: "Gagal memuat obat")
+                        medicineResults.isEmpty() && query.isNotBlank() -> EmptyState("Obat tidak ditemukan")
+                        medicineResults.isEmpty() -> EmptyState("Masukkan kata kunci untuk cari obat")
+                        else -> {
+                            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                items(medicineResults) { medicine ->
+                                    MedicineResultCard(medicine = medicine) {
+                                        val id = medicine.idMedicine ?: 0
+                                        if (id > 0) navController.navigate("medicine_detail/$id")
+                                        else navController.navigate("international_medicine")
+                                    }
+                                }
+                                item { Spacer(modifier = Modifier.height(20.dp)) }
+                            }
+                        }
                     }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Verifikasi BPOM RI", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        Text("Cek nomor registrasi resmi", color = Color.White.copy(alpha = 0.8f), fontSize = 11.sp)
-                    }
-                    Text("Buka", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
-            }
 
-            Text(
-                text = "Hasil populer",
-                color = SearchText,
-                fontWeight = FontWeight.Bold,
-                fontSize = 13.sp,
-                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
-            )
+                SearchTab.FOOD -> {
+                    SearchHeader(
+                        title = "Database Food (OpenFoodFacts)",
+                        subtitle = "Produk makanan/minuman dengan filter halal"
+                    )
+                    when {
+                        foodLoading -> LoadingState("Mencari produk food...")
+                        foodError.isNotBlank() -> ErrorState(foodError)
+                        foodResults.isEmpty() && query.isNotBlank() -> EmptyState("Produk food tidak ditemukan")
+                        foodResults.isEmpty() -> EmptyState("Masukkan kata kunci untuk cari food")
+                        else -> {
+                            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                items(foodResults) { product ->
+                                    FoodResultCard(product = product) {
+                                        val barcode = product.barcode ?: product.code ?: product.id
+                                        if (!barcode.isNullOrBlank()) {
+                                            navController.navigate("product_external_detail/$barcode")
+                                        }
+                                    }
+                                }
+                                item { Spacer(modifier = Modifier.height(20.dp)) }
+                            }
+                        }
+                    }
+                }
 
-            SearchResultCard("Indomie Goreng", "BPOM: MD 123456789", "HALAL", Color(0xFF00C896)) {
-                navController.navigate("search_external")
-            }
-            SearchResultCard("Paracetamol 500mg", "BPOM: DBL 1234567890", "HALAL", Color(0xFF00C896)) {
-                navController.navigate("international_medicine")
-            }
-            SearchResultCard("Lipstik Matte", "BPOM: NA 18201234567", "SYUBHAT", Color(0xFFF5A623)) {
-                navController.navigate("skincare_scanner")
+                SearchTab.COSMETIC -> {
+                    SearchHeader(
+                        title = "Database Kosmetik (OpenBeautyFacts)",
+                        subtitle = "Cari komposisi dan analisis keamanan/kelayakan halal"
+                    )
+                    when {
+                        cosmeticLoading -> LoadingState("Mencari kosmetik...")
+                        !cosmeticError.isNullOrBlank() -> ErrorState(cosmeticError ?: "Gagal memuat kosmetik")
+                        cosmeticResults.isEmpty() && query.isNotBlank() -> EmptyState("Kosmetik tidak ditemukan")
+                        cosmeticResults.isEmpty() -> EmptyState("Masukkan kata kunci untuk cari kosmetik")
+                        else -> {
+                            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                items(cosmeticResults) { cosmetic ->
+                                    CosmeticResultCard(cosmetic = cosmetic) {
+                                        skincareViewModel.selectProduct(cosmetic)
+                                        navController.navigate("cosmetic_detail")
+                                    }
+                                }
+                                item { Spacer(modifier = Modifier.height(20.dp)) }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun SearchResultCard(
-    name: String,
-    subtitle: String,
-    status: String,
-    statusColor: Color,
-    onClick: () -> Unit
-) {
+private fun SearchHeader(title: String, subtitle: String) {
+    val color = MaterialTheme.colorScheme
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp)
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+            .padding(bottom = 10.dp),
+        colors = CardDefaults.cardColors(containerColor = color.surfaceVariant.copy(alpha = 0.5f)),
         shape = RoundedCornerShape(14.dp)
     ) {
-        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(title, color = color.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            Text(subtitle, color = color.onSurfaceVariant, fontSize = 11.sp)
+        }
+    }
+}
+
+@Composable
+private fun LoadingState(text: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator()
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun ErrorState(message: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEAEA)),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Text(
+            text = message,
+            color = Color(0xFFC62828),
+            modifier = Modifier.padding(12.dp),
+            fontSize = 12.sp
+        )
+    }
+}
+
+@Composable
+private fun EmptyState(text: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 20.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+    }
+}
+
+@Composable
+private fun MedicineResultCard(medicine: MedicineData, onClick: () -> Unit) {
+    val color = MaterialTheme.colorScheme
+    val halalText = medicine.halalStatus.ifBlank { "unknown" }.uppercase()
+    val halalColor = when (medicine.halalStatus.lowercase()) {
+        "halal" -> Color(0xFF2E7D32)
+        "haram" -> Color(0xFFC62828)
+        else -> Color(0xFFEF6C00)
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = color.surface)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Box(
                 modifier = Modifier
                     .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF1F5F9)),
+                    .background(color.primary.copy(alpha = 0.12f), RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
-            ) { Text("📦") }
+            ) {
+                Icon(Icons.Default.MedicalServices, contentDescription = null, tint = color.primary)
+            }
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(name, color = SearchText, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                Text(subtitle, color = SearchMuted, fontSize = 10.sp)
+                Text(medicine.name, fontWeight = FontWeight.Bold, color = color.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(medicine.genericName ?: "-", fontSize = 11.sp, color = color.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            Box(
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(halalText, color = halalColor, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+        }
+    }
+}
+
+@Composable
+private fun FoodResultCard(product: ProductItem, onClick: () -> Unit) {
+    val color = MaterialTheme.colorScheme
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = color.surface)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = product.getBestImageUrl(),
+                contentDescription = product.getDisplayName(),
                 modifier = Modifier
-                    .clip(RoundedCornerShape(100.dp))
-                    .background(statusColor.copy(alpha = 0.15f))
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            ) {
-                Text(status, color = statusColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    .size(46.dp)
+                    .background(color.surfaceVariant, RoundedCornerShape(10.dp)),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(product.getDisplayName(), fontWeight = FontWeight.Bold, color = color.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(product.brands ?: "-", fontSize = 11.sp, color = color.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
+            Spacer(modifier = Modifier.width(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Shield, contentDescription = null, tint = product.getHalalStatusColor(), modifier = Modifier.size(14.dp))
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(product.getHalalStatus(), color = product.getHalalStatusColor(), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CosmeticResultCard(cosmetic: BeautyProduct, onClick: () -> Unit) {
+    val color = MaterialTheme.colorScheme
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = color.surface)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = cosmetic.imageUrl,
+                contentDescription = cosmetic.productName,
+                modifier = Modifier
+                    .size(46.dp)
+                    .background(color.surfaceVariant, RoundedCornerShape(10.dp)),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(cosmetic.productName ?: "Unknown Cosmetic", fontWeight = FontWeight.Bold, color = color.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(cosmetic.brands ?: "-", fontSize = 11.sp, color = color.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(cosmetic.bestIngredientsText ?: "Komposisi belum tersedia", fontSize = 10.sp, color = color.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Analisis", color = color.primary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
         }
     }
 }

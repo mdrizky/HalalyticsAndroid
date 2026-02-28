@@ -1,6 +1,7 @@
 package com.example.halalyticscompose
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -44,6 +45,12 @@ fun HalalyticsComposeTheme(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // 🔒 SECURITY: Prevent screenshots and hide app in Recent Apps (Privacy Screen)
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_SECURE,
+            WindowManager.LayoutParams.FLAG_SECURE
+        )
         
         setContent {
             val mainViewModel: MainViewModel = hiltViewModel()
@@ -92,9 +99,10 @@ class MainActivity : ComponentActivity() {
 
                     
                      val token = sessionManager.getAuthToken() ?: ""
+                     val userId = sessionManager.getUserId()
                      // Start notification listener on app start if logged in
                      if (token.isNotEmpty()) {
-                         notificationViewModel.loadNotifications(token, 0)
+                         notificationViewModel.loadNotifications(token, userId)
                          // Sync with MySQL if Firebase user is present
                          com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.let { firebaseUser ->
                              mainViewModel.syncWithMySQL(firebaseUser, token)
@@ -161,6 +169,28 @@ class MainActivity : ComponentActivity() {
                         MainLayout(navController = navController, showBottomNav = true) { paddingValues ->
                             SearchHubScreen(
                                 navController = navController
+                            )
+                        }
+                    }
+
+                    composable("cosmetic_detail") {
+                        MainLayout(navController = navController) {
+                            CosmeticDetailScreen(navController = navController)
+                        }
+                    }
+
+                    composable("health_articles") {
+                        MainLayout(navController = navController) {
+                            HealthArticleListScreen(navController = navController)
+                        }
+                    }
+
+                    composable("health_article_detail/{articleId}") { backStackEntry ->
+                        val articleId = backStackEntry.arguments?.getString("articleId") ?: ""
+                        MainLayout(navController = navController) {
+                            HealthArticleDetailScreen(
+                                navController = navController,
+                                articleId = articleId
                             )
                         }
                     }
@@ -240,6 +270,12 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
+
+                    composable("ai_report") {
+                        MainLayout(navController = navController) { paddingValues ->
+                            AiReportScreen(navController = navController)
+                        }
+                    }
                     
                     // Manual Input Screen
                     composable("manual_input") {
@@ -264,6 +300,17 @@ class MainActivity : ComponentActivity() {
                         MainLayout(navController = navController, showBottomNav = true) { paddingValues ->
                             ScanHistoryScreen(
                                 navController = navController
+                            )
+                        }
+                    }
+
+                    // Scan history detail
+                    composable("scan_history_detail/{id}") { backStackEntry ->
+                        MainLayout(navController = navController) { paddingValues ->
+                            val historyId = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 0
+                            ScanHistoryDetailScreen(
+                                navController = navController,
+                                historyId = historyId
                             )
                         }
                     }
@@ -433,8 +480,7 @@ class MainActivity : ComponentActivity() {
                     composable("pharmacy") {
                         MainLayout(navController = navController) { paddingValues ->
                             PharmacyScreen(
-                                navController = navController,
-                                mainViewModel = mainViewModel
+                                navController = navController
                             )
                         }
                     }
@@ -511,6 +557,31 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 viewModel = mainViewModel
                             )
+                        }
+                    }
+
+                    // Body Monitor Screen
+                    composable("health_monitor") {
+                        MainLayout(navController = navController) { paddingValues ->
+                            HealthMonitorScreen(navController = navController)
+                        }
+                    }
+
+                    composable("health_diary") {
+                        MainLayout(navController = navController) { paddingValues ->
+                            HealthDiaryScreen(navController = navController)
+                        }
+                    }
+
+                    composable("medical_resume") {
+                        MainLayout(navController = navController) { paddingValues ->
+                            MedicalResumeScreen(navController = navController)
+                        }
+                    }
+
+                    composable("health_pass") {
+                        MainLayout(navController = navController) { paddingValues ->
+                            HealthPassScreen(navController = navController)
                         }
                     }
 

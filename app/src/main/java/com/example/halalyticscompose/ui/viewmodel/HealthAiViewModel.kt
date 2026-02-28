@@ -39,11 +39,21 @@ class HealthAiViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _isLoading.value = true
+                _error.value = null
+                _interactionResult.value = null
                 val token = getToken()
-                val response = apiService.checkDrugInteraction(token ?: "", drugAId, drugBId, drugAName, drugBName)
+                if (token.isNullOrBlank()) {
+                    _error.value = "Sesi login tidak ditemukan. Silakan login ulang."
+                    _isLoading.value = false
+                    return@launch
+                }
+
+                val response = apiService.checkDrugInteraction(token, drugAId, drugBId, drugAName, drugBName)
                 if (response.success) {
                     _interactionResult.value = response.data
                     _interactionSource.value = response.source
+                } else {
+                    _error.value = "Interaksi tidak dapat diproses."
                 }
                 _isLoading.value = false
             } catch (e: Exception) {

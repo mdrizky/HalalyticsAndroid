@@ -25,6 +25,9 @@ class SkincareViewModel @Inject constructor(
     private val _searchResults = MutableStateFlow<List<BeautyProduct>>(emptyList())
     val searchResults: StateFlow<List<BeautyProduct>> = _searchResults
 
+    private val _selectedProduct = MutableStateFlow<BeautyProduct?>(null)
+    val selectedProduct: StateFlow<BeautyProduct?> = _selectedProduct
+
     private val _analysisResult = MutableStateFlow<SkincareAnalysis?>(null)
     val analysisResult: StateFlow<SkincareAnalysis?> = _analysisResult
 
@@ -183,5 +186,9 @@ class SkincareViewModel @Inject constructor(
         _halalResult.value = null
         _errorMessage.value = null
         _ingredientsText.value = null
+    }
+
+    fun selectProduct(product: BeautyProduct?) {
+        _selectedProduct.value = product
     }
 }

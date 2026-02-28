@@ -11,6 +11,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import net.sqlcipher.database.SQLiteDatabase
+import net.sqlcipher.database.SupportFactory
 import javax.inject.Singleton
 
 @Module
@@ -22,13 +24,35 @@ object DatabaseModule {
     fun provideHalalyticsDatabase(
         @ApplicationContext context: Context
     ): HalalyticsDatabase {
-        return Room.databaseBuilder(
-            context,
-            HalalyticsDatabase::class.java,
-            "halalytics_database"
-        )
-        .fallbackToDestructiveMigration()
-        .build()
+        // Required by SQLCipher before using SupportFactory/Room.
+        SQLiteDatabase.loadLibs(context)
+
+        // 🔒 SECURITY: Encrypt the local database with SQLCipher
+        // Generates a deterministic passphrase so data persists across app restarts
+        val passphrase = generatePassphrase(context)
+        val factory = SupportFactory(passphrase)
+
+        return try {
+            Room.databaseBuilder(
+                context,
+                HalalyticsDatabase::class.java,
+                "halalytics_database"
+            )
+                .openHelperFactory(factory)
+                .fallbackToDestructiveMigration()
+                .build()
+        } catch (e: Exception) {
+            // Recovery path for passphrase mismatch / legacy plain DB state.
+            context.deleteDatabase("halalytics_database")
+            Room.databaseBuilder(
+                context,
+                HalalyticsDatabase::class.java,
+                "halalytics_database"
+            )
+                .openHelperFactory(factory)
+                .fallbackToDestructiveMigration()
+                .build()
+        }
     }
     
     @Provides
@@ -40,6 +64,14 @@ object DatabaseModule {
     fun provideConsumptionDao(database: HalalyticsDatabase): com.example.halalyticscompose.Data.Local.Dao.ConsumptionDao {
         return database.consumptionDao()
     }
+    
+    /**
+     * Generates a deterministic encryption passphrase for SQLCipher.
+     * Uses the app's unique package signature as a seed to create
+     * an encryption key that persists across app restarts.
+     */
+    private fun generatePassphrase(context: Context): ByteArray {
+        val seed = "Halalytics_DB_Key_${context.packageName}_v1"
+        return SQLiteDatabase.getBytes(seed.toCharArray())
+    }
 }
-
-

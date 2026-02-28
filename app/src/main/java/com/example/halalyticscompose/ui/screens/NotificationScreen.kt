@@ -1,5 +1,6 @@
 package com.example.halalyticscompose.ui.screens
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -38,6 +39,11 @@ fun NotificationScreen(
     val userId = sessionManager.getUserId() // Get real user ID from session
 
     val notifications by viewModel.notifications.collectAsState()
+    val adminOnlyNotifications = remember(notifications) {
+        notifications.filter {
+            it.type.lowercase() in setOf("admin", "announcement", "product", "verification", "request", "bpom", "system")
+        }
+    }
     val unreadCount by viewModel.unreadCount.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
@@ -113,12 +119,12 @@ fun NotificationScreen(
             }
 
             when {
-                loading && notifications.isEmpty() -> {
+                loading && adminOnlyNotifications.isEmpty() -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-                notifications.isEmpty() -> {
+                adminOnlyNotifications.isEmpty() -> {
                     EmptyNotificationsState(
                         modifier = Modifier.align(Alignment.Center)
                     )
@@ -129,22 +135,61 @@ fun NotificationScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(notifications) { notification ->
+                        items(adminOnlyNotifications) { notification ->
                             NotificationCard(
                                 notification = notification,
                                 onClick = {
                                     if (!notification.isRead) {
                                         viewModel.markAsRead(token, notification.id)
                                     }
-                                    // Handle navigation based on type
-                                    if (notification.type == "scan") {
-                                        // navController.navigate("scan_history")
-                                    }
+                                    navController.navigate(resolveNotificationRoute(notification))
                                 }
                             )
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+private fun resolveNotificationRoute(notification: NotificationItem): String {
+    val actionType = notification.actionType?.lowercase().orEmpty()
+    val actionValue = notification.actionValue.orEmpty()
+    val fallbackBarcode = notification.relatedProduct?.barcode.orEmpty()
+
+    fun resolveProductRoute(raw: String): String {
+        val value = raw.ifBlank { fallbackBarcode }
+        if (value.isBlank()) return "search_hub"
+        return when {
+            value.startsWith("ext:", ignoreCase = true) ->
+                "product_external_detail/${Uri.encode(value.substringAfter("ext:"))}"
+            value.startsWith("local:", ignoreCase = true) ->
+                "product_detail/${Uri.encode(value.substringAfter("local:"))}"
+            value.all { it.isDigit() } && value.length >= 8 ->
+                "product_external_detail/${Uri.encode(value)}"
+            else -> "product_detail/${Uri.encode(value)}"
+        }
+    }
+
+    return when (actionType) {
+        "open_product", "view_product" -> resolveProductRoute(actionValue)
+        "view_request", "open_request" -> {
+            val label = Uri.encode("Request Verifikasi #${if (actionValue.isBlank()) notification.id else actionValue}")
+            "report_issue/0/$label"
+        }
+        "open_bpom", "open_verification", "verification_result" -> "bpom_scanner"
+        "open_health_suite" -> "health_suite_hub"
+        "open_search" -> "search_hub"
+        "open_news", "open_article" ->
+            if (actionValue.isNotBlank()) "health_article_detail/${Uri.encode(actionValue)}" else "health_articles"
+        else -> {
+            when (notification.type.lowercase()) {
+                "product" -> resolveProductRoute(actionValue)
+                "verification", "bpom" -> "bpom_scanner"
+                "request" -> "report_issue/0/${Uri.encode("Laporan Verifikasi")}"
+                "announcement", "admin", "system" -> "health_articles"
+                else -> "notifications"
             }
         }
     }

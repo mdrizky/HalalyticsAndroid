@@ -22,13 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.halalyticscompose.ui.viewmodel.HealthAiViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HealthJourneyScreen(
     navController: NavController,
-    viewModel: HealthAiViewModel = viewModel()
+    viewModel: HealthAiViewModel = hiltViewModel()
 ) {
     var selectedTab by remember { mutableStateOf("Weight") }
     val metrics = listOf("Weight", "Blood Pressure", "Blood Sugar", "Cholesterol")
@@ -50,12 +50,13 @@ fun HealthJourneyScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF0F172A),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -77,12 +78,15 @@ fun HealthJourneyScreen(
                         modifier = Modifier
                             .padding(end = 8.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (selectedTab == metric) Color(0xFF3B82F6) else Color(0xFFF1F5F9))
+                            .background(
+                                if (selectedTab == metric) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant
+                            )
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
                             text = metric,
-                            color = if (selectedTab == metric) Color.White else Color(0xFF64748B),
+                            color = if (selectedTab == metric) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp
                         )
@@ -134,7 +138,7 @@ fun HealthJourneyScreen(
                     if (metricHistory.isEmpty()) {
                         Text(
                             "Belum ada data untuk $selectedTab", 
-                            color = Color.Gray, 
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, 
                             modifier = Modifier.fillMaxWidth().padding(32.dp), 
                             textAlign = TextAlign.Center
                         )
@@ -149,8 +153,8 @@ fun HealthJourneyScreen(
 fun HealthMetricItem(data: com.example.halalyticscompose.Data.Model.HealthMetricData) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(
@@ -158,22 +162,22 @@ fun HealthMetricItem(data: com.example.halalyticscompose.Data.Model.HealthMetric
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.size(40.dp).clip(CircleShape).background(Color(0xFF3B82F6).copy(0.1f)),
+                modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = data.value.take(2),
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF3B82F6)
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text("${data.value}", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(data.recordedAt, fontSize = 12.sp, color = Color.Gray)
+                Text(data.recordedAt, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (!data.notes.isNullOrBlank()) {
-                Icon(Icons.AutoMirrored.Filled.Notes, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color(0xFF94A3B8))
+                Icon(Icons.AutoMirrored.Filled.Notes, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

@@ -17,7 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocalPharmacy
 import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material.icons.outlined.Restaurant
-import androidx.compose.material.icons.outlined.TextSnippet
+import androidx.compose.material.icons.automirrored.outlined.TextSnippet
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -25,10 +25,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.halalyticscompose.ui.theme.DarkBackground
+import com.example.halalyticscompose.R
 
 @Composable
 fun ScanHubScreen(
@@ -37,44 +38,44 @@ fun ScanHubScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF021A34))
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "Scan Center",
+            text = stringResource(R.string.scan_hub_title),
             style = MaterialTheme.typography.headlineSmall,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = "Pilih mode scan sesuai kebutuhan analisis.",
+            text = stringResource(R.string.scan_hub_subtitle),
             style = MaterialTheme.typography.bodySmall,
-            color = Color.White.copy(alpha = 0.7f)
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
         )
         Spacer(modifier = Modifier.height(4.dp))
 
         ScanActionCard(
-            title = "Barcode / QR",
-            subtitle = "Scan produk halal umum",
+            title = stringResource(R.string.scan_hub_barcode_title),
+            subtitle = stringResource(R.string.scan_hub_barcode_desc),
             icon = Icons.Outlined.QrCodeScanner,
             onClick = { navController.navigate("scan") }
         )
         ScanActionCard(
-            title = "OCR Produk",
-            subtitle = "Ambil teks komposisi dari kemasan",
-            icon = Icons.Outlined.TextSnippet,
+            title = stringResource(R.string.scan_hub_ocr_title),
+            subtitle = stringResource(R.string.scan_hub_ocr_desc),
+            icon = Icons.AutoMirrored.Outlined.TextSnippet,
             onClick = { navController.navigate("enhanced_ocr") }
         )
         ScanActionCard(
-            title = "AI Meal Scan",
-            subtitle = "Analisis makanan dari foto",
+            title = stringResource(R.string.scan_hub_meal_title),
+            subtitle = stringResource(R.string.scan_hub_meal_desc),
             icon = Icons.Outlined.Restaurant,
             onClick = { navController.navigate("food_scan") }
         )
         ScanActionCard(
-            title = "BPOM Verify",
-            subtitle = "Cek registrasi dan validitas BPOM",
+            title = stringResource(R.string.scan_hub_bpom_title),
+            subtitle = stringResource(R.string.scan_hub_bpom_desc),
             icon = Icons.Outlined.LocalPharmacy,
             onClick = { navController.navigate("bpom_scanner") }
         )
@@ -91,28 +92,39 @@ private fun ScanActionCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF102840), RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
             .clickable(onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Box(
                 modifier = Modifier
                     .size(42.dp)
-                    .background(Color(0xFF0ABAB5).copy(alpha = 0.18f), RoundedCornerShape(12.dp)),
+                    .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null, tint = Color(0xFF33E1DB))
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             }
             Spacer(modifier = Modifier.size(12.dp))
-            Column {
-                Text(text = title, color = Color.White, fontWeight = FontWeight.Bold)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = title, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = subtitle, color = Color.White.copy(alpha = 0.75f))
+                Text(
+                    text = subtitle,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
-        Text(text = "Buka", color = Color(0xFF25E4DA), fontWeight = FontWeight.SemiBold)
+        Text(
+            text = stringResource(R.string.common_open),
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(start = 12.dp)
+        )
     }
 }

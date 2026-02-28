@@ -5,7 +5,9 @@ data class Banner(
     val title: String,
     val description: String?,
     val image: String,
-    val position: Int
+    val position: Int,
+    val action_type: String? = null,
+    val action_value: String? = null
 )
 
 data class BannerResponse(

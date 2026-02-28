@@ -1,6 +1,7 @@
 package com.example.halalyticscompose.di
 
 import android.util.Log
+import com.example.halalyticscompose.BuildConfig
 import com.example.halalyticscompose.Data.API.ApiService
 import com.example.halalyticscompose.data.api.NotificationApiService
 import com.example.halalyticscompose.data.api.OCRProductApiService
@@ -11,6 +12,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.CertificatePinner
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -22,7 +25,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
     
-    private const val BASE_URL = "http://10.0.2.2:8000/api/" // Emulator loopback URL
+    private const val DEFAULT_BASE_URL = "http://10.0.2.2:8000/api/"
     private const val TAG = "HalalyticsNetwork"
 
     @Provides
@@ -69,10 +72,13 @@ object NetworkModule {
         }
 
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BASIC
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
         }
-
-        return OkHttpClient.Builder()
+        val builder = OkHttpClient.Builder()
             .addInterceptor(languageInterceptor)
             .addInterceptor(requestMetricsInterceptor)
             .addInterceptor(loggingInterceptor)
@@ -80,14 +86,28 @@ object NetworkModule {
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
-            .build()
+
+        // Optional SSL pinning for production HTTPS host.
+        val baseUrl = BuildConfig.API_BASE_URL.ifBlank { DEFAULT_BASE_URL }
+        val host = baseUrl.toHttpUrlOrNull()?.host
+        val pin = BuildConfig.API_CERT_PIN
+        if (!host.isNullOrBlank() && pin.isNotBlank() && baseUrl.startsWith("https://")) {
+            builder.certificatePinner(
+                CertificatePinner.Builder()
+                    .add(host, pin)
+                    .build()
+            )
+        }
+
+        return builder.build()
     }
     
     @Provides
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        val baseUrl = BuildConfig.API_BASE_URL.ifBlank { DEFAULT_BASE_URL }
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

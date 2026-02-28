@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -27,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.halalyticscompose.ui.theme.*
+import com.example.halalyticscompose.R
 import com.example.halalyticscompose.ui.viewmodel.AiAnalysisViewModel
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 import com.example.halalyticscompose.utils.SessionManager
@@ -40,6 +41,7 @@ fun AiAnalysisScreen(
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val color = MaterialTheme.colorScheme
     var ingredientsText by remember { mutableStateOf("") }
     var viewModel by remember { mutableStateOf<AiAnalysisViewModel?>(null) }
     
@@ -77,19 +79,19 @@ fun AiAnalysisScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Smart Analysis AI", style = MaterialTheme.typography.titleLarge) },
+                title = { Text(stringResource(R.string.ai_analysis_title), style = MaterialTheme.typography.titleLarge) },
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() },
-                        modifier = Modifier.padding(8.dp).clip(CircleShape).background(Color.White.copy(0.05f))
+                        modifier = Modifier.padding(8.dp).clip(CircleShape).background(color.onSurface.copy(0.06f))
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = color.onSurface)
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = BgDarkBase)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = color.surface)
             )
         },
-        containerColor = BgDarkBase
+        containerColor = color.background
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -103,9 +105,9 @@ fun AiAnalysisScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        CircularProgressIndicator(color = Emerald500)
+                        CircularProgressIndicator(color = color.primary)
                         Spacer(modifier = Modifier.height(24.dp))
-                        Text("AI is analyzing components...", color = TextMuted)
+                        Text(stringResource(R.string.ai_analysis_loading), color = color.onSurfaceVariant)
                     }
                 }
                 "Success" -> {
@@ -117,9 +119,9 @@ fun AiAnalysisScreen(
                     ) {
                         // Profile Selector (Premium Style)
                         Text(
-                            text = "Analysis for Profile",
+                            text = stringResource(R.string.ai_analysis_profile),
                             style = MaterialTheme.typography.labelSmall,
-                            color = Emerald500,
+                            color = color.primary,
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
                             fontWeight = FontWeight.Bold
                         )
@@ -131,7 +133,7 @@ fun AiAnalysisScreen(
                         ) {
                             item {
                                 ProfileChip(
-                                    name = "Myself",
+                                    name = stringResource(R.string.ai_analysis_myself),
                                     isSelected = selectedProfile == null,
                                     onClick = { mainViewModel.selectFamilyProfile(null) }
                                 )
@@ -149,10 +151,10 @@ fun AiAnalysisScreen(
 
                         // Main Result Card
                         val statusColor = when (result.status.lowercase()) {
-                            "halal" -> Emerald500
-                            "haram" -> HaramRed
-                            "syubhat" -> MushboohYellow
-                            else -> TextMuted
+                            "halal" -> color.primary
+                            "haram" -> color.error
+                            "syubhat" -> color.tertiary
+                            else -> color.onSurfaceVariant
                         }
                         
                         val statusIcon = when (result.status.lowercase()) {
@@ -166,8 +168,8 @@ fun AiAnalysisScreen(
                                 .fillMaxWidth()
                                 .padding(horizontal = 24.dp)
                                 .clip(RoundedCornerShape(32.dp))
-                                .background(BgDarkSurface)
-                                .border(1.dp, Color.White.copy(0.05f), RoundedCornerShape(32.dp))
+                                .background(color.surface)
+                                .border(1.dp, color.outlineVariant.copy(alpha = 0.45f), RoundedCornerShape(32.dp))
                                 .padding(32.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -196,7 +198,7 @@ fun AiAnalysisScreen(
                                 Text(
                                     result.analysis,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.White.copy(0.8f),
+                                    color = color.onSurface.copy(0.8f),
                                     textAlign = TextAlign.Center,
                                     lineHeight = 22.sp
                                 )
@@ -208,9 +210,9 @@ fun AiAnalysisScreen(
                         // Personal Health Alerts
                         if (uiState.healthAlerts.isNotEmpty()) {
                             Text(
-                                "Health Guard Alerts",
+                                stringResource(R.string.ai_analysis_alerts),
                                 style = MaterialTheme.typography.titleLarge,
-                                color = Color.White,
+                                color = color.onBackground,
                                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
                             )
                             
@@ -220,14 +222,14 @@ fun AiAnalysisScreen(
                                         .fillMaxWidth()
                                         .padding(horizontal = 24.dp, vertical = 6.dp)
                                         .clip(RoundedCornerShape(20.dp))
-                                        .background(MushboohYellow.copy(0.1f))
-                                        .border(1.dp, MushboohYellow.copy(0.2f), RoundedCornerShape(20.dp))
+                                        .background(color.tertiary.copy(0.1f))
+                                        .border(1.dp, color.tertiary.copy(0.25f), RoundedCornerShape(20.dp))
                                         .padding(16.dp)
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(Icons.Default.Warning, null, tint = MushboohYellow, modifier = Modifier.size(20.dp))
+                                        Icon(Icons.Default.Warning, null, tint = color.tertiary, modifier = Modifier.size(20.dp))
                                         Spacer(modifier = Modifier.width(16.dp))
-                                        Text(alert, style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                                        Text(alert, style = MaterialTheme.typography.bodyMedium, color = color.onSurface)
                                     }
                                 }
                             }
@@ -237,9 +239,9 @@ fun AiAnalysisScreen(
                         if (result.redFlags.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(20.dp))
                             Text(
-                                "Critical Ingredients",
+                                stringResource(R.string.ai_analysis_critical),
                                 style = MaterialTheme.typography.titleLarge,
-                                color = Color.White,
+                                color = color.onBackground,
                                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
                             )
                             
@@ -252,11 +254,11 @@ fun AiAnalysisScreen(
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(12.dp))
-                                            .background(HaramRed.copy(0.1f))
-                                            .border(1.dp, HaramRed.copy(0.2f), RoundedCornerShape(12.dp))
+                                            .background(color.error.copy(0.1f))
+                                            .border(1.dp, color.error.copy(0.25f), RoundedCornerShape(12.dp))
                                             .padding(horizontal = 14.dp, vertical = 8.dp)
                                     ) {
-                                        Text(flag, color = HaramRed, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                                        Text(flag, color = color.error, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -271,11 +273,11 @@ fun AiAnalysisScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Icon(Icons.Default.Error, null, tint = HaramRed, modifier = Modifier.size(64.dp))
+                        Icon(Icons.Default.Error, null, tint = color.error, modifier = Modifier.size(64.dp))
                         Spacer(modifier = Modifier.height(24.dp))
                         Text(
-                            uiState.errorMessage ?: "Analysis Failed", 
-                            color = Color.White, 
+                            uiState.errorMessage ?: stringResource(R.string.ai_analysis_failed),
+                            color = color.onSurface,
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.titleMedium
                         )
@@ -285,11 +287,11 @@ fun AiAnalysisScreen(
                                 .fillMaxWidth()
                                 .height(56.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(Brush.linearGradient(listOf(Emerald500, Emerald600)))
+                                .background(Brush.linearGradient(listOf(color.primary, color.secondary)))
                                 .clickable { viewModel?.analyzeIngredients(ingredientsText) },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("Try Again", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.ai_analysis_retry), color = color.onPrimary, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -300,17 +302,18 @@ fun AiAnalysisScreen(
 
 @Composable
 fun ProfileChip(name: String, isSelected: Boolean, onClick: () -> Unit) {
+    val color = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(if (isSelected) Emerald500 else BgDarkSurface)
-            .border(1.dp, if (isSelected) Emerald500 else Color.White.copy(0.05f), RoundedCornerShape(16.dp))
+            .background(if (isSelected) color.primary else color.surface)
+            .border(1.dp, if (isSelected) color.primary else color.outlineVariant.copy(alpha = 0.45f), RoundedCornerShape(16.dp))
             .clickable { onClick() }
             .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
         Text(
             name, 
-            color = if (isSelected) Color.Black else Color.White, 
+            color = if (isSelected) color.onPrimary else color.onSurface,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
             fontSize = 14.sp
         )

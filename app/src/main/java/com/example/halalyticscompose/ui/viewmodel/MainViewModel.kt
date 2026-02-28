@@ -26,6 +26,7 @@ import com.example.halalyticscompose.ai.GeminiAnalyzer
 import com.example.halalyticscompose.ai.AiAnalysisResult
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.delay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import com.example.halalyticscompose.utils.SessionManager
@@ -87,6 +88,8 @@ class MainViewModel @Inject constructor(
     // Banners
     private val _banners = MutableStateFlow<List<com.example.halalyticscompose.Data.Model.Banner>>(emptyList())
     val banners: StateFlow<List<com.example.halalyticscompose.Data.Model.Banner>> = _banners.asStateFlow()
+    private val _bannersLastUpdated = MutableStateFlow<Long?>(null)
+    val bannersLastUpdated: StateFlow<Long?> = _bannersLastUpdated.asStateFlow()
 
     // Offline Mode State
     private val _isOfflineMode = MutableStateFlow(false)
@@ -125,11 +128,23 @@ class MainViewModel @Inject constructor(
     private val _unreadNotificationCount = MutableStateFlow(0)
     val unreadNotificationCount: StateFlow<Int> = _unreadNotificationCount.asStateFlow()
 
+    private val _pendingContributionCount = MutableStateFlow(0)
+    val pendingContributionCount: StateFlow<Int> = _pendingContributionCount.asStateFlow()
+
+    private val _approvedContributionCount = MutableStateFlow(0)
+    val approvedContributionCount: StateFlow<Int> = _approvedContributionCount.asStateFlow()
+
+    private val _lastRealtimeSyncAt = MutableStateFlow<Long?>(null)
+    val lastRealtimeSyncAt: StateFlow<Long?> = _lastRealtimeSyncAt.asStateFlow()
+
     private val _isNotifEnabled = MutableStateFlow(true)
     val isNotifEnabled: StateFlow<Boolean> = _isNotifEnabled.asStateFlow()
 
     private val _userWatchlist = MutableStateFlow<List<String>>(emptyList())
     val userWatchlist: StateFlow<List<String>> = _userWatchlist.asStateFlow()
+
+    private var realtimeHistoryJob: kotlinx.coroutines.Job? = null
+    private var realtimeStatusJob: kotlinx.coroutines.Job? = null
 
     val dailyHealthScore: StateFlow<Int> = _scanHistory.map { history ->
         var score = 50 // Base score
@@ -472,6 +487,7 @@ class MainViewModel @Inject constructor(
             fetchWeeklyStats(t)
             fetchUnreadCount(t)
             fetchDailyIntake(t)
+            startRealtimeStatusSync(t)
         }
         fetchBanners()
     }
@@ -524,28 +540,27 @@ class MainViewModel @Inject constructor(
             try {
                 val response = apiService.getBanners()
                 if (response.isSuccessful && response.body()?.success == true) {
-                val normalized = (response.body()?.data ?: emptyList()).map { banner ->
-                    val fullUrl = ApiConfig.getFullImageUrl(banner.image)
-                    if (fullUrl != null) banner.copy(image = fullUrl) else banner
-                }
-                
-                if (normalized.isEmpty()) {
-                    setDummyBanners()
+                    val normalized = (response.body()?.data ?: emptyList()).map { banner ->
+                        val fullUrl = ApiConfig.getFullImageUrl(banner.image)
+                        if (fullUrl != null) banner.copy(image = fullUrl) else banner
+                    }
+
+                    if (normalized.isEmpty()) {
+                        setDummyBanners()
+                    } else {
+                        _banners.value = normalized
+                        _bannersLastUpdated.value = System.currentTimeMillis()
+                    }
                 } else {
-                    _banners.value = normalized
+                    Log.e("MainViewModel", "Failed to fetch banners: ${response.code()}")
+                    setDummyBanners()
                 }
-            } else {
-                Log.e("MainViewModel", "Failed to fetch banners: ${response.code()}")
-                // Fallback to dummy data
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "Failed to fetch banners: ${e.message}")
                 setDummyBanners()
             }
-        } catch (e: Exception) {
-            Log.e("MainViewModel", "Failed to fetch banners: ${e.message}")
-            // Fallback to dummy data
-            setDummyBanners()
         }
     }
-}
     
     private fun setDummyBanners() {
         if (_banners.value.isEmpty()) {
@@ -565,6 +580,7 @@ class MainViewModel @Inject constructor(
                     position = 2
                 )
             )
+            _bannersLastUpdated.value = System.currentTimeMillis()
         }
     }
 
@@ -594,7 +610,7 @@ class MainViewModel @Inject constructor(
                 // Also start realtime sync for HomeScreen and Global state
                 val userId = sessionManager?.getUserId() ?: 0
                 if (userId > 0) {
-                    startRealtimeHistorySync(userId)
+                    startRealtimeHistorySync(userId, token)
                 }
             } catch (e: Exception) {
                 println("Failed to fetch history: ${e.message}")
@@ -602,9 +618,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun startRealtimeHistorySync(userId: Int) {
+    private fun startRealtimeHistorySync(userId: Int, token: String) {
+        realtimeHistoryJob?.cancel()
         val listener = com.example.halalyticscompose.services.FirebaseRealtimeListener(userId)
-        viewModelScope.launch {
+        realtimeHistoryJob = viewModelScope.launch {
             listener.listenToScanHistory().collect { update ->
                 // Check if item already exists in the current list
                 val currentList = _scanHistory.value.toMutableList()
@@ -624,8 +641,29 @@ class MainViewModel @Inject constructor(
                     _scanHistory.value = currentList.take(20) // Keep reasonable limits for global state
                     
                     // Also update stats optimistically or refresh
-                    sessionManager?.getAuthToken()?.let { fetchUserStats(it) }
+                    fetchUserStats(token)
                 }
+            }
+        }
+    }
+
+    private fun startRealtimeStatusSync(token: String) {
+        realtimeStatusJob?.cancel()
+        realtimeStatusJob = viewModelScope.launch {
+            while (true) {
+                try {
+                    fetchUnreadCount(token)
+                    val contributionResponse = apiService.getMyContributions("Bearer $token")
+                    if (contributionResponse.success) {
+                        val data = contributionResponse.data
+                        _pendingContributionCount.value = data.count { it.status.equals("pending", ignoreCase = true) }
+                        _approvedContributionCount.value = data.count { it.status.equals("approved", ignoreCase = true) }
+                    }
+                    _lastRealtimeSyncAt.value = System.currentTimeMillis()
+                } catch (e: Exception) {
+                    Log.w("MainViewModel", "Realtime status sync failed: ${e.message}")
+                }
+                delay(30000)
             }
         }
     }
@@ -743,6 +781,13 @@ class MainViewModel @Inject constructor(
                 _totalScans.value = 0
                 _halalProducts.value = 0
                 _scanHistory.value = emptyList()
+                _unreadNotificationCount.value = 0
+                _pendingContributionCount.value = 0
+                _approvedContributionCount.value = 0
+                _lastRealtimeSyncAt.value = null
+
+                realtimeHistoryJob?.cancel()
+                realtimeStatusJob?.cancel()
                 
                 // Clear session
                 sessionManager?.logout()
@@ -1612,6 +1657,12 @@ class MainViewModel @Inject constructor(
 
     fun selectFamilyProfile(profile: FamilyProfile?) {
         _selectedFamilyProfile.value = profile
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        realtimeHistoryJob?.cancel()
+        realtimeStatusJob?.cancel()
     }
 
 }

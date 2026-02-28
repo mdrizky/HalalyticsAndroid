@@ -115,8 +115,8 @@ class NotificationViewModel : ViewModel() {
                         type = update.type, // 'system', 'scan', etc
                         isRead = update.is_read,
                         createdAt = java.time.Instant.ofEpochSecond(update.created_at).toString(), // simplified
-                        actionType = null,
-                        actionValue = null,
+                        actionType = update.action_type,
+                        actionValue = update.action_value,
                         relatedProduct = null
                     )
                     

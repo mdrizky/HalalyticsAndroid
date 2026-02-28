@@ -44,7 +44,7 @@ fun SettingsScreen(
                     title = { Text(stringResource(R.string.settings_title), fontWeight = FontWeight.Bold) },
                     navigationIcon = {
                         IconButton(onClick = { navController.navigateUp() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                         }
                     }
                 )
@@ -85,11 +85,11 @@ fun SettingsScreen(
                 SettingsCard {
                     Column(modifier = Modifier.padding(8.dp)) {
                         LanguageOption("id", "Indonesia", "🇮🇩", appLanguage) { viewModel.setAppLanguage("id") }
-                        Divider(modifier = Modifier.padding(horizontal = 8.dp), thickness = 0.5.dp)
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp), thickness = 0.5.dp)
                         LanguageOption("en", "English", "🇺🇸", appLanguage) { viewModel.setAppLanguage("en") }
-                        Divider(modifier = Modifier.padding(horizontal = 8.dp), thickness = 0.5.dp)
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp), thickness = 0.5.dp)
                         LanguageOption("ms", "Melayu", "🇲🇾", appLanguage) { viewModel.setAppLanguage("ms") }
-                        Divider(modifier = Modifier.padding(horizontal = 8.dp), thickness = 0.5.dp)
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp), thickness = 0.5.dp)
                         LanguageOption("ar", "العربية", "🇸🇦", appLanguage) { viewModel.setAppLanguage("ar") }
                     }
                 }

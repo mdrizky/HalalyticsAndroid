@@ -1,8 +1,10 @@
 package com.example.halalyticscompose.ui.screens
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.net.Uri
-import android.provider.MediaStore
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -12,7 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,13 +30,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.halalyticscompose.ui.theme.HalalGreen
-import com.example.halalyticscompose.ui.theme.DarkCard
-import com.example.halalyticscompose.ui.theme.DarkBackground
-import com.example.halalyticscompose.ui.theme.TextGray
 import com.example.halalyticscompose.ui.theme.SecondaryColor
 import com.example.halalyticscompose.ui.viewmodel.NutritionScannerViewModel
 import java.io.ByteArrayOutputStream
 import android.util.Base64
+import java.io.IOException
 import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,9 +60,8 @@ fun NutritionScannerScreen(
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let {
-            val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
-            selectedImageBitmap = bitmap
+        selectedImageBitmap = uri?.let { loadBitmapFromUri(context, it) }
+        if (selectedImageBitmap != null) {
             viewModel.clearResult()
         }
     }
@@ -82,17 +81,17 @@ fun NutritionScannerScreen(
                 title = { Text("Nutrition & Halal Scan") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DarkBackground,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
         },
-        containerColor = DarkBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -105,7 +104,7 @@ fun NutritionScannerScreen(
             
             Text(
                 "Foto komposisi (ingredients) pada kemasan produk untuk mengecek status halal dan skor nutrisinya.",
-                color = TextGray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
@@ -115,7 +114,7 @@ fun NutritionScannerScreen(
                     .fillMaxWidth()
                     .height(250.dp)
                     .clip(RoundedCornerShape(16.dp)),
-                colors = CardDefaults.cardColors(containerColor = DarkCard)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 if (selectedImageBitmap != null) {
                     Image(
@@ -126,7 +125,7 @@ fun NutritionScannerScreen(
                     )
                 } else {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Belum ada foto komposisi", color = TextGray)
+                        Text("Belum ada foto komposisi", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -142,13 +141,13 @@ fun NutritionScannerScreen(
                     onClick = { cameraLauncher.launch(null) },
                     colors = ButtonDefaults.buttonColors(containerColor = SecondaryColor)
                 ) {
-                    Text("Kamera")
+                Text("Kamera")
                 }
                 Button(
                     onClick = { galleryLauncher.launch("image/*") },
                     colors = ButtonDefaults.buttonColors(containerColor = SecondaryColor)
                 ) {
-                    Text("Galeri")
+                Text("Galeri")
                 }
             }
 
@@ -169,7 +168,7 @@ fun NutritionScannerScreen(
 
             if (isLoading) {
                 CircularProgressIndicator(color = HalalGreen, modifier = Modifier.padding(16.dp))
-                Text("AI sedang memindai komposisi...", color = Color.White)
+                Text("AI sedang memindai komposisi...", color = MaterialTheme.colorScheme.onSurface)
             }
 
             if (error != null) {
@@ -191,13 +190,13 @@ fun NutritionScannerScreen(
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = DarkCard)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
                     Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             "STATUS",
                             fontWeight = FontWeight.Bold,
-                            color = TextGray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
@@ -220,13 +219,13 @@ fun NutritionScannerScreen(
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             for (i in 0 until concernsArray.length()) {
-                                Text("- ${concernsArray.getString(i)}", color = Color.White)
+                                Text("- ${concernsArray.getString(i)}", color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
 
                         if (aiJson != null) {
                             Spacer(modifier = Modifier.height(16.dp))
-                            Divider(color = Color.DarkGray)
+                            HorizontalDivider(color = Color.DarkGray)
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Row(
@@ -234,20 +233,20 @@ fun NutritionScannerScreen(
                                 horizontalArrangement = Arrangement.SpaceEvenly
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("Health Score", color = TextGray)
-                                    Text("${result!!.healthScore}/100", color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                                    Text("Health Score", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text("${result!!.healthScore}/100", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
                                 }
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("Kalori", color = TextGray)
-                                    Text("${aiJson.optInt("kalori", 0)} kcal", color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                                    Text("Kalori", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text("${aiJson.optInt("kalori", 0)} kcal", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
                                 }
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("Gula", color = TextGray)
-                                    Text("${aiJson.optInt("gula", 0)} g", color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                                    Text("Gula", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text("${aiJson.optInt("gula", 0)} g", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
                                 }
                             }
                         } else {
-                            Text("Raw Data: ${result!!.aiAnalysis}", color = Color.White)
+                            Text("Raw Data: ${result!!.aiAnalysis}", color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }
@@ -262,5 +261,20 @@ fun NutritionScannerScreen(
                 }
             }
         }
+    }
+}
+
+private fun loadBitmapFromUri(context: android.content.Context, uri: Uri): Bitmap? {
+    return try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val source = ImageDecoder.createSource(context.contentResolver, uri)
+            ImageDecoder.decodeBitmap(source)
+        } else {
+            context.contentResolver.openInputStream(uri)?.use { stream ->
+                BitmapFactory.decodeStream(stream)
+            }
+        }
+    } catch (_: IOException) {
+        null
     }
 }

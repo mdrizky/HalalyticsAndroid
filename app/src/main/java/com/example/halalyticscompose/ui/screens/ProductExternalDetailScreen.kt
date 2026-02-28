@@ -251,7 +251,7 @@ private fun ProductDetailContent(
             text = product.getDisplayName(),
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
-            color = TextWhite
+            color = MaterialTheme.colorScheme.onSurface
         )
         
         product.brands?.let { brands ->
@@ -259,7 +259,7 @@ private fun ProductDetailContent(
             Text(
                 text = brands,
                 fontSize = 14.sp,
-                color = TextGray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         
@@ -328,7 +328,7 @@ private fun ProductDetailContent(
                         Text(
                             text = "Halal Status",
                             fontSize = 12.sp,
-                            color = TextGray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = halalStatus,
@@ -356,7 +356,7 @@ private fun ProductDetailContent(
                     Text(
                         text = rec,
                         fontSize = 12.sp,
-                        color = TextGray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -429,7 +429,7 @@ private fun ProductDetailContent(
                 Text(
                     text = ingredients,
                     fontSize = 13.sp,
-                    color = TextGray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 18.sp
                 )
             }
@@ -439,21 +439,88 @@ private fun ProductDetailContent(
         val energy = product.getNutrimentNumber("energy", "energy-kcal_100g", "energy-kcal", "energy_100g")
         val sugar = product.getNutrimentNumber("sugar", "sugars_100g", "sugars")
         val fat = product.getNutrimentNumber("fat", "fat_100g", "fat")
+        val saturatedFat = product.getNutrimentNumber("saturated-fat", "saturated-fat_100g", "saturated_fat")
         val salt = product.getNutrimentNumber("salt", "salt_100g", "salt")
-        if (!energy.isNullOrBlank() || !sugar.isNullOrBlank() || !fat.isNullOrBlank() || !salt.isNullOrBlank()) {
+        val sodium = product.getNutrimentNumber("sodium", "sodium_100g")
+        if (!energy.isNullOrBlank() || !sugar.isNullOrBlank() || !fat.isNullOrBlank() || !saturatedFat.isNullOrBlank() || !salt.isNullOrBlank() || !sodium.isNullOrBlank()) {
             InfoCard(
                 title = "Nutrition Snapshot (per 100g/ml)",
                 icon = Icons.Outlined.Favorite
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    if (!energy.isNullOrBlank()) Text("Energy: $energy", fontSize = 13.sp, color = TextGray)
-                    if (!sugar.isNullOrBlank()) Text("Sugar: $sugar g", fontSize = 13.sp, color = TextGray)
-                    if (!fat.isNullOrBlank()) Text("Fat: $fat g", fontSize = 13.sp, color = TextGray)
-                    if (!salt.isNullOrBlank()) Text("Salt: $salt g", fontSize = 13.sp, color = TextGray)
+                    if (!energy.isNullOrBlank()) Text("Energy: $energy", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (!sugar.isNullOrBlank()) Text("Sugar: $sugar g", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (!fat.isNullOrBlank()) Text("Fat: $fat g", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (!saturatedFat.isNullOrBlank()) Text("Saturated Fat: $saturatedFat g", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (!salt.isNullOrBlank()) Text("Salt: $salt g", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (!sodium.isNullOrBlank()) Text("Sodium: $sodium g", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
         }
+
+        val nutrientLevels = buildList {
+            fat?.toDoubleOrNull()?.let { add("Fat" to it) }
+            saturatedFat?.toDoubleOrNull()?.let { add("Saturated Fat" to it) }
+            sugar?.toDoubleOrNull()?.let { add("Sugars" to it) }
+            salt?.toDoubleOrNull()?.let { add("Salt" to it) }
+        }
+        if (nutrientLevels.isNotEmpty()) {
+            InfoCard(
+                title = "Nutrient Levels",
+                icon = Icons.Outlined.Analytics
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    nutrientLevels.forEach { (label, value) ->
+                        val (levelText, levelColor) = classifyNutrientLevel(label, value)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("$label: $value g", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
+                            Text(levelText, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = levelColor)
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        val additives = product.labelsTags
+            ?.filter { it.contains("additive", ignoreCase = true) || it.startsWith("en:e") }
+            .orEmpty()
+        if (additives.isNotEmpty()) {
+            InfoCard(
+                title = "Additives",
+                icon = Icons.Outlined.Science
+            ) {
+                Text(
+                    text = additives.joinToString(", "),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        InfoCard(
+            title = "Matching with Your Preferences",
+            icon = Icons.Outlined.VerifiedUser
+        ) {
+            val halalMatch = if (product.isHalal()) "Halal label ditemukan" else "Perlu verifikasi halal lanjutan"
+            val sugarMatch = sugar?.toDoubleOrNull()?.let {
+                if (it >= 10.0) "Kadar gula tinggi, batasi konsumsi" else "Kadar gula relatif aman"
+            } ?: "Data gula belum lengkap"
+            val allergenMatch = if (!product.allergens.isNullOrBlank()) "Ada alergen: ${product.allergens}" else "Tidak ada alergen utama terdeteksi"
+
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("• $halalMatch", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("• $sugarMatch", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("• $allergenMatch", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
         
         // Allergens
         if (!product.allergens.isNullOrBlank()) {
@@ -479,7 +546,7 @@ private fun ProductDetailContent(
                 Text(
                     text = product.categories,
                     fontSize = 13.sp,
-                    color = TextGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -493,7 +560,7 @@ private fun ProductDetailContent(
                 Text(
                     text = product.quantity,
                     fontSize = 13.sp,
-                    color = TextGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -507,7 +574,7 @@ private fun ProductDetailContent(
                 Text(
                     text = product.packaging,
                     fontSize = 13.sp,
-                    color = TextGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -521,7 +588,7 @@ private fun ProductDetailContent(
                 Text(
                     text = product.manufacturingPlaces,
                     fontSize = 13.sp,
-                    color = TextGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -538,7 +605,7 @@ private fun ProductDetailContent(
                 Text(
                     text = value,
                     fontSize = 13.sp,
-                    color = TextGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -552,7 +619,7 @@ private fun ProductDetailContent(
                 Text(
                     text = product.labels,
                     fontSize = 13.sp,
-                    color = TextGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -566,7 +633,7 @@ private fun ProductDetailContent(
                 Text(
                     text = "Group ${product.novaGroup}",
                     fontSize = 13.sp,
-                    color = TextGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -580,7 +647,7 @@ private fun ProductDetailContent(
                 Text(
                     text = product.stores,
                     fontSize = 13.sp,
-                    color = TextGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -600,7 +667,7 @@ private fun ProductDetailContent(
                 },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSaved) TextMuted else HalalGreen
+                    containerColor = if (isSaved) MaterialTheme.colorScheme.surfaceVariant else HalalGreen
                 ),
                 enabled = !isSaved
             ) {
@@ -608,12 +675,12 @@ private fun ProductDetailContent(
                     if (isSaved) Icons.Filled.Check else Icons.Outlined.BookmarkAdd,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
-                    tint = if (isSaved) TextGray else DarkBackground
+                    tint = if (isSaved) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimary
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = if (isSaved) "Saved" else "Save to History",
-                    color = if (isSaved) TextGray else DarkBackground
+                    color = if (isSaved) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimary
                 )
             }
             
@@ -646,7 +713,7 @@ private fun InfoCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkCard)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.padding(14.dp)
@@ -665,11 +732,31 @@ private fun InfoCard(
                     text = title,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = TextWhite
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             Spacer(modifier = Modifier.height(10.dp))
             content()
+        }
+    }
+}
+
+private fun classifyNutrientLevel(label: String, value: Double): Pair<String, Color> {
+    return when (label.lowercase()) {
+        "salt" -> when {
+            value >= 1.5 -> "High" to Color(0xFFDC2626)
+            value >= 0.3 -> "Moderate" to Color(0xFFD97706)
+            else -> "Low" to Color(0xFF16A34A)
+        }
+        "sugars" -> when {
+            value >= 10.0 -> "High" to Color(0xFFDC2626)
+            value >= 5.0 -> "Moderate" to Color(0xFFD97706)
+            else -> "Low" to Color(0xFF16A34A)
+        }
+        else -> when {
+            value >= 17.5 -> "High" to Color(0xFFDC2626)
+            value >= 3.0 -> "Moderate" to Color(0xFFD97706)
+            else -> "Low" to Color(0xFF16A34A)
         }
     }
 }

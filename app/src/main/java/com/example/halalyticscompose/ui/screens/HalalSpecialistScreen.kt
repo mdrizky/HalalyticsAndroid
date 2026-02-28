@@ -21,13 +21,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.halalyticscompose.ui.viewmodel.HealthAiViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HalalSpecialistScreen(
     navController: NavController,
-    viewModel: HealthAiViewModel = viewModel()
+    viewModel: HealthAiViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val alternatives by viewModel.halalAlternatives.collectAsState()
@@ -43,12 +43,13 @@ fun HalalSpecialistScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF0F172A),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -74,7 +75,7 @@ fun HalalSpecialistScreen(
             
             Text(
                 "Cari obat yang Anda gunakan untuk mengetahui status halal dan alternatifnya.",
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
@@ -127,8 +128,8 @@ fun HalalAnalysisView(data: com.example.halalyticscompose.Data.Model.HalalAltern
         data.halalAlternatives?.forEach { alt ->
             Card(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -136,7 +137,7 @@ fun HalalAnalysisView(data: com.example.halalyticscompose.Data.Model.HalalAltern
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
                         Text(alt.name, fontWeight = FontWeight.Bold)
-                        alt.manufacturer?.let { Text(it, fontSize = 12.sp, color = Color.Gray) }
+                        alt.manufacturer?.let { Text(it, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                         alt.halalCert?.let { 
                             Text("Sertifikat: $it", fontSize = 11.sp, color = Color(0xFF10B981), fontWeight = FontWeight.SemiBold)
                         }
@@ -148,9 +149,13 @@ fun HalalAnalysisView(data: com.example.halalyticscompose.Data.Model.HalalAltern
         data.explanation?.let {
             Spacer(modifier = Modifier.height(24.dp))
             Box(
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Color(0xFFF1F5F9)).padding(16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    .padding(16.dp)
             ) {
-                Text(it, fontSize = 13.sp, color = Color(0xFF475569), lineHeight = 20.sp)
+                Text(it, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
             }
         }
     }

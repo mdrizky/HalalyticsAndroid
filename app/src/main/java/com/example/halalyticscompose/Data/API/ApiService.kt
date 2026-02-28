@@ -281,6 +281,12 @@ interface ApiService {
         @Query("page") page: Int? = 1
     ): RealtimeScanHistoryResponse
 
+    @GET("scan-history/{id}")
+    suspend fun getScanHistoryDetail(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): ScanHistoryDetailResponse
+
     @POST("scan-history")
     suspend fun recordScan(
         @Header("Authorization") token: String,
@@ -508,6 +514,18 @@ interface ApiService {
     @GET("banners")
     suspend fun getBanners(): Response<BannerResponse>
 
+    @GET("articles")
+    suspend fun getHealthArticles(
+        @Query("q") query: String? = null,
+        @Query("limit") limit: Int = 20,
+        @Query("include_external") includeExternal: Boolean = true
+    ): HealthArticleApiResponse
+
+    @GET("articles/{slug}")
+    suspend fun getHealthArticleDetail(
+        @Path("slug") slug: String
+    ): HealthArticleDetailApiResponse
+
     @GET("admin/monitor/feed")
     suspend fun getAdminActivityFeed(
         @Header("Authorization") token: String
@@ -642,13 +660,19 @@ interface ApiService {
         @Header("Authorization") bearer: String
     ): HealthMetricResponse
 
+    @GET("health/diary")
+    suspend fun getHealthDiary(
+        @Header("Authorization") bearer: String,
+        @Query("limit") limit: Int = 30
+    ): HealthMetricResponse
+
     // ==================== BPOM VERIFICATION ====================
     @GET("bpom/search")
     suspend fun searchBpom(
         @Header("Authorization") bearer: String,
         @Query("q") query: String,
         @Query("family_id") familyId: Int? = null,
-        @Query("include_ai") includeAi: Boolean = false
+        @Query("include_ai") includeAi: Boolean? = null
     ): BpomSearchResponse
 
     @POST("bpom/check")
@@ -657,7 +681,7 @@ interface ApiService {
         @Header("Authorization") bearer: String,
         @Field("code") code: String,
         @Field("family_id") familyId: Int? = null,
-        @Field("include_ai") includeAi: Boolean = false
+        @Field("include_ai") includeAi: Boolean? = null
     ): BpomCheckResponse
 
     @POST("bpom/analyze")
@@ -748,5 +772,8 @@ interface ApiService {
     ): Response<com.example.halalyticscompose.Data.Model.MedicalRecordResponse>
 
     @POST("emergency/trigger")
-    suspend fun triggerEmergency(@Body request: com.example.halalyticscompose.Data.Model.EmergencyRequest): Response<com.example.halalyticscompose.Data.Model.EmergencyResponse>
+    suspend fun triggerEmergency(
+        @Header("Authorization") bearer: String,
+        @Body request: com.example.halalyticscompose.Data.Model.EmergencyRequest
+    ): Response<com.example.halalyticscompose.Data.Model.EmergencyResponse>
 }

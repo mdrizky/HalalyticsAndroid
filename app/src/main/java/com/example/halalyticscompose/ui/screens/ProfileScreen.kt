@@ -17,8 +17,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -41,19 +41,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.halalyticscompose.R
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
-
-private val ProfileBg = Color(0xFFF7FAFC)
-private val ProfilePrimary = Color(0xFF00C896)
-private val ProfilePrimaryDark = Color(0xFF00A878)
-private val ProfileText = Color(0xFF0A2540)
-private val ProfileMuted = Color(0xFF64748B)
-private val Danger = Color(0xFFFF4757)
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,18 +66,23 @@ fun ProfileScreen(
     val currentStreak by viewModel.currentStreak.collectAsState()
     val isDarkMode by viewModel.isDarkMode.collectAsState()
     val isNotifEnabled by viewModel.isNotifEnabled.collectAsState()
+    val unreadNotificationCount by viewModel.unreadNotificationCount.collectAsState()
+    val pendingContributionCount by viewModel.pendingContributionCount.collectAsState()
+    val approvedContributionCount by viewModel.approvedContributionCount.collectAsState()
+    val lastRealtimeSyncAt by viewModel.lastRealtimeSyncAt.collectAsState()
+    val color = MaterialTheme.colorScheme
 
     Scaffold(
-        containerColor = ProfileBg,
+        containerColor = color.background,
         topBar = {
             TopAppBar(
-                title = { Text("Profil", color = Color.White, fontWeight = FontWeight.ExtraBold) },
+                title = { Text(stringResource(R.string.profile_title), color = color.onSurface, fontWeight = FontWeight.ExtraBold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = color.onSurface)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = ProfilePrimary)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = color.surface)
             )
         }
     ) { padding ->
@@ -92,15 +95,15 @@ fun ProfileScreen(
             item {
                 Card(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .fillMaxWidth(),
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth(),
                     shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = color.surface)
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Brush.linearGradient(listOf(ProfilePrimary, ProfilePrimaryDark)))
+                            .background(Brush.linearGradient(listOf(color.primary, color.secondary)))
                             .padding(16.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -136,17 +139,26 @@ fun ProfileScreen(
                             .padding(horizontal = 14.dp, vertical = 12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        MiniStat("Total Scan", totalScans.toString())
-                        MiniStat("Halal", halalProducts.toString())
-                        MiniStat("Streak", "$currentStreak hari")
+                        MiniStat(stringResource(R.string.profile_total_scan), totalScans.toString())
+                        MiniStat(stringResource(R.string.home_stats_halal), halalProducts.toString())
+                        MiniStat(stringResource(R.string.streak), stringResource(R.string.profile_streak_day, currentStreak))
                     }
                 }
             }
 
             item {
+                RealtimeStatusCard(
+                    unreadNotifications = unreadNotificationCount,
+                    pendingRequests = pendingContributionCount,
+                    approvedRequests = approvedContributionCount,
+                    syncedAt = lastRealtimeSyncAt
+                )
+            }
+
+            item {
                 Text(
-                    text = "Pengaturan",
-                    color = ProfileText,
+                    text = stringResource(R.string.profile_settings),
+                    color = color.onBackground,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                 )
@@ -155,16 +167,16 @@ fun ProfileScreen(
             item {
                 SettingCard(
                     icon = Icons.Default.Settings,
-                    title = "Kelola Akun",
-                    subtitle = "Edit profil dan data pribadi"
+                    title = stringResource(R.string.profile_manage_account),
+                    subtitle = stringResource(R.string.profile_manage_account_desc)
                 ) { navController.navigate("account_management") }
             }
 
             item {
                 ToggleCard(
                     icon = Icons.Default.DarkMode,
-                    title = "Mode Gelap",
-                    subtitle = "Tampilan aplikasi"
+                    title = stringResource(R.string.profile_dark_mode),
+                    subtitle = stringResource(R.string.profile_dark_mode_desc)
                     ,checked = isDarkMode,
                     onChecked = { viewModel.toggleDarkMode() }
                 )
@@ -173,8 +185,8 @@ fun ProfileScreen(
             item {
                 ToggleCard(
                     icon = Icons.Default.Notifications,
-                    title = "Notifikasi",
-                    subtitle = "Pengingat dan update"
+                    title = stringResource(R.string.notifications),
+                    subtitle = stringResource(R.string.profile_notif_desc)
                     ,checked = isNotifEnabled,
                     onChecked = { viewModel.setNotifEnabled(it) }
                 )
@@ -187,7 +199,7 @@ fun ProfileScreen(
                         .fillMaxWidth()
                         .clickable { viewModel.logout(navController) },
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = color.surface)
                 ) {
                     Row(
                         modifier = Modifier.padding(14.dp),
@@ -197,15 +209,15 @@ fun ProfileScreen(
                             modifier = Modifier
                                 .size(38.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Danger.copy(alpha = 0.12f)),
+                                .background(color.error.copy(alpha = 0.12f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.Logout, null, tint = Danger)
+                            Icon(Icons.AutoMirrored.Filled.Logout, null, tint = color.error)
                         }
                         Spacer(modifier = Modifier.size(10.dp))
                         Column {
-                            Text("Keluar", color = Danger, fontWeight = FontWeight.Bold)
-                            Text("Logout dari aplikasi", color = ProfileMuted, fontSize = 12.sp)
+                            Text(stringResource(R.string.profile_logout), color = color.error, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.profile_logout_desc), color = color.onSurfaceVariant, fontSize = 12.sp)
                         }
                     }
                 }
@@ -217,10 +229,46 @@ fun ProfileScreen(
 }
 
 @Composable
+private fun RealtimeStatusCard(
+    unreadNotifications: Int,
+    pendingRequests: Int,
+    approvedRequests: Int,
+    syncedAt: Long?
+) {
+    val color = MaterialTheme.colorScheme
+    val syncedText = syncedAt?.let {
+        val formatter = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        "Realtime sync ${formatter.format(Date(it))}"
+    } ?: "Realtime sync belum aktif"
+
+    Card(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = color.surface),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text("Status User-Admin", color = color.onSurface, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Notif baru: $unreadNotifications", color = color.onSurfaceVariant, fontSize = 11.sp)
+                Text("Request pending: $pendingRequests", color = color.onSurfaceVariant, fontSize = 11.sp)
+            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Text("Request disetujui: $approvedRequests", color = color.onSurfaceVariant, fontSize = 11.sp)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(syncedText, color = color.primary, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+        }
+    }
+}
+
+@Composable
 private fun MiniStat(label: String, value: String) {
+    val color = MaterialTheme.colorScheme
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, color = ProfileText, fontWeight = FontWeight.ExtraBold)
-        Text(label, color = ProfileMuted, fontSize = 11.sp)
+        Text(value, color = color.onSurface, fontWeight = FontWeight.ExtraBold)
+        Text(label, color = color.onSurfaceVariant, fontSize = 11.sp)
     }
 }
 
@@ -231,13 +279,14 @@ private fun SettingCard(
     subtitle: String,
     onClick: () -> Unit
 ) {
+    val color = MaterialTheme.colorScheme
     Card(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = color.surface)
     ) {
         Row(
             modifier = Modifier.padding(14.dp),
@@ -247,15 +296,15 @@ private fun SettingCard(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(ProfilePrimary.copy(alpha = 0.12f)),
+                    .background(color.primary.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, null, tint = ProfilePrimary)
+                Icon(icon, null, tint = color.primary)
             }
             Spacer(modifier = Modifier.size(10.dp))
             Column {
-                Text(title, color = ProfileText, fontWeight = FontWeight.Bold)
-                Text(subtitle, color = ProfileMuted, fontSize = 12.sp)
+                Text(title, color = color.onSurface, fontWeight = FontWeight.Bold)
+                Text(subtitle, color = color.onSurfaceVariant, fontSize = 12.sp)
             }
         }
     }
@@ -269,12 +318,13 @@ private fun ToggleCard(
     checked: Boolean,
     onChecked: (Boolean) -> Unit
 ) {
+    val color = MaterialTheme.colorScheme
     Card(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = color.surface)
     ) {
         Row(
             modifier = Modifier.padding(14.dp),
@@ -284,15 +334,15 @@ private fun ToggleCard(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(ProfilePrimary.copy(alpha = 0.12f)),
+                    .background(color.primary.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, null, tint = ProfilePrimary)
+                Icon(icon, null, tint = color.primary)
             }
             Spacer(modifier = Modifier.size(10.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, color = ProfileText, fontWeight = FontWeight.Bold)
-                Text(subtitle, color = ProfileMuted, fontSize = 12.sp)
+                Text(title, color = color.onSurface, fontWeight = FontWeight.Bold)
+                Text(subtitle, color = color.onSurfaceVariant, fontSize = 12.sp)
             }
             Switch(checked = checked, onCheckedChange = onChecked)
         }
