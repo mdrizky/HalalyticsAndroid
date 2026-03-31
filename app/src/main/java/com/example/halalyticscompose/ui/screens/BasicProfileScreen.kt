@@ -191,6 +191,37 @@ fun BasicProfileScreen(
                     }
                     
                     Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = { navController.navigate("edit_profile") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF4F46E5)
+                        )
+                    ) {
+                        Text(
+                            text = "Lengkapi Profil Dasar",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedButton(
+                        onClick = {
+                            navController.navigate("home") {
+                                popUpTo("basic_profile") { inclusive = true }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Lanjut ke Beranda")
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
                     
                     // Quick Actions
                     Text(

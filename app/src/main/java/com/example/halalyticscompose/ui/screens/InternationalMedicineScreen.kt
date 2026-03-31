@@ -246,7 +246,16 @@ fun InternationalMedicineScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Results Section
-                    if (medicines.isEmpty() && !isLoading && errorMessage == null) {
+                    if (isLoading && medicines.isEmpty()) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(4) {
+                                MedicineSkeletonCard()
+                            }
+                        }
+                    } else if (medicines.isEmpty() && !isLoading && errorMessage == null) {
                         // Empty state
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -390,19 +399,98 @@ fun InternationalMedicineScreen(navController: NavController) {
                                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                                 )
                                             }
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Text(
+                                                text = if ((medicine.source ?: "").lowercase() in setOf("openfda", "rxnorm")) {
+                                                    "Status halal: Perlu pengecekan manual"
+                                                } else {
+                                                    "Status halal: ${medicine.halalStatus.replaceFirstChar { it.uppercase() }}"
+                                                },
+                                                fontSize = 11.sp,
+                                                color = when (medicine.halalStatus.lowercase()) {
+                                                    "halal" -> Color(0xFF16A34A)
+                                                    "haram" -> Color(0xFFDC2626)
+                                                    else -> Color(0xFFF59E0B)
+                                                }
+                                            )
                                         }
 
-                                        Icon(
-                                            Icons.Default.ChevronRight,
-                                            contentDescription = "Detail",
-                                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                        )
+                                        Column(horizontalAlignment = Alignment.End) {
+                                            TextButton(
+                                                onClick = {
+                                                    if (medicine.idMedicine != null) {
+                                                        navController.navigate("medicine_detail/${medicine.idMedicine}")
+                                                    }
+                                                },
+                                                enabled = medicine.idMedicine != null
+                                            ) {
+                                                Text(
+                                                    if (medicine.idMedicine != null) "Tersimpan Lokal" else "Import Lokal"
+                                                )
+                                            }
+                                            Icon(
+                                                Icons.Default.ChevronRight,
+                                                contentDescription = "Detail",
+                                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MedicineSkeletonCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .height(14.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.45f)
+                        .height(12.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.55f)
+                        .height(10.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                )
             }
         }
     }

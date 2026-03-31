@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,6 +19,10 @@ class MedicalRecordsViewModel @Inject constructor(
     private val apiService: ApiService,
     private val sessionManager: SessionManager
 ) : ViewModel() {
+    private fun parseApiError(raw: String?): String? {
+        if (raw.isNullOrBlank()) return null
+        return runCatching { JSONObject(raw).optString("message").takeIf { it.isNotBlank() } }.getOrNull()
+    }
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -32,9 +37,10 @@ class MedicalRecordsViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
+                _error.value = null
                 val userIdPattern = sessionManager.getUserId()
                 if (userIdPattern <= 0) {
-                    _error.value = "User not logged in"
+                    _error.value = "Sesi berakhir, silakan login kembali"
                     return@launch
                 }
                 val token = sessionManager.getBearerToken()
@@ -47,10 +53,11 @@ class MedicalRecordsViewModel @Inject constructor(
                 if (response.isSuccessful && response.body() != null) {
                     _records.value = response.body()!!.data
                 } else {
-                    _error.value = "Failed to load records (${response.code()})"
+                    _error.value = parseApiError(response.errorBody()?.string())
+                        ?: "Gagal memuat rekam medis (${response.code()})"
                 }
             } catch (e: Exception) {
-                _error.value = "Network Error: ${e.message}"
+                _error.value = "Koneksi bermasalah: ${e.message}"
             } finally {
                 _isLoading.value = false
             }
@@ -61,6 +68,7 @@ class MedicalRecordsViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
+                _error.value = null
                 val token = sessionManager.getBearerToken()
                 if (token.isNullOrBlank()) {
                     _error.value = "Sesi login tidak valid"
@@ -70,10 +78,11 @@ class MedicalRecordsViewModel @Inject constructor(
                 if (response.isSuccessful && response.body() != null) {
                     loadRecords() // Refresh
                 } else {
-                    _error.value = "Failed to add record: ${response.message()}"
+                    _error.value = parseApiError(response.errorBody()?.string())
+                        ?: "Gagal menyimpan rekam medis (${response.code()})"
                 }
             } catch (e: Exception) {
-                _error.value = "Network Error: ${e.message}"
+                _error.value = "Koneksi bermasalah: ${e.message}"
             } finally {
                 _isLoading.value = false
             }

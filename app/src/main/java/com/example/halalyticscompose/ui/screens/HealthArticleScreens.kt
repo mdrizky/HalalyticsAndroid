@@ -270,16 +270,17 @@ fun HealthArticleDetailScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
-    val fallback = remember(articleId) { fallbackArticles.firstOrNull { it.id == articleId } }
+    val decodedArticleId = remember(articleId) { Uri.decode(articleId) }
+    val fallback = remember(decodedArticleId) { fallbackArticles.firstOrNull { it.id == decodedArticleId } }
 
-    LaunchedEffect(articleId) {
+    LaunchedEffect(decodedArticleId) {
         val current = selected
-        if (current == null || (current.toUiKey() != articleId && current.id != articleId)) {
-            if (fallback == null) viewModel.loadArticleDetail(articleId)
+        if (current == null || (current.toUiKey() != decodedArticleId && current.id != decodedArticleId)) {
+            if (fallback == null) viewModel.loadArticleDetail(decodedArticleId)
         }
     }
 
-    val remoteArticle = selected?.takeIf { it.toUiKey() == articleId || it.id == articleId }
+    val remoteArticle = selected?.takeIf { it.toUiKey() == decodedArticleId || it.id == decodedArticleId }
 
     Scaffold(
         topBar = {
@@ -377,4 +378,3 @@ private fun ArticleDetailContent(
         item { Spacer(modifier = Modifier.height(18.dp)) }
     }
 }
-

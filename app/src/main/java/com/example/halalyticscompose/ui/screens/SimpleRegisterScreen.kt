@@ -552,7 +552,7 @@ fun SimpleRegisterScreen(
                                 medicalHistory = medicalHistory,
                                 onSuccess = {
                                     isLoading = false
-                                    navController.navigate("home") {
+                                    navController.navigate("basic_profile") {
                                         popUpTo("register") { inclusive = true }
                                     }
                                 },

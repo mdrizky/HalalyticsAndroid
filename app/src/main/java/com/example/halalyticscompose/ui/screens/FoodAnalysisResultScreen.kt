@@ -217,7 +217,7 @@ fun FoodAnalysisResultScreen(
                          
                          // Portion Advice
                          Card(
-                            colors = CardDefaults.cardColors(containerColor = DarkCard),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                              Column(modifier = Modifier.padding(16.dp)) {

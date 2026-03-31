@@ -1,5 +1,6 @@
 package com.example.halalyticscompose.ui.screens
 
+import android.net.Uri
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -45,6 +46,7 @@ import androidx.camera.core.resolutionselector.ResolutionStrategy
 import com.example.halalyticscompose.ui.theme.*
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 import com.example.halalyticscompose.utils.RetailBarcodeAnalyzer
+import com.example.halalyticscompose.utils.TextRecognitionAnalyzer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -198,18 +200,26 @@ fun ScanScreen(
             ) {
                 if (isScanning && hasCameraPermission) {
                     CameraPreview(
-                        onBarcodeDetected = { code ->
+                        scanMode = selectedTab, // 0 = Barcode, 1 = OCR
+                        onResultDetected = { result ->
                             if (isScanning && scannedCode.isEmpty()) {
-                                println("📸 Code detected: $code")
-                                scannedCode = code
+                                println("📸 Code/Text detected: $result")
+                                scannedCode = result
                                 isScanning = false
                                 
-                                if (selectedTab == 2) {
-                                    // Navigate to certificate verification
-                                    navController.navigate("certificate_result/$code")
-                                } else {
-                                    // Navigate to regular product detail
-                                    navController.navigate("product_detail/$code")
+                                when (selectedTab) {
+                                    1 -> {
+                                        // OCR Text Detected -> Send to Enhanced OCR Screen
+                                        navController.navigate("enhanced_ocr?scannedText=${Uri.encode(result)}")
+                                    }
+                                    2 -> {
+                                        // Certificate Verification
+                                        navController.navigate("certificate_result/$result")
+                                    }
+                                    else -> {
+                                        // Regular Barcode
+                                        navController.navigate("product_detail/$result")
+                                    }
                                 }
                             }
                         },
@@ -434,9 +444,8 @@ fun ScanScreen(
                 Button(
                     onClick = { 
                         isScanning = true
-                        if (selectedTab == 1) {
-                            navController.navigate("enhanced_ocr")
-                        }
+                        scannedCode = "" // Reset scanned code when restarting scan
+                        // No logic to navigate immediately, let the scanner detect text/barcode first
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -492,7 +501,8 @@ fun ScanScreen(
 
 @Composable
 fun CameraPreview(
-    onBarcodeDetected: (String) -> Unit,
+    scanMode: Int, // 0 = Barcode, 1 = OCR (Text)
+    onResultDetected: (String) -> Unit,
     showFlash: Boolean
 ) {
     val context = LocalContext.current
@@ -538,8 +548,14 @@ fun CameraPreview(
                     .setResolutionSelector(resolutionSelector)
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
-                    .also {
-                        it.setAnalyzer(Executors.newSingleThreadExecutor(), RetailBarcodeAnalyzer(onBarcodeDetected))
+                    .also { analysis ->
+                        val executor = Executors.newSingleThreadExecutor()
+                        val analyzer = if (scanMode == 1) {
+                            TextRecognitionAnalyzer(onResultDetected)
+                        } else {
+                            RetailBarcodeAnalyzer(onResultDetected)
+                        }
+                        analysis.setAnalyzer(executor, analyzer)
                     }
                 
                 // Robust Camera Selection logic for Emulator Support

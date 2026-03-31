@@ -112,3 +112,22 @@ data class EmergencyLogData(
     @SerializedName("emergency_type") val emergencyType: String,
     @SerializedName("ai_guidance") val aiGuidance: String
 )
+
+// ----------------- AI Insight & Health Score ----------------- //
+
+data class DailyInsightResponse(
+    val status: String,
+    val insight: String
+)
+
+data class HealthScoreResponse(
+    val status: String,
+    val data: HealthScoreData
+)
+
+data class HealthScoreData(
+    val score: Int,
+    val level: String,
+    val color: String,
+    val label: String
+)

@@ -19,137 +19,153 @@ data class ThemePreferences(
 
 // Simple theme manager without DataStore for now
 object ThemeManager {
-    // Flow untuk observe theme changes (using system theme for now)
     val themeFlow: Flow<ThemePreferences> = flow {
-        emit(ThemePreferences(isDarkMode = false)) // Default to light theme
+        emit(ThemePreferences(isDarkMode = false))
     }
 
-    // Save theme preference (placeholder)
     suspend fun setDarkMode(isDark: Boolean) {
-        // TODO: Implement DataStore persistence
-        // For now, just log the change
         println("Theme changed to dark mode: $isDark")
     }
 
-    // Get current theme
     suspend fun getDarkMode(): Boolean {
-        return false // Default to light theme
+        return false
     }
 }
 
-// Custom color schemes for better contrast
+// ═══════════════════════════════════════════════════════════════════
+// LIGHT COLOR SCHEME — Minimalist Professional
+// Navy (#0D47A1) + Mint (#4DB6AC) + White Surface + #F5F7FA Background
+// ═══════════════════════════════════════════════════════════════════
 val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF1A237E),           // Deep blue
-    onPrimary = Color(0xFFFFFFFF),           // White
-    primaryContainer = Color(0xFFE3F2FD),      // Light blue
-    onPrimaryContainer = Color(0xFF0D47A1),  // Dark blue
-    secondary = Color(0xFF6750A4),          // Purple
-    onSecondary = Color(0xFFFFFFFF),          // White
-    secondaryContainer = Color(0xFFEADDFF),    // Light purple
-    onSecondaryContainer = Color(0xFF4F378B),  // Dark purple
-    tertiary = Color(0xFF00695C),            // Teal
-    onTertiary = Color(0xFFFFFFFF),           // White
-    tertiaryContainer = Color(0xFFA5D6A7),    // Light teal
-    onTertiaryContainer = Color(0xFF004D40),  // Dark teal
-    error = Color(0xFFBA1A1A),              // Red
-    onError = Color(0xFFFFFFFF),              // White
-    errorContainer = Color(0xFFFFDAD6),      // Light red
-    onErrorContainer = Color(0xFF410002),    // Dark red
-    background = Color(0xFFFFFBFE),            // Almost white
-    onBackground = Color(0xFF1C1B1F),      // Dark gray
-    surface = Color(0xFFFFFFFF),              // White
-    onSurface = Color(0xFF1C1B1F),        // Dark gray
-    outline = Color(0xFF79747E),            // Medium gray
-    outlineVariant = Color(0xFFCAC4D0),      // Light gray
-    scrim = Color(0xFF000000),              // Black
-    inverseSurface = Color(0xFF313033),      // Dark surface
-    inverseOnSurface = Color(0xFFF4EFF4),    // Light text
-    inversePrimary = Color(0xFFC4C7F5)       // Light primary
+    primary = Color(0xFF0D47A1),               // Deep Navy — primary buttons, FAB, icons
+    onPrimary = Color(0xFFFFFFFF),             // White on navy
+    primaryContainer = Color(0xFFE3F2FD),      // Light navy wash
+    onPrimaryContainer = Color(0xFF0D47A1),    // Navy text on container
+
+    secondary = Color(0xFF4DB6AC),             // Mint accent
+    onSecondary = Color(0xFFFFFFFF),           // White on mint
+    secondaryContainer = Color(0xFFE0F7FA),    // Mint very light
+    onSecondaryContainer = Color(0xFF00695C),  // Dark teal on container
+
+    tertiary = Color(0xFF4DB6AC),              // Mint (same as secondary for consistency)
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFE0F7FA),
+    onTertiaryContainer = Color(0xFF004D40),
+
+    error = Color(0xFFD32F2F),                 // Medical red
+    onError = Color(0xFFFFFFFF),
+    errorContainer = Color(0xFFFFEBEE),
+    onErrorContainer = Color(0xFFB71C1C),
+
+    background = Color(0xFFF5F7FA),            // Light gray — clean & elegant
+    onBackground = Color(0xFF212121),          // Almost black text
+
+    surface = Color(0xFFFFFFFF),               // Pure white cards
+    onSurface = Color(0xFF212121),             // Dark text on white
+    
+    surfaceVariant = Color(0xFFF0F2F5),        // Slightly darker surface for contrast
+    onSurfaceVariant = Color(0xFF757575),      // Secondary text
+
+    outline = Color(0xFFE0E0E0),               // Light border
+    outlineVariant = Color(0xFFEEEEEE),        // Very light border
+
+    scrim = Color(0xFF000000),
+    inverseSurface = Color(0xFF303030),
+    inverseOnSurface = Color(0xFFF5F5F5),
+    inversePrimary = Color(0xFF90CAF9)         // Light blue for inverted
 )
 
+// ═══════════════════════════════════════════════════════════════════
+// DARK COLOR SCHEME — Professional Dark Mode
+// ═══════════════════════════════════════════════════════════════════
 val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF90CAF9),              // Light blue
-    onPrimary = Color(0xFF1C1B1F),          // Dark gray
-    primaryContainer = Color(0xFF004494),      // Dark blue
-    onPrimaryContainer = Color(0xFFD1E4FF),    // Light blue
-    secondary = Color(0xFF03DAC6),            // Light accent
-    onSecondary = Color(0xFF313033),          // Dark gray
-    secondaryContainer = Color(0xFF4F378B),      // Dark purple
-    onSecondaryContainer = Color(0xFFEADDFF),    // Light purple
-    tertiary = Color(0xFF03DAC6),            // Light accent
-    onTertiary = Color(0xFF313033),          // Dark gray
-    tertiaryContainer = Color(0xFF4F378B),      // Dark purple
-    error = Color(0xFFFFB4AB),              // Light red
-    onError = Color(0xFF690005),              // Dark red
-    errorContainer = Color(0xFF93000A),      // Dark red
+    primary = Color(0xFF90CAF9),               // Light blue for dark mode
+    onPrimary = Color(0xFF0D47A1),             // Navy text on light primary
+    primaryContainer = Color(0xFF0D47A1),      // Navy container
+    onPrimaryContainer = Color(0xFFE3F2FD),    // Light on navy
+
+    secondary = Color(0xFF80CBC4),             // Mint lighter for dark
+    onSecondary = Color(0xFF00332F),
+    secondaryContainer = Color(0xFF004D40),
+    onSecondaryContainer = Color(0xFFE0F7FA),
+
+    tertiary = Color(0xFF80CBC4),
+    onTertiary = Color(0xFF00332F),
+    tertiaryContainer = Color(0xFF004D40),
+
+    error = Color(0xFFFF8A80),
+    onError = Color(0xFF690005),
+    errorContainer = Color(0xFF93000A),
+
     background = Color(0xFF121212),            // Very dark
-    onBackground = Color(0xFFECECEC),        // Light gray
-    surface = Color(0xFF1E1E1E),            // Dark surface
-    onSurface = Color(0xFFECECEC),          // Light gray
-    outline = Color(0xFF938F99),            // Medium gray
-    outlineVariant = Color(0xFF49454F),      // Dark gray
-    scrim = Color(0xFF000000),              // Black
-    inverseSurface = Color(0xFFE3F2FD),      // Light surface
-    inverseOnSurface = Color(0xFF1C1B1F),      // Dark text
-    inversePrimary = Color(0xFF1C1B1F)       // Dark primary
+    onBackground = Color(0xFFECECEC),          // Light text
+
+    surface = Color(0xFF1E1E1E),               // Dark surface
+    onSurface = Color(0xFFECECEC),
+    
+    surfaceVariant = Color(0xFF2C2C2C),
+    onSurfaceVariant = Color(0xFFB0B0B0),
+
+    outline = Color(0xFF444444),
+    outlineVariant = Color(0xFF333333),
+
+    scrim = Color(0xFF000000),
+    inverseSurface = Color(0xFFE3F2FD),
+    inverseOnSurface = Color(0xFF1C1B1F),
+    inversePrimary = Color(0xFF0D47A1)
 )
 
-// Custom colors for better contrast
+// ═══════════════════════════════════════════════════════════════════
+// CUSTOM COLORS (accessible directly, without MaterialTheme)
+// ═══════════════════════════════════════════════════════════════════
 object CustomColors {
-    // Light theme colors
-    val LightTextPrimary = Color(0xFF1A1A1A)      // Almost black
-    val LightTextSecondary = Color(0xFF666666)    // Medium gray
-    val LightTextTertiary = Color(0xFF999999)    // Light gray
-    val LightBackground = Color(0xFFFFFFFF)        // White
-    val LightSurface = Color(0xFFF8F9FA)        // Very light gray
-    val LightBorder = Color(0xFFE0E0E0)          // Light gray
-    val LightCard = Color(0xFFFFFFFF)            // White
-    val LightIcon = Color(0xFF1A1A1A)            // Dark gray
-    
-    // Dark theme colors
-    val DarkTextPrimary = Color(0xFFFFFFFF)        // White
-    val DarkTextSecondary = Color(0xFFB0B0B0)    // Light gray
-    val DarkTextTertiary = Color(0xFF808080)    // Medium gray
-    val DarkBackground = Color(0xFF121212)        // Very dark
-    val DarkSurface = Color(0xFF1E1E1E)        // Dark surface
-    val DarkBorder = Color(0xFF333333)          // Medium dark
-    val DarkCard = Color(0xFF2A2A2A)            // Dark card
-    val DarkIcon = Color(0xFFFFFFFF)              // White
-    
+    // Light theme
+    val LightTextPrimary = Color(0xFF212121)
+    val LightTextSecondary = Color(0xFF757575)
+    val LightTextTertiary = Color(0xFF9E9E9E)
+    val LightBackground = Color(0xFFF5F7FA)
+    val LightSurface = Color(0xFFFFFFFF)
+    val LightBorder = Color(0xFFE0E0E0)
+    val LightCard = Color(0xFFFFFFFF)
+    val LightIcon = Color(0xFF0D47A1)        // Navy icons in light mode
+
+    // Dark theme
+    val DarkTextPrimary = Color(0xFFFFFFFF)
+    val DarkTextSecondary = Color(0xFFB0B0B0)
+    val DarkTextTertiary = Color(0xFF808080)
+    val DarkBackground = Color(0xFF121212)
+    val DarkSurface = Color(0xFF1E1E1E)
+    val DarkBorder = Color(0xFF333333)
+    val DarkCard = Color(0xFF2A2A2A)
+    val DarkIcon = Color(0xFF90CAF9)         // Light blue icons in dark mode
+
     // Status colors (work for both themes)
-    val Success = Color(0xFF4CAF50)              // Green
-    val Warning = Color(0xFFFF9800)              // Orange
-    val Error = Color(0xFFF44336)                // Red
-    val Info = Color(0xFF2196F3)                // Blue
+    val Success = Color(0xFF388E3C)           // Professional green
+    val Warning = Color(0xFFF57C00)           // Deep orange
+    val Error = Color(0xFFD32F2F)             // Medical red
+    val Info = Color(0xFF0D47A1)              // Navy
 }
 
 // Theme utilities
 object ThemeUtils {
-    fun getTextColor(isDark: Boolean): Color {
-        return if (isDark) CustomColors.DarkTextPrimary else CustomColors.LightTextPrimary
-    }
-    
-    fun getSecondaryTextColor(isDark: Boolean): Color {
-        return if (isDark) CustomColors.DarkTextSecondary else CustomColors.LightTextSecondary
-    }
-    
-    fun getBackgroundColor(isDark: Boolean): Color {
-        return if (isDark) CustomColors.DarkBackground else CustomColors.LightBackground
-    }
-    
-    fun getSurfaceColor(isDark: Boolean): Color {
-        return if (isDark) CustomColors.DarkSurface else CustomColors.LightSurface
-    }
-    
-    fun getBorderColor(isDark: Boolean): Color {
-        return if (isDark) CustomColors.DarkBorder else CustomColors.LightBorder
-    }
-    
-    fun getCardColor(isDark: Boolean): Color {
-        return if (isDark) CustomColors.DarkCard else CustomColors.LightCard
-    }
-    
-    fun getIconColor(isDark: Boolean): Color {
-        return if (isDark) CustomColors.DarkIcon else CustomColors.LightIcon
-    }
+    fun getTextColor(isDark: Boolean): Color =
+        if (isDark) CustomColors.DarkTextPrimary else CustomColors.LightTextPrimary
+
+    fun getSecondaryTextColor(isDark: Boolean): Color =
+        if (isDark) CustomColors.DarkTextSecondary else CustomColors.LightTextSecondary
+
+    fun getBackgroundColor(isDark: Boolean): Color =
+        if (isDark) CustomColors.DarkBackground else CustomColors.LightBackground
+
+    fun getSurfaceColor(isDark: Boolean): Color =
+        if (isDark) CustomColors.DarkSurface else CustomColors.LightSurface
+
+    fun getBorderColor(isDark: Boolean): Color =
+        if (isDark) CustomColors.DarkBorder else CustomColors.LightBorder
+
+    fun getCardColor(isDark: Boolean): Color =
+        if (isDark) CustomColors.DarkCard else CustomColors.LightCard
+
+    fun getIconColor(isDark: Boolean): Color =
+        if (isDark) CustomColors.DarkIcon else CustomColors.LightIcon
 }

@@ -5,10 +5,19 @@ import com.google.gson.annotations.SerializedName
 // Symptoms Analysis Response
 data class SymptomsAnalysisResponse(
     @SerializedName("success") val success: Boolean,
+    @SerializedName("message") val message: String? = null,
+    @SerializedName("data") val data: SymptomsAnalysisDataWrapper? = null,
+    // Keep top-level fields in case backend sends it flat sometimes
+    @SerializedName("symptoms_analysis") val flat_symptoms_analysis: SymptomsAnalysis? = null,
+    @SerializedName("recommended_medicines") val flat_recommended_medicines: List<com.example.halalyticscompose.Data.Model.MedicineData>? = null
+) {
+    val symptoms_analysis: SymptomsAnalysis? get() = data?.symptoms_analysis ?: flat_symptoms_analysis
+    val recommended_medicines: List<com.example.halalyticscompose.Data.Model.MedicineData>? get() = data?.recommended_medicines ?: flat_recommended_medicines
+}
+
+data class SymptomsAnalysisDataWrapper(
     @SerializedName("symptoms_analysis") val symptoms_analysis: SymptomsAnalysis? = null,
-    @SerializedName("recommended_medicines") val recommended_medicines: List<com.example.halalyticscompose.Data.Model.MedicineData>? = null,
-    @SerializedName("all_medicines") val all_medicines: List<com.example.halalyticscompose.Data.Model.MedicineData>? = null,
-    @SerializedName("message") val message: String? = null
+    @SerializedName("recommended_medicines") val recommended_medicines: List<com.example.halalyticscompose.Data.Model.MedicineData>? = null
 )
 
 data class SymptomsAnalysis(

@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -85,8 +86,34 @@ fun MedicalResumeScreen(
 
             when {
                 isLoading && records.isEmpty() -> CircularProgressIndicator()
-                !error.isNullOrBlank() -> Text(error ?: "Gagal memuat data", color = color.error)
-                records.isEmpty() -> Text("Belum ada resume medis.", color = color.onSurfaceVariant)
+                !error.isNullOrBlank() -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = color.errorContainer)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(error ?: "Gagal memuat data", color = color.onErrorContainer)
+                            Button(onClick = { viewModel.loadRecords() }) {
+                                Text("Coba Lagi")
+                            }
+                        }
+                    }
+                }
+                records.isEmpty() -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = color.surface)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("Belum ada resume medis.", color = color.onSurfaceVariant)
+                            Button(onClick = { navController.navigate("medical_records") }) {
+                                Text("Tambah Rekam Medis")
+                            }
+                        }
+                    }
+                }
                 else -> {
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         items(records.take(20)) { record ->

@@ -156,4 +156,24 @@ data class Kategori(
     val namaKategori: String = ""
 )
 
+data class HealthEncyclopedia(
+    val id: Int = 0,
+    val type: String = "",
+    val alphabet: String = "",
+    val title: String = "",
+    val summary: String? = null,
+    val content: String? = null,
+    val source_link: String? = null
+)
 
+data class HealthEncyclopediaResponse(
+    val success: Boolean = false,
+    val data: List<HealthEncyclopedia> = emptyList(),
+    val message: String? = null
+)
+
+data class HealthEncyclopediaDetailResponse(
+    val success: Boolean = false,
+    val data: HealthEncyclopedia? = null,
+    val message: String? = null
+)

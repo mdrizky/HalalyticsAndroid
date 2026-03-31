@@ -40,9 +40,11 @@ android {
             }
         }
         val geminiApiKey = (localProperties.getProperty("GEMINI_API_KEY") ?: "").replace("\"", "\\\"")
+        val newsDataApiKey = (localProperties.getProperty("NEWSDATA_API_KEY") ?: "").replace("\"", "\\\"")
         val apiBaseUrl = (localProperties.getProperty("API_BASE_URL") ?: "http://10.0.2.2:8000/api/").replace("\"", "\\\"")
         val apiCertPin = (localProperties.getProperty("API_CERT_PIN") ?: "").replace("\"", "\\\"")
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+        buildConfigField("String", "NEWSDATA_API_KEY", "\"$newsDataApiKey\"")
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
         buildConfigField("String", "API_CERT_PIN", "\"$apiCertPin\"")
     }
@@ -177,9 +179,6 @@ dependencies {
     // 🔹 DataStore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
-    // 🔹 Google Maps for Compose
-    implementation("com.google.maps.android:maps-compose:4.3.3")
-    implementation("com.google.android.gms:play-services-maps:18.2.0")
 
     // 🔹 Charts (for Weekly Journal)
     implementation("co.yml:ycharts:2.1.0")
@@ -193,6 +192,7 @@ dependencies {
     
     // 🔹 WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.biometric:biometric:1.1.0")
 
     // 🔹 Compose Material Icons Extended
     implementation("androidx.compose.material:material-icons-extended")

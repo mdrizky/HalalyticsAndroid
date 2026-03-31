@@ -35,7 +35,7 @@ class HealthAiViewModel @Inject constructor(
     private val _interactionSource = MutableStateFlow<String?>(null)
     val interactionSource: StateFlow<String?> = _interactionSource.asStateFlow()
 
-    fun checkInteraction(drugAId: Int? = null, drugBId: Int? = null, drugAName: String? = null, drugBName: String? = null) {
+    fun checkInteraction(drugAId: Int? = null, drugBId: Int? = null, drugAName: String? = null, drugBName: String? = null, familyId: Int? = null) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
@@ -48,7 +48,7 @@ class HealthAiViewModel @Inject constructor(
                     return@launch
                 }
 
-                val response = apiService.checkDrugInteraction(token, drugAId, drugBId, drugAName, drugBName)
+                val response = apiService.checkDrugInteraction(token, drugAId, drugBId, drugAName, drugBName, familyId)
                 if (response.success) {
                     _interactionResult.value = response.data
                     _interactionSource.value = response.source
@@ -67,7 +67,7 @@ class HealthAiViewModel @Inject constructor(
     private val _pillIdentifyResult = MutableStateFlow<PillIdentifyData?>(null)
     val pillIdentifyResult: StateFlow<PillIdentifyData?> = _pillIdentifyResult.asStateFlow()
 
-    fun identifyPill(imageFile: File, shape: String? = null, color: String? = null) {
+    fun identifyPill(imageFile: File, shape: String? = null, color: String? = null, familyId: Int? = null) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
@@ -77,7 +77,8 @@ class HealthAiViewModel @Inject constructor(
                 val colorPart = color?.toRequestBody("text/plain".toMediaTypeOrNull())
 
                 val token = getToken()
-                val response = apiService.identifyPill(token ?: "", imagePart, shapePart, colorPart)
+                val familyIdPart = familyId?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
+                val response = apiService.identifyPill(token ?: "", imagePart, shapePart, colorPart, familyIdPart)
                 if (response.success) {
                     _pillIdentifyResult.value = response.data
                 }
@@ -93,7 +94,7 @@ class HealthAiViewModel @Inject constructor(
     private val _labAnalysisResult = MutableStateFlow<LabAnalysisData?>(null)
     val labAnalysisResult: StateFlow<LabAnalysisData?> = _labAnalysisResult.asStateFlow()
 
-    fun analyzeLab(imageFile: File? = null, manualDataJson: String? = null, testDate: String) {
+    fun analyzeLab(imageFile: File? = null, manualDataJson: String? = null, testDate: String, familyId: Int? = null) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
@@ -105,7 +106,8 @@ class HealthAiViewModel @Inject constructor(
                 val testDatePart = testDate.toRequestBody("text/plain".toMediaTypeOrNull())
 
                 val token = getToken()
-                val response = apiService.analyzeLabResult(token ?: "", imagePart, manualDataPart, testDatePart)
+                val familyIdPart = familyId?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
+                val response = apiService.analyzeLabResult(token ?: "", imagePart, manualDataPart, testDatePart, familyIdPart)
                 if (response.success) {
                     _labAnalysisResult.value = response.data
                 }
@@ -167,16 +169,18 @@ class HealthAiViewModel @Inject constructor(
     private val _metricHistory = MutableStateFlow<List<HealthMetricData>>(emptyList())
     val metricHistory: StateFlow<List<HealthMetricData>> = _metricHistory.asStateFlow()
 
-    fun recordMetric(type: String, value: String, date: String) {
+    fun recordMetric(type: String, value: String, date: String, notes: String? = null) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
                 val token = getToken()
-                apiService.recordHealthMetric(token ?: "", mapOf(
+                val body = mutableMapOf<String, Any>(
                     "metric_type" to type,
                     "value" to value,
                     "recorded_at" to date
-                ))
+                )
+                if (!notes.isNullOrBlank()) body["notes"] = notes
+                apiService.recordHealthMetric(token ?: "", body)
                 fetchMetricHistory(type)
                 _isLoading.value = false
             } catch (e: Exception) {

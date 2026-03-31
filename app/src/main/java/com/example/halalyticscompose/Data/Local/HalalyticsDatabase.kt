@@ -11,6 +11,8 @@ import com.example.halalyticscompose.Data.Local.Entities.CachedScanResult
 import com.example.halalyticscompose.Data.Local.Entities.Consumption
 import com.example.halalyticscompose.data.database.ProductHistoryDao
 import com.example.halalyticscompose.data.database.ProductHistoryEntity
+import net.sqlcipher.database.SQLiteDatabase
+import net.sqlcipher.database.SupportFactory
 
 @Database(
     entities = [CachedScanResult::class, Consumption::class, ProductHistoryEntity::class],
@@ -30,13 +32,38 @@ abstract class HalalyticsDatabase : RoomDatabase() {
         
         fun getDatabase(context: Context): HalalyticsDatabase {
             return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    HalalyticsDatabase::class.java,
-                    "halalytics_database"
+                val appContext = context.applicationContext
+                SQLiteDatabase.loadLibs(appContext)
+                val passphrase = SQLiteDatabase.getBytes(
+                    "Halalytics_DB_Key_${appContext.packageName}_v1".toCharArray()
                 )
-                .fallbackToDestructiveMigration()
-                .build()
+                val factory = SupportFactory(passphrase)
+                val instance = try {
+                    val db = Room.databaseBuilder(
+                        appContext,
+                        HalalyticsDatabase::class.java,
+                        "halalytics_database"
+                    )
+                        .openHelperFactory(factory)
+                        .fallbackToDestructiveMigration()
+                        .build()
+                    // Force-open to detect mismatch early and recover.
+                    db.openHelper.writableDatabase
+                    db
+                } catch (e: Exception) {
+                    // Recovery path for legacy plain/encrypted DB mismatch.
+                    appContext.deleteDatabase("halalytics_database")
+                    val rebuilt = Room.databaseBuilder(
+                        appContext,
+                        HalalyticsDatabase::class.java,
+                        "halalytics_database"
+                    )
+                        .openHelperFactory(factory)
+                        .fallbackToDestructiveMigration()
+                        .build()
+                    rebuilt.openHelper.writableDatabase
+                    rebuilt
+                }
                 INSTANCE = instance
                 instance
             }

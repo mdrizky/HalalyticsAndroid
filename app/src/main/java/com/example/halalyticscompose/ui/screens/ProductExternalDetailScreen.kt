@@ -149,7 +149,7 @@ fun ProductExternalDetailScreen(
                             onClick = { externalViewModel.getProductDetail(barcode) },
                             colors = ButtonDefaults.buttonColors(containerColor = HalalGreen)
                         ) {
-                            Text("Retry", color = DarkBackground)
+                            Text("Retry", color = MaterialTheme.colorScheme.onPrimary)
                         }
                     }
                 }

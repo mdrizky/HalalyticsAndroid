@@ -14,8 +14,8 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import android.util.Log
 import com.example.halalyticscompose.Data.Network.ApiConfig
+import com.example.halalyticscompose.Data.Network.ApiErrorHandler
 import com.example.halalyticscompose.Data.API.ApiService
-import retrofit2.HttpException
 import retrofit2.Response
 
 import com.example.halalyticscompose.Data.Local.Dao.ConsumptionDao
@@ -53,6 +53,9 @@ class MainViewModel @Inject constructor(
     
     private val _currentUser = MutableStateFlow<String?>(null)
     val currentUser: StateFlow<String?> = _currentUser.asStateFlow()
+
+    private val _isAdmin = MutableStateFlow(false)
+    val isAdmin: StateFlow<Boolean> = _isAdmin.asStateFlow()
 
     private val _userData = MutableStateFlow<com.example.halalyticscompose.Data.Model.User?>(null)
     val userData: StateFlow<com.example.halalyticscompose.Data.Model.User?> = _userData.asStateFlow()
@@ -137,8 +140,27 @@ class MainViewModel @Inject constructor(
     private val _lastRealtimeSyncAt = MutableStateFlow<Long?>(null)
     val lastRealtimeSyncAt: StateFlow<Long?> = _lastRealtimeSyncAt.asStateFlow()
 
+    // --- AI Insight & Health Score ---
+    private val _aiDailyInsight = MutableStateFlow<String?>(null)
+    val aiDailyInsight: StateFlow<String?> = _aiDailyInsight.asStateFlow()
+
+    private val _healthScoreData = MutableStateFlow<HealthScoreData?>(null)
+    val healthScoreData: StateFlow<HealthScoreData?> = _healthScoreData.asStateFlow()
+
     private val _isNotifEnabled = MutableStateFlow(true)
     val isNotifEnabled: StateFlow<Boolean> = _isNotifEnabled.asStateFlow()
+
+    private val _privacyModeEnabled = MutableStateFlow(true)
+    val privacyModeEnabled: StateFlow<Boolean> = _privacyModeEnabled.asStateFlow()
+
+    private val _biometricLockEnabled = MutableStateFlow(false)
+    val biometricLockEnabled: StateFlow<Boolean> = _biometricLockEnabled.asStateFlow()
+
+    private val _autoLogoutEnabled = MutableStateFlow(false)
+    val autoLogoutEnabled: StateFlow<Boolean> = _autoLogoutEnabled.asStateFlow()
+
+    private val _autoLogoutMinutes = MutableStateFlow(5)
+    val autoLogoutMinutes: StateFlow<Int> = _autoLogoutMinutes.asStateFlow()
 
     private val _userWatchlist = MutableStateFlow<List<String>>(emptyList())
     val userWatchlist: StateFlow<List<String>> = _userWatchlist.asStateFlow()
@@ -216,7 +238,11 @@ class MainViewModel @Inject constructor(
                     return@launch
                 }
 
-                val request = com.example.halalyticscompose.Data.Model.MealAnalysisRequest(image = base64)
+                val currentFamilyId = _selectedFamilyProfile.value?.id
+                val request = com.example.halalyticscompose.Data.Model.MealAnalysisRequest(
+                    image = base64,
+                    familyId = currentFamilyId
+                )
                 val response = withTimeout(25000) {
                     apiService.analyzeMeal("Bearer $token", request)
                 }
@@ -265,6 +291,38 @@ class MainViewModel @Inject constructor(
     fun setWatchlist(watchlist: String) {
         viewModelScope.launch {
             preferenceManager.setWatchlist(watchlist)
+        }
+    }
+
+    fun setPrivacyModeEnabled(isEnabled: Boolean) {
+        _privacyModeEnabled.value = isEnabled
+        viewModelScope.launch {
+            preferenceManager.setPrivacyModeEnabled(isEnabled)
+            sessionManager.savePrivacyModeEnabled(isEnabled)
+        }
+    }
+
+    fun setBiometricLockEnabled(isEnabled: Boolean) {
+        _biometricLockEnabled.value = isEnabled
+        viewModelScope.launch {
+            preferenceManager.setBiometricLockEnabled(isEnabled)
+            sessionManager.saveBiometricLockEnabled(isEnabled)
+        }
+    }
+
+    fun setAutoLogoutEnabled(isEnabled: Boolean) {
+        _autoLogoutEnabled.value = isEnabled
+        viewModelScope.launch {
+            preferenceManager.setAutoLogoutEnabled(isEnabled)
+            sessionManager.saveAutoLogoutEnabled(isEnabled)
+        }
+    }
+
+    fun setAutoLogoutMinutes(minutes: Int) {
+        _autoLogoutMinutes.value = minutes
+        viewModelScope.launch {
+            preferenceManager.setAutoLogoutMinutes(minutes)
+            sessionManager.saveAutoLogoutMinutes(minutes)
         }
     }
 
@@ -319,22 +377,65 @@ class MainViewModel @Inject constructor(
                 _userWatchlist.value = if (it.isNotBlank()) it.split(",").map { item -> item.trim() } else emptyList()
             }
         }
+        viewModelScope.launch {
+            preferenceManager.privacyModeEnabled.collect {
+                _privacyModeEnabled.value = it
+            }
+        }
+        viewModelScope.launch {
+            preferenceManager.biometricLockEnabled.collect {
+                _biometricLockEnabled.value = it
+            }
+        }
+        viewModelScope.launch {
+            preferenceManager.autoLogoutEnabled.collect {
+                _autoLogoutEnabled.value = it
+            }
+        }
+        viewModelScope.launch {
+            preferenceManager.autoLogoutMinutes.collect {
+                _autoLogoutMinutes.value = it
+            }
+        }
         
-        // Restore session if available, but block admin account from Android app
-        if (sessionManager.isLoggedIn() && sessionManager.getRole()?.equals("admin", ignoreCase = true) == true) {
-            sessionManager.logout()
-            _isLoggedIn.value = false
-            _accessToken.value = null
-            _currentUser.value = null
-            _userData.value = null
-        } else if (sessionManager.isLoggedIn()) {
+        if (sessionManager.isLoggedIn()) {
             _isLoggedIn.value = true
             _accessToken.value = sessionManager.getAuthToken()
             _currentUser.value = sessionManager.getFullName() ?: sessionManager.getUsername()
+            _isAdmin.value = sessionManager.getRole()?.equals("admin", ignoreCase = true) == true
+            _userData.value = com.example.halalyticscompose.Data.Model.User(
+                idUser = sessionManager.getUserId(),
+                username = sessionManager.getUsername() ?: "",
+                fullName = sessionManager.getFullName(),
+                email = sessionManager.getEmail() ?: "",
+                phone = sessionManager.getPhone(),
+                bloodType = sessionManager.getBloodType(),
+                allergy = sessionManager.getAllergy(),
+                medicalHistory = sessionManager.getMedicalHistory(),
+                role = sessionManager.getRole() ?: "user",
+                active = true,
+                image = sessionManager.getImageUrl(),
+                goal = sessionManager.getGoal(),
+                dietPreference = sessionManager.getDietPreference(),
+                activityLevel = sessionManager.getActivityLevel(),
+                address = null,
+                language = normalizeLanguage(sessionManager.getLanguage()),
+                age = sessionManager.getAge(),
+                height = sessionManager.getHeight()?.toDouble(),
+                weight = sessionManager.getWeight()?.toDouble(),
+                bmi = sessionManager.getBmi()?.toDouble(),
+                notifEnabled = sessionManager.isNotifEnabled(),
+                darkMode = sessionManager.isDarkMode(),
+                bio = null
+            )
             _totalScans.value = sessionManager.getTotalScans()
             _halalProducts.value = sessionManager.getHalalCount()
             _isDarkMode.value = sessionManager.isDarkMode()
             _appLanguage.value = normalizeLanguage(sessionManager.getLanguage())
+            _privacyModeEnabled.value = sessionManager.isPrivacyModeEnabled()
+            _biometricLockEnabled.value = sessionManager.isBiometricLockEnabled()
+            _autoLogoutEnabled.value = sessionManager.isAutoLogoutEnabled()
+            _autoLogoutMinutes.value = sessionManager.getAutoLogoutMinutes()
             _bmi.value = "%.1f".format(sessionManager.getBmi() ?: 0f)
             _activityLevel.value = sessionManager.getActivityLevel() ?: "Sedang"
             
@@ -376,22 +477,10 @@ class MainViewModel @Inject constructor(
                     val user = loginResponse.user // Alias for content
                     
                     if (token != null && user != null) {
-                        if (user.role.equals("admin", ignoreCase = true)) {
-                            sessionManager.logout()
-                            _accessToken.value = null
-                            _isLoggedIn.value = false
-                            _currentUser.value = null
-                            _userData.value = null
-                            val errorMessage = "Username /password salah"
-                            _errorMessage.value = errorMessage
-                            _isLoading.value = false
-                            onError(errorMessage)
-                            return@launch
-                        }
-
                         _accessToken.value = token
                         _isLoggedIn.value = true
                         _currentUser.value = user.full_name ?: user.username
+                        _isAdmin.value = user.role.equals("admin", ignoreCase = true)
                         _userData.value = com.example.halalyticscompose.Data.Model.User(
                             idUser = user.id_user,
                             username = user.username,
@@ -433,6 +522,15 @@ class MainViewModel @Inject constructor(
                                 medicalHistory = user.medical_history,
                                 imageUrl = user.image
                             )
+                            manager.saveHealthProfile(
+                                age = user.age,
+                                height = user.height,
+                                weight = user.weight,
+                                bmi = user.bmi,
+                                activityLevel = user.activity_level,
+                                dietPreference = user.diet_preference,
+                                goal = user.goal
+                            )
                             manager.saveLanguage(user.language ?: manager.getLanguage())
                         }
 
@@ -441,6 +539,8 @@ class MainViewModel @Inject constructor(
                         fetchDailyIntake(token)
                         fetchScanHistory(token)
                         registerFcmToken()
+                        fetchAiDailyInsight()
+                        fetchHealthScore()
                         
                         onSuccess()
                     } else {
@@ -459,15 +559,7 @@ class MainViewModel @Inject constructor(
                 _isLoading.value = false
             } catch (e: Exception) {
                 _isLoading.value = false
-                val errorMessage = when (e) {
-                    is HttpException -> {
-                        when (e.code()) {
-                            401 -> "Username atau password salah"
-                            else -> "Error: ${e.message()}"
-                        }
-                    }
-                    else -> "Error: ${e.message ?: "Koneksi bermasalah"}"
-                }
+                val errorMessage = ApiErrorHandler.fromThrowable<LoginModel>(e).message
                 _errorMessage.value = errorMessage
                 onError(errorMessage)
                 e.printStackTrace()
@@ -488,8 +580,41 @@ class MainViewModel @Inject constructor(
             fetchUnreadCount(t)
             fetchDailyIntake(t)
             startRealtimeStatusSync(t)
+            fetchAiDailyInsight()
+            fetchHealthScore()
         }
         fetchBanners()
+    }
+
+    // ==========================================
+    // FETCH AI DAILY INSIGHT & HEALTH SCORE
+    // ==========================================
+    fun fetchAiDailyInsight() {
+        val token = _accessToken.value ?: sessionManager.getAuthToken() ?: return
+        viewModelScope.launch {
+            try {
+                val response = apiService.getAiDailyInsight("Bearer $token")
+                if (response.isSuccessful && response.body()?.status == "success") {
+                    _aiDailyInsight.value = response.body()?.insight
+                }
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "Failed to fetch AI Daily Insight: ${e.message}")
+            }
+        }
+    }
+
+    fun fetchHealthScore() {
+        val token = _accessToken.value ?: sessionManager.getAuthToken() ?: return
+        viewModelScope.launch {
+            try {
+                val response = apiService.getHealthScore("Bearer $token")
+                if (response.isSuccessful && response.body()?.status == "success") {
+                    _healthScoreData.value = response.body()?.data
+                }
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "Failed to fetch Health Score: ${e.message}")
+            }
+        }
     }
 
     private fun fetchUnreadCount(token: String) {
@@ -558,6 +683,27 @@ class MainViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e("MainViewModel", "Failed to fetch banners: ${e.message}")
                 setDummyBanners()
+            }
+        }
+    }
+
+    fun exportReport(month: String? = null, onResult: (String?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                _accessToken.value?.let { token ->
+                    val response = apiService.exportMonthlyReport("Bearer $token", month)
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        onResult(response.body()?.reportUrl)
+                    } else {
+                        onResult(null)
+                    }
+                } ?: onResult(null)
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "Export report failed: ${e.message}")
+                onResult(null)
+            } finally {
+                _isLoading.value = false
             }
         }
     }
@@ -715,6 +861,7 @@ class MainViewModel @Inject constructor(
                         _accessToken.value = token
                         _isLoggedIn.value = true
                         _currentUser.value = user.full_name ?: user.username
+                        _isAdmin.value = user.role.equals("admin", ignoreCase = true)
                         
                         // Save to session
                         sessionManager?.let { manager ->
@@ -735,6 +882,10 @@ class MainViewModel @Inject constructor(
 
                         fetchUserStats(token)
                         fetchScanHistory(token)
+                        
+                        // Fetch AI Insight & Health Score untuk Home Screen
+                        fetchAiDailyInsight()
+                        fetchHealthScore()
                         onSuccess()
                     } else {
                         onError("Registrasi berhasil, tetapi data tidak lengkap")
@@ -747,7 +898,7 @@ class MainViewModel @Inject constructor(
                 _isLoading.value = false
             } catch (e: Exception) {
                 _isLoading.value = false
-                val errorMessage = "Error: ${e.message ?: "Pendaftaran gagal"}"
+                val errorMessage = ApiErrorHandler.fromThrowable<LoginModel>(e).message
                 _errorMessage.value = errorMessage
                 onError(errorMessage)
                 e.printStackTrace()
@@ -778,6 +929,8 @@ class MainViewModel @Inject constructor(
                 _accessToken.value = null
                 _isLoggedIn.value = false
                 _currentUser.value = null
+                _isAdmin.value = false
+                _userData.value = null
                 _totalScans.value = 0
                 _halalProducts.value = 0
                 _scanHistory.value = emptyList()
@@ -1122,6 +1275,7 @@ class MainViewModel @Inject constructor(
                                 loginContent.language?.let { manager.saveLanguage(it) }
                             }
                             _currentUser.value = user.fullName ?: user.username
+                            _isAdmin.value = user.role.equals("admin", ignoreCase = true)
                             _userData.value = user // Update state flow
                             onSuccess()
                             onComplete()
@@ -1135,7 +1289,7 @@ class MainViewModel @Inject constructor(
                 _isLoading.value = false
             } catch (e: Exception) {
                 _isLoading.value = false
-                onError(e.message ?: "Failed to update profile")
+                onError(ApiErrorHandler.fromThrowable<LoginModel>(e).message)
             }
         }
     }
@@ -1252,39 +1406,65 @@ class MainViewModel @Inject constructor(
 
     fun updateDailyIntakeFromLocal() {
         viewModelScope.launch {
-            val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-            val userId = sessionManager?.getUserId() ?: 0
-            
-            val totalSugar = consumptionDao?.getTotalSugarByDate(date, userId) ?: 0.0
-            val totalSodium = consumptionDao?.getTotalSodiumByDate(date, userId) ?: 0.0
-            
-            // Stats based on local consumption (Consolidated Health Tracker)
-            val sugarLimit = 50.0 // g (Default WHO recommendation)
-            val sodiumLimit = 2300.0 // mg (Standard recommendation)
-            val calorieLimit = 2000.0
-            
-            _dailyIntake.value = DailyIntakeResponse(
-                success = true,
-                message = "Computed from local database",
-                dailyIntake = com.example.halalyticscompose.Data.Model.DailyIntakeData(
-                    totalWaterMl = 0,
-                    totalCaffeineMg = 0,
-                    totalSugarG = totalSugar.toInt(),
-                    totalCalories = (totalSugar * 4).toInt(),
-                    totalSodiumMg = totalSodium.toInt()
-                ),
-                targets = com.example.halalyticscompose.Data.Model.IntakeTargets(
-                    waterTargetMl = 2000,
-                    caffeineLimitMg = 400,
-                    calorieLimit = calorieLimit.toInt(),
-                    sugarLimitG = sugarLimit.toFloat().toInt(),
-                    sodiumLimitMg = sodiumLimit.toInt()
-                ),
-                progress = com.example.halalyticscompose.Data.Model.IntakeProgress(
-                    waterPercentage = 0f,
-                    caffeinePercentage = 0f
+            try {
+                val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                val userId = sessionManager?.getUserId() ?: 0
+
+                val totalSugar = consumptionDao?.getTotalSugarByDate(date, userId) ?: 0.0
+                val totalSodium = consumptionDao?.getTotalSodiumByDate(date, userId) ?: 0.0
+
+                // Stats based on local consumption (Consolidated Health Tracker)
+                val sugarLimit = 50.0 // g (Default WHO recommendation)
+                val sodiumLimit = 2300.0 // mg (Standard recommendation)
+                val calorieLimit = 2000.0
+
+                _dailyIntake.value = DailyIntakeResponse(
+                    success = true,
+                    message = "Computed from local database",
+                    dailyIntake = com.example.halalyticscompose.Data.Model.DailyIntakeData(
+                        totalWaterMl = 0,
+                        totalCaffeineMg = 0,
+                        totalSugarG = totalSugar.toInt(),
+                        totalCalories = (totalSugar * 4).toInt(),
+                        totalSodiumMg = totalSodium.toInt()
+                    ),
+                    targets = com.example.halalyticscompose.Data.Model.IntakeTargets(
+                        waterTargetMl = 2000,
+                        caffeineLimitMg = 400,
+                        calorieLimit = calorieLimit.toInt(),
+                        sugarLimitG = sugarLimit.toFloat().toInt(),
+                        sodiumLimitMg = sodiumLimit.toInt()
+                    ),
+                    progress = com.example.halalyticscompose.Data.Model.IntakeProgress(
+                        waterPercentage = 0f,
+                        caffeinePercentage = 0f
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "Failed reading local intake DB", e)
+                _dailyIntake.value = DailyIntakeResponse(
+                    success = false,
+                    message = "Local intake unavailable",
+                    dailyIntake = com.example.halalyticscompose.Data.Model.DailyIntakeData(
+                        totalWaterMl = 0,
+                        totalCaffeineMg = 0,
+                        totalSugarG = 0,
+                        totalCalories = 0,
+                        totalSodiumMg = 0
+                    ),
+                    targets = com.example.halalyticscompose.Data.Model.IntakeTargets(
+                        waterTargetMl = 2000,
+                        caffeineLimitMg = 400,
+                        calorieLimit = 2000,
+                        sugarLimitG = 50,
+                        sodiumLimitMg = 2300
+                    ),
+                    progress = com.example.halalyticscompose.Data.Model.IntakeProgress(
+                        waterPercentage = 0f,
+                        caffeinePercentage = 0f
+                    )
+                )
+            }
         }
     }
 
@@ -1360,8 +1540,8 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = apiService.getDailyIntake("Bearer $token")
-                if (response.success) {
-                    _dailyIntake.value = response
+                if (response.isSuccessful) {
+                    response.body()?.let { _dailyIntake.value = it }
                 }
             } catch (e: Exception) {
                 android.util.Log.e("MainViewModel", "Failed to fetch daily intake: ${e.message}")

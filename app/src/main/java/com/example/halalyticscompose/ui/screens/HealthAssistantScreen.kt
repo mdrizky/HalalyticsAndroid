@@ -1,6 +1,10 @@
 package com.example.halalyticscompose.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -19,6 +23,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -27,10 +32,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.halalyticscompose.ui.theme.*
 import com.example.halalyticscompose.ui.viewmodel.MedicineViewModel
+import com.example.halalyticscompose.utils.VoiceRecognitionHelper
+import com.example.halalyticscompose.utils.TextToSpeechHelper
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -39,18 +47,92 @@ import java.util.Locale
 @Composable
 fun HealthAssistantScreen(
     navController: NavController,
+    initialSymptom: String? = null
 ) {
     val context = LocalContext.current
     val viewModel: MedicineViewModel = hiltViewModel()
-    var symptoms by remember { mutableStateOf("") }
+    var symptoms by remember { mutableStateOf(initialSymptom ?: "") }
     var showResults by remember { mutableStateOf(false) }
     var selectedMedicine by remember { mutableStateOf<com.example.halalyticscompose.Data.Model.MedicineData?>(null) }
     var showReminderDialog by remember { mutableStateOf(false) }
 
+    // Voice Note STT/TTS state
+    var isListening by remember { mutableStateOf(false) }
+    var isSpeaking by remember { mutableStateOf(false) }
+    var voiceStatus by remember { mutableStateOf("") }
+    val voiceHelper = remember { VoiceRecognitionHelper(context) }
+    val ttsHelper = remember {
+        TextToSpeechHelper(context).also { helper ->
+            helper.onSpeakingStarted = { isSpeaking = true }
+            helper.onSpeakingDone = { isSpeaking = false }
+        }
+    }
+
+    // Mic pulse animation
+    val infiniteTransition = rememberInfiniteTransition(label = "mic_pulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = if (isListening) 1.35f else 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulse"
+    )
+
+    // Runtime permission launcher for RECORD_AUDIO
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            isListening = true
+            voiceStatus = "Mendengarkan..."
+            voiceHelper.startListening(
+                onResult = { result ->
+                    symptoms = result
+                    isListening = false
+                    voiceStatus = "✓ Suara terdeteksi"
+                },
+                onError = { msg ->
+                    isListening = false
+                    voiceStatus = msg
+                },
+                onPartial = { partial -> symptoms = partial },
+                onListeningStarted = { isListening = true },
+                onListeningEnded = { isListening = false }
+            )
+        } else {
+            Toast.makeText(context, "Izin mikrofon diperlukan untuk fitur suara", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Auto-read AI response with TTS
     val symptomsAnalysis by viewModel.symptomsAnalysis.collectAsState()
+    LaunchedEffect(symptomsAnalysis) {
+        symptomsAnalysis?.let { analysis ->
+            val speechText = buildString {
+                append("Hasil analisis. Kondisi: ${analysis.condition}. ")
+                append("Tingkat keparahan: ${analysis.severity}. ")
+                if (analysis.possible_causes.isNotEmpty()) {
+                    append("Kemungkinan penyebab: ${analysis.possible_causes.joinToString(", ")}. ")
+                }
+                analysis.usage_instructions?.let { append("Saran: $it") }
+            }
+            ttsHelper.speak(speechText)
+        }
+    }
+
     val recommendedMedicines by viewModel.recommendedMedicines.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+
+    // Cleanup on dispose
+    DisposableEffect(Unit) {
+        onDispose {
+            voiceHelper.destroy()
+            ttsHelper.shutdown()
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.loadUserReminders()
@@ -137,7 +219,7 @@ fun HealthAssistantScreen(
                     OutlinedTextField(
                         value = symptoms,
                         onValueChange = { symptoms = it },
-                        placeholder = { Text("e.g. I have a persistent headache and feel slightly nauseous...", color = MaterialTheme.colorScheme.onSurface.copy(0.6f)) },
+                        placeholder = { Text("Ceritakan keluhan Anda atau klik mic...", color = MaterialTheme.colorScheme.onSurface.copy(0.6f)) },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 4,
                         maxLines = 6,
@@ -152,34 +234,134 @@ fun HealthAssistantScreen(
                             unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
+
+                    // Voice status indicator
+                    if (voiceStatus.isNotEmpty()) {
+                        Text(
+                            text = voiceStatus,
+                            fontSize = 11.sp,
+                            color = if (isListening) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(0.5f),
+                            modifier = Modifier.padding(top = 4.dp, start = 4.dp)
+                        )
+                    }
                     
-                    Spacer(modifier = Modifier.height(20.dp))
-                    
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(
-                                if (symptoms.isNotBlank() && !isLoading) 
-                                    Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary))
-                                else 
-                                    Brush.linearGradient(listOf(MaterialTheme.colorScheme.onSurface.copy(0.1f), MaterialTheme.colorScheme.onSurface.copy(0.05f)))
-                            )
-                            .clickable(enabled = symptoms.isNotBlank() && !isLoading) {
-                                viewModel.analyzeSymptoms(symptoms)
-                                showResults = true
-                            },
-                        contentAlignment = Alignment.Center
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Voice Note + Analyze buttons row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
-                        } else {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.AutoAwesome, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp))
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text("Analyze Symptoms", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
+                        // 🎤 Mic Button with pulse animation
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .scale(if (isListening) pulseScale else 1f)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isListening) Color(0xFFE53935)
+                                    else MaterialTheme.colorScheme.primary.copy(0.15f)
+                                )
+                                .clickable {
+                                    if (isListening) {
+                                        voiceHelper.stopListening()
+                                        isListening = false
+                                        voiceStatus = "Dihentikan"
+                                    } else {
+                                        // Stop TTS if it's speaking
+                                        ttsHelper.stop()
+                                        // Check permission first
+                                        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                                            isListening = true
+                                            voiceStatus = "Mendengarkan..."
+                                            voiceHelper.startListening(
+                                                onResult = { result ->
+                                                    symptoms = result
+                                                    isListening = false
+                                                    voiceStatus = "✓ Suara terdeteksi"
+                                                },
+                                                onError = { msg ->
+                                                    isListening = false
+                                                    voiceStatus = msg
+                                                },
+                                                onPartial = { partial -> symptoms = partial },
+                                                onListeningStarted = { isListening = true },
+                                                onListeningEnded = { isListening = false }
+                                            )
+                                        } else {
+                                            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                                        }
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                if (isListening) Icons.Default.Stop else Icons.Default.Mic,
+                                contentDescription = if (isListening) "Stop" else "Voice Note",
+                                tint = if (isListening) Color.White else MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+
+                        // Analyze button
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    if (symptoms.isNotBlank() && !isLoading) 
+                                        Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary))
+                                    else 
+                                        Brush.linearGradient(listOf(MaterialTheme.colorScheme.onSurface.copy(0.1f), MaterialTheme.colorScheme.onSurface.copy(0.05f)))
+                                )
+                                .clickable(enabled = symptoms.isNotBlank() && !isLoading) {
+                                    ttsHelper.stop()
+                                    viewModel.analyzeSymptoms(symptoms)
+                                    showResults = true
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isLoading) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
+                            } else {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.AutoAwesome, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp))
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text("Analyze", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
+                                }
                             }
+                        }
+
+                        // 🔊 TTS Toggle button
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isSpeaking) MaterialTheme.colorScheme.secondary.copy(0.2f)
+                                    else MaterialTheme.colorScheme.onSurface.copy(0.05f)
+                                )
+                                .clickable {
+                                    if (isSpeaking) {
+                                        ttsHelper.stop()
+                                        isSpeaking = false
+                                    } else {
+                                        // Re-read the last analysis
+                                        symptomsAnalysis?.let { analysis ->
+                                            val speechText = "Kondisi: ${analysis.condition}. Tingkat: ${analysis.severity}."
+                                            ttsHelper.speak(speechText)
+                                        }
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                if (isSpeaking) Icons.Default.VolumeOff else Icons.Default.VolumeUp,
+                                contentDescription = "TTS",
+                                tint = if (isSpeaking) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface.copy(0.5f),
+                                modifier = Modifier.size(22.dp)
+                            )
                         }
                     }
                 }
@@ -208,6 +390,17 @@ fun HealthAssistantScreen(
             // Results Section
             val analysis = symptomsAnalysis
             if (showResults && analysis != null) {
+                // TTS indicator
+                if (isSpeaking) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.VolumeUp, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Sedang membacakan hasil analisis...", fontSize = 11.sp, color = MaterialTheme.colorScheme.secondary)
+                    }
+                }
                 Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                     // Emergency Alert
                     if (analysis.emergency_warning != null || analysis.severity.equals("emergency", ignoreCase = true)) {
@@ -379,12 +572,12 @@ fun HealthAssistantScreen(
                                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                             if (analysis.should_seek_doctor) {
                                                 Button(
-                                                    onClick = { navController.navigate("pharmacy") },
+                                                    onClick = { navController.navigate("emergency_p3k") },
                                                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                                                 ) {
                                                     Icon(Icons.Default.LocalHospital, null)
                                                     Spacer(modifier = Modifier.width(6.dp))
-                                                    Text("Ke Dokter/RS")
+                                                    Text("Ke IGD/Dokter")
                                                 }
                                             } else {
                                                 OutlinedButton(onClick = { navController.navigate("medicine_reminders") }) {

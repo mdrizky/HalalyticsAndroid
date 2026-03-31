@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.halalyticscompose.Data.API.ApiService
 import com.example.halalyticscompose.Data.API.BeautyProduct
+import com.example.halalyticscompose.Data.API.bestId
 import com.example.halalyticscompose.Data.Model.*
 import com.example.halalyticscompose.Data.Network.ApiConfig
 import com.example.halalyticscompose.utils.SessionManager
@@ -21,6 +22,23 @@ class SkincareViewModel @Inject constructor(
     private val apiService: ApiService,
     private val sessionManager: SessionManager
 ) : ViewModel() {
+    companion object {
+        private const val MAX_PAGES_TO_FETCH = 3
+    }
+
+    private fun sanitizeErrorMessage(raw: String?): String? {
+        val message = raw?.trim()?.takeIf { it.isNotBlank() } ?: return null
+        val lower = message.lowercase()
+        return if (
+            "sqlstate" in lower ||
+            "base table or view not found" in lower ||
+            "syntax error or access violation" in lower
+        ) {
+            "Layanan data sedang bermasalah. Silakan coba lagi."
+        } else {
+            message
+        }
+    }
 
     private val _searchResults = MutableStateFlow<List<BeautyProduct>>(emptyList())
     val searchResults: StateFlow<List<BeautyProduct>> = _searchResults
@@ -67,7 +85,7 @@ class SkincareViewModel @Inject constructor(
             is HttpException -> {
                 val raw = throwable.response()?.errorBody()?.string()
                 val messageFromApi = runCatching {
-                    if (raw.isNullOrBlank()) null else JSONObject(raw).optString("message").takeIf { it.isNotBlank() }
+                    if (raw.isNullOrBlank()) null else sanitizeErrorMessage(JSONObject(raw).optString("message"))
                 }.getOrNull()
                 if (!messageFromApi.isNullOrBlank()) {
                     "$prefix (${throwable.code()}): $messageFromApi"
@@ -87,21 +105,32 @@ class SkincareViewModel @Inject constructor(
             _errorMessage.value = null
             try {
                 val openBeautyFactsApi = ApiConfig.getOpenBeautyFactsApiService()
-                val response = openBeautyFactsApi.searchBeautyProducts(query = query)
-                
-                if (response.isSuccessful && response.body() != null) {
-                    _searchResults.value = response.body()!!.products
+                val merged = mutableListOf<BeautyProduct>()
+
+                for (page in 1..MAX_PAGES_TO_FETCH) {
+                    val response = openBeautyFactsApi.searchBeautyProducts(query = query, page = page, pageSize = 100)
+                    if (!response.isSuccessful || response.body() == null) {
+                        if (page == 1) {
+                            val errorBody = sanitizeErrorMessage(response.errorBody()?.string()?.take(220))
+                            _errorMessage.value = if (!errorBody.isNullOrBlank()) {
+                                "Pencarian gagal (${response.code()}): $errorBody"
+                            } else {
+                                "Pencarian gagal (${response.code()}): ${response.message()}"
+                            }
+                        }
+                        break
+                    }
+                    val products = response.body()!!.products
+                    if (products.isEmpty()) break
+                    merged += products
+                    if (products.size < 100) break
+                }
+
+                if (_errorMessage.value == null) {
+                    _searchResults.value = dedupeProducts(merged)
                     if (_searchResults.value.isEmpty()) {
                         _errorMessage.value = "Data skincare tidak ditemukan dari OpenBeautyFacts."
                     }
-                } else {
-                    val errorBody = response.errorBody()?.string()?.take(220)
-                    _errorMessage.value = if (!errorBody.isNullOrBlank()) {
-                        "Pencarian gagal (${response.code()}): $errorBody"
-                    } else {
-                        "Pencarian gagal (${response.code()}): ${response.message()}"
-                    }
-                    _searchResults.value = emptyList()
                 }
             } catch (e: Exception) {
                 _errorMessage.value = formatApiError("Error koneksi OpenBeautyFacts", e)
@@ -109,6 +138,17 @@ class SkincareViewModel @Inject constructor(
                 _isLoading.value = false
             }
         }
+    }
+
+    private fun dedupeProducts(products: List<BeautyProduct>): List<BeautyProduct> {
+        val merged = LinkedHashMap<String, BeautyProduct>()
+        products.forEach { item ->
+            val key = item.bestId?.takeIf { it.isNotBlank() }
+                ?: item.productName?.trim()?.lowercase()
+                ?: return@forEach
+            merged.putIfAbsent(key, item)
+        }
+        return merged.values.toList()
     }
 
     fun analyzeIngredients(
@@ -190,5 +230,41 @@ class SkincareViewModel @Inject constructor(
 
     fun selectProduct(product: BeautyProduct?) {
         _selectedProduct.value = product
+    }
+
+    fun selectProductById(productId: String) {
+        if (productId.isBlank()) return
+        val found = _searchResults.value.firstOrNull { it.bestId == productId }
+        if (found != null) {
+            _selectedProduct.value = found
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = ApiConfig.getOpenBeautyFactsApiService().getBeautyProductDetail(productId)
+                if (response.isSuccessful) {
+                    val product = response.body()?.product
+                    if (product != null) {
+                        _selectedProduct.value = product
+                        _errorMessage.value = null
+                    } else {
+                        _errorMessage.value = "Detail kosmetik tidak ditemukan."
+                    }
+                } else {
+                    val errorBody = sanitizeErrorMessage(response.errorBody()?.string()?.take(220))
+                    _errorMessage.value = if (!errorBody.isNullOrBlank()) {
+                        "Gagal memuat detail kosmetik (${response.code()}): $errorBody"
+                    } else {
+                        "Gagal memuat detail kosmetik (${response.code()})"
+                    }
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = formatApiError("Error koneksi OpenBeautyFacts", e)
+            } finally {
+                _isLoading.value = false
+            }
+        }
     }
 }

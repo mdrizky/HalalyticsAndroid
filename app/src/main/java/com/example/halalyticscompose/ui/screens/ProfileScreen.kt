@@ -6,12 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,9 +14,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -36,11 +35,15 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,6 +55,8 @@ import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,8 +74,10 @@ fun ProfileScreen(
     val unreadNotificationCount by viewModel.unreadNotificationCount.collectAsState()
     val pendingContributionCount by viewModel.pendingContributionCount.collectAsState()
     val approvedContributionCount by viewModel.approvedContributionCount.collectAsState()
-    val lastRealtimeSyncAt by viewModel.lastRealtimeSyncAt.collectAsState()
+    var lastRealtimeSyncAt by remember { mutableStateOf<Long?>(null) }
+    var isExporting by remember { mutableStateOf(false) }
     val color = MaterialTheme.colorScheme
+    val context = LocalContext.current
 
     Scaffold(
         containerColor = color.background,
@@ -114,7 +121,19 @@ fun ProfileScreen(
                                     .background(Color.White.copy(alpha = 0.25f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.Person, null, tint = Color.White, modifier = Modifier.size(30.dp))
+                                val imageUrl = userData?.avatarUrl ?: userData?.image
+                                if (!imageUrl.isNullOrBlank()) {
+                                    AsyncImage(
+                                        model = imageUrl,
+                                        contentDescription = "Avatar",
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    Icon(Icons.Default.Person, null, tint = Color.White, modifier = Modifier.size(30.dp))
+                                }
                             }
                             Spacer(modifier = Modifier.size(12.dp))
                             Column {
@@ -156,6 +175,15 @@ fun ProfileScreen(
             }
 
             item {
+                HealthSummaryCard(
+                    allergy = userData?.allergy,
+                    medicalHistory = userData?.medicalHistory,
+                    height = userData?.height,
+                    weight = userData?.weight
+                )
+            }
+
+            item {
                 Text(
                     text = stringResource(R.string.profile_settings),
                     color = color.onBackground,
@@ -169,7 +197,69 @@ fun ProfileScreen(
                     icon = Icons.Default.Settings,
                     title = stringResource(R.string.profile_manage_account),
                     subtitle = stringResource(R.string.profile_manage_account_desc)
+                ) { navController.navigate("edit_profile") }
+            }
+
+            item {
+                SettingCard(
+                    icon = Icons.Default.Person,
+                    title = "Edit Profile Lengkap",
+                    subtitle = "Nama, foto, tinggi, berat, alergi, riwayat medis"
+                ) { navController.navigate("edit_profile") }
+            }
+
+            item {
+                SettingCard(
+                    icon = Icons.Default.VerifiedUser,
+                    title = "Status Profil",
+                    subtitle = "Lihat kelengkapan profil dan status verifikasi data"
+                ) { navController.navigate("profile_status") }
+            }
+
+            item {
+                SettingCard(
+                    icon = Icons.Default.PictureAsPdf,
+                    title = if (isExporting) "Sedang Export..." else "Export Laporan Bulanan",
+                    subtitle = "Unduh ringkasan halal dan analisa AI Anda"
+                ) { 
+                    if (!isExporting) {
+                        isExporting = true
+                        viewModel.exportReport { url ->
+                            isExporting = false
+                            if (url != null) {
+                                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW)
+                                intent.data = android.net.Uri.parse(url)
+                                context.startActivity(intent)
+                            } else {
+                                android.widget.Toast.makeText(context, "Gagal membuat laporan", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                SettingCard(
+                    icon = Icons.Default.MedicalServices,
+                    title = "Health & Allergy Summary",
+                    subtitle = "Lihat ringkasan alergi dan medical history"
                 ) { navController.navigate("account_management") }
+            }
+
+            item {
+                SettingCard(
+                    icon = Icons.Default.Search,
+                    title = "Ingredient Watchlist",
+                    subtitle = "Kelola bahan yang ingin dihindari"
+                ) { navController.navigate("watchlist_editor") }
+            }
+
+            item {
+                SettingCard(
+                    icon = Icons.Default.Settings,
+                    title = "Security & Privacy",
+                    subtitle = "Biometrik, auto-logout, privacy mode"
+                ) { navController.navigate("settings") }
             }
 
             item {
@@ -228,6 +318,69 @@ fun ProfileScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun HealthSummaryCard(
+    allergy: String?,
+    medicalHistory: String?,
+    height: Double?,
+    weight: Double?
+) {
+    val color = MaterialTheme.colorScheme
+    Card(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = color.surface),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Health & Allergy Summary", color = color.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            
+            Text("Alergi", fontSize = 12.sp, color = color.onSurfaceVariant)
+            if (allergy.isNullOrBlank()) {
+                Text("-", color = color.onSurfaceVariant, fontSize = 13.sp)
+            } else {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    allergy.split(",").map { it.trim() }.filter { it.isNotEmpty() }.forEach { alg ->
+
+
+
+
+
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = color.errorContainer,
+                            modifier = Modifier.padding(end = 4.dp, bottom = 4.dp)
+                        ) {
+                            Text(
+                                text = alg, 
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                color = color.onErrorContainer,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(2.dp))
+            Text("Riwayat medis: ${medicalHistory?.ifBlank { "-" } ?: "-"}", color = color.onSurfaceVariant, fontSize = 13.sp)
+            Text(
+                "Tinggi/Berat: ${height?.let { "${it}cm" } ?: "-"} / ${weight?.let { "${it}kg" } ?: "-"}",
+                color = color.onSurfaceVariant,
+                fontSize = 13.sp
+            )
+        }
+    }
+}
+
 @Composable
 private fun RealtimeStatusCard(
     unreadNotifications: Int,
@@ -237,28 +390,46 @@ private fun RealtimeStatusCard(
 ) {
     val color = MaterialTheme.colorScheme
     val syncedText = syncedAt?.let {
-        val formatter = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-        "Realtime sync ${formatter.format(Date(it))}"
-    } ?: "Realtime sync belum aktif"
+        val formatter = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+        "Last synced at ${formatter.format(java.util.Date(it))}"
+    } ?: "Cloud Sync inactive"
 
     Card(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = color.surface),
+        colors = CardDefaults.cardColors(containerColor = color.surfaceVariant.copy(alpha = 0.5f)),
         shape = RoundedCornerShape(14.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text("Status User-Admin", color = color.onSurface, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-            Spacer(modifier = Modifier.height(6.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Notif baru: $unreadNotifications", color = color.onSurfaceVariant, fontSize = 11.sp)
-                Text("Request pending: $pendingRequests", color = color.onSurfaceVariant, fontSize = 11.sp)
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.CloudSync,
+                    contentDescription = "Cloud Sync",
+                    tint = color.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Cloud Sync Status", color = color.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp)
             }
-            Spacer(modifier = Modifier.height(2.dp))
-            Text("Request disetujui: $approvedRequests", color = color.onSurfaceVariant, fontSize = 11.sp)
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Unread Notif: $unreadNotifications", color = color.onSurfaceVariant, fontSize = 12.sp)
+                Text("Pending Req: $pendingRequests", color = color.onSurfaceVariant, fontSize = 12.sp)
+            }
             Spacer(modifier = Modifier.height(4.dp))
-            Text(syncedText, color = color.primary, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+            Text("Approved Req: $approvedRequests", color = color.onSurfaceVariant, fontSize = 12.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(if (syncedAt != null) color.primary else color.error, CircleShape)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(syncedText, color = color.onSurfaceVariant, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+            }
         }
     }
 }

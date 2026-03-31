@@ -115,7 +115,7 @@ interface ApiService {
     ): LoginModel
 
     @FormUrlEncoded
-    @POST("sync_user.php") // Bridge script
+    @POST("user/sync") // Updated from legacy sync_user.php
     suspend fun syncUser(
         @Field("firebase_uid") firebaseUid: String,
         @Field("email") email: String,
@@ -373,11 +373,26 @@ interface ApiService {
         @Query("date") date: String? = null
     ): com.example.halalyticscompose.Data.Model.PersonalRiskScoreResponse
 
-    @GET("user/daily-intake")
-    suspend fun getDailyIntake(
-        @Header("Authorization") bearer: String,
-        @Query("date") date: String? = null
-    ): DailyIntakeResponse
+    @GET("ai/daily-intake")
+    suspend fun getDailyIntake(@Header("Authorization") bearer: String): Response<DailyIntakeResponse>
+
+    @GET("ai/daily-insight")
+    suspend fun getAiDailyInsight(@Header("Authorization") bearer: String): Response<DailyInsightResponse>
+
+    @GET("health/score")
+    suspend fun getHealthScore(@Header("Authorization") bearer: String): Response<HealthScoreResponse>
+
+    // ==================== HEALTH ENCYCLOPEDIA ====================
+    @GET("health-encyclopedia")
+    suspend fun getHealthEncyclopedia(
+        @Query("type") type: String? = null,
+        @Query("search") search: String? = null
+    ): Response<HealthEncyclopediaResponse>
+
+    @GET("health-encyclopedia/{id}")
+    suspend fun getHealthEncyclopediaById(
+        @Path("id") id: Int
+    ): Response<HealthEncyclopediaDetailResponse>
 
     // ==================== PRODUCT REQUESTS (Crowdsourcing) ====================
     @Multipart
@@ -578,7 +593,8 @@ interface ApiService {
         @Field("drug_a_id") drugAId: Int? = null,
         @Field("drug_b_id") drugBId: Int? = null,
         @Field("drug_a_name") drugAName: String? = null,
-        @Field("drug_b_name") drugBName: String? = null
+        @Field("drug_b_name") drugBName: String? = null,
+        @Field("family_id") familyId: Int? = null
     ): DrugInteractionResponse
 
     @GET("ai/drugs/search")
@@ -594,7 +610,8 @@ interface ApiService {
         @Header("Authorization") bearer: String,
         @Part image: okhttp3.MultipartBody.Part,
         @Part("shape") shape: okhttp3.RequestBody? = null,
-        @Part("color") color: okhttp3.RequestBody? = null
+        @Part("color") color: okhttp3.RequestBody? = null,
+        @Part("family_id") familyId: okhttp3.RequestBody? = null
     ): PillIdentifyResponse
 
     // 3. Lab Analysis
@@ -604,7 +621,8 @@ interface ApiService {
         @Header("Authorization") bearer: String,
         @Part image: okhttp3.MultipartBody.Part? = null,
         @Part("manual_data") manualData: okhttp3.RequestBody? = null, // JSON
-        @Part("test_date") testDate: okhttp3.RequestBody
+        @Part("test_date") testDate: okhttp3.RequestBody,
+        @Part("family_id") familyId: okhttp3.RequestBody? = null
     ): LabAnalysisResponse
 
     @GET("ai/lab-history")
@@ -639,7 +657,8 @@ interface ApiService {
     @GET("ai/halal-alternatives")
     suspend fun getHalalAlternatives(
         @Header("Authorization") bearer: String,
-        @Query("drug_id") drugId: Int
+        @Query("drug_id") drugId: Int,
+        @Query("family_id") familyId: Int? = null
     ): HalalAlternativeResponse
 
     // 6. Health Journey (Metrics)
@@ -743,6 +762,12 @@ interface ApiService {
         @Part evidenceImage: okhttp3.MultipartBody.Part?
     ): ReportResponse
 
+    @POST("export-report")
+    suspend fun exportMonthlyReport(
+        @Header("Authorization") bearer: String,
+        @Query("month") month: String? = null
+    ): Response<com.example.halalyticscompose.Data.Model.ExportReportResponse>
+
     @GET("products/alternatives/{barcode}")
     suspend fun getProductAlternatives(
         @Path("barcode") barcode: String,
@@ -776,4 +801,48 @@ interface ApiService {
         @Header("Authorization") bearer: String,
         @Body request: com.example.halalyticscompose.Data.Model.EmergencyRequest
     ): Response<com.example.halalyticscompose.Data.Model.EmergencyResponse>
+
+    // ==================== GAMIFICATION — Points & Leaderboard ====================
+    @GET("user/points")
+    suspend fun getMyPoints(
+        @Header("Authorization") bearer: String
+    ): GenericResponse
+
+    @GET("user/points/history")
+    suspend fun getPointsHistory(
+        @Header("Authorization") bearer: String,
+        @Query("per_page") perPage: Int = 20,
+        @Query("page") page: Int = 1
+    ): GenericResponse
+
+    @GET("leaderboard")
+    suspend fun getLeaderboard(
+        @Query("period") period: String = "monthly",
+        @Query("limit") limit: Int = 10
+    ): GenericResponse
+
+    @GET("user/rank")
+    suspend fun getMyRank(
+        @Header("Authorization") bearer: String,
+        @Query("period") period: String = "monthly"
+    ): GenericResponse
+
+    // ==================== NOTIFICATION PREFERENCES ====================
+    @GET("user/notification-preferences")
+    suspend fun getNotificationPreferences(
+        @Header("Authorization") bearer: String
+    ): GenericResponse
+
+    @FormUrlEncoded
+    @PUT("user/notification-preferences")
+    suspend fun updateNotificationPreferences(
+        @Header("Authorization") bearer: String,
+        @Field("medication_reminders") medicationReminders: Boolean? = null,
+        @Field("promo_deals") promoDeals: Boolean? = null,
+        @Field("weekly_report") weeklyReport: Boolean? = null,
+        @Field("favorite_updates") favoriteUpdates: Boolean? = null,
+        @Field("new_products") newProducts: Boolean? = null,
+        @Field("watchlist_alerts") watchlistAlerts: Boolean? = null,
+        @Field("security_alerts") securityAlerts: Boolean? = null
+    ): GenericResponse
 }

@@ -107,7 +107,7 @@ fun MedicineRemindersScreen(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
-            IconButton(onClick = { navController.navigate("medication_reminder_advanced") }) {
+            IconButton(onClick = { navController.navigate("add_medicine_reminder") }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Reminder")
             }
         }
@@ -202,7 +202,7 @@ fun MedicineRemindersScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
-                        onClick = { navController.navigate("medication_reminder_advanced") }
+                        onClick = { navController.navigate("add_medicine_reminder") }
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))

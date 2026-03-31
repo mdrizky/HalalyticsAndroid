@@ -34,6 +34,7 @@ fun CertificateResultScreen(
 ) {
     val isValid = info.status.lowercase() == "valid"
     val accentColor = if (isValid) HalalGreen else Color(0xFFEF4444)
+    val color = MaterialTheme.colorScheme
 
     Scaffold(
         topBar = {
@@ -45,13 +46,13 @@ fun CertificateResultScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DarkBackground,
-                    titleContentColor = TextWhite,
-                    navigationIconContentColor = TextWhite
+                    containerColor = color.background,
+                    titleContentColor = color.onBackground,
+                    navigationIconContentColor = color.onBackground
                 )
             )
         },
-        containerColor = DarkBackground
+        containerColor = color.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -84,13 +85,13 @@ fun CertificateResultScreen(
                 text = if (isValid) "Sertifikat Valid" else "Sertifikat Tidak Valid",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextWhite
+                color = color.onBackground
             )
             
             Text(
                 text = "Diverifikasi oleh ${info.issuer}",
                 fontSize = 14.sp,
-                color = TextGray
+                color = color.onSurfaceVariant
             )
             
             Spacer(modifier = Modifier.height(40.dp))
@@ -99,8 +100,8 @@ fun CertificateResultScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = DarkCardLight),
-                border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder)
+                colors = CardDefaults.cardColors(containerColor = color.surface),
+                border = androidx.compose.foundation.BorderStroke(1.dp, color.outlineVariant)
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
                     DetailItem(
@@ -109,7 +110,7 @@ fun CertificateResultScreen(
                         value = info.certificateNumber
                     )
                     
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = DarkBorder)
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = color.outlineVariant)
                     
                     DetailItem(
                         icon = Icons.Default.Business,
@@ -117,7 +118,7 @@ fun CertificateResultScreen(
                         value = info.productName ?: info.manufacturer ?: "N/A"
                     )
                     
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = DarkBorder)
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = color.outlineVariant)
                     
                     DetailItem(
                         icon = Icons.Default.CalendarMonth,
@@ -151,6 +152,7 @@ private fun DetailItem(
     label: String,
     value: String
 ) {
+    val color = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -158,8 +160,8 @@ private fun DetailItem(
         Icon(icon, contentDescription = null, tint = HalalGreen, modifier = Modifier.size(20.dp))
         Spacer(modifier = Modifier.width(12.dp))
         Column {
-            Text(text = label, fontSize = 12.sp, color = TextGray)
-            Text(text = value, fontSize = 15.sp, color = TextWhite, fontWeight = FontWeight.Medium)
+            Text(text = label, fontSize = 12.sp, color = color.onSurfaceVariant)
+            Text(text = value, fontSize = 15.sp, color = color.onSurface, fontWeight = FontWeight.Medium)
         }
     }
 }

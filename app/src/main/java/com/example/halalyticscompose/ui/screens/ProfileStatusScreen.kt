@@ -13,21 +13,41 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.halalyticscompose.Data.Model.LoginModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.halalyticscompose.ui.theme.MushboohYellow
+import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileStatusScreen(
-    user: LoginModel.LoginContent? = null,
-    goal: String? = null,
-    dietPreference: String? = null,
-    activityLevel: String? = null,
-    address: String? = null,
-    language: String? = null,
-    bmi: Float? = null,
-    onBackClick: () -> Unit = {}
+    navController: NavController,
+    viewModel: MainViewModel = hiltViewModel()
 ) {
+    val userData by viewModel.userData.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
+    val totalScans by viewModel.totalScans.collectAsState()
+    val halalProducts by viewModel.halalProducts.collectAsState()
+    val currentStreak by viewModel.currentStreak.collectAsState()
+    val bmi = userData?.bmi?.toFloat()
+    val profileChecks = remember(userData, currentUser) {
+        listOf(
+            "Nama lengkap" to !((userData?.fullName ?: currentUser).isNullOrBlank()),
+            "Email" to !userData?.email.isNullOrBlank(),
+            "No. telepon" to !userData?.phone.isNullOrBlank(),
+            "Golongan darah" to !userData?.bloodType.isNullOrBlank(),
+            "Alergi" to !userData?.allergy.isNullOrBlank(),
+            "Riwayat medis" to !userData?.medicalHistory.isNullOrBlank(),
+            "Tujuan kesehatan" to !userData?.goal.isNullOrBlank(),
+            "Preferensi diet" to !userData?.dietPreference.isNullOrBlank(),
+            "Level aktivitas" to !userData?.activityLevel.isNullOrBlank(),
+            "Bahasa" to !userData?.language.isNullOrBlank()
+        )
+    }
+    val completionPercent = remember(profileChecks) {
+        if (profileChecks.isEmpty()) 0 else ((profileChecks.count { it.second }.toFloat() / profileChecks.size.toFloat()) * 100f).toInt()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -40,7 +60,7 @@ fun ProfileStatusScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Kembali",
@@ -65,6 +85,49 @@ fun ProfileStatusScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Text(
+                            text = "Kelengkapan Profil",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "$completionPercent%",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        LinearProgressIndicator(
+                            progress = completionPercent / 100f,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        profileChecks.forEach { (label, completed) ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = if (completed) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
+                                    contentDescription = null,
+                                    tint = if (completed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(label, color = MaterialTheme.colorScheme.onSurface)
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                        }
+                    }
+                }
                 
                 // BMI Card
                 bmi?.let { bmiValue ->
@@ -129,7 +192,7 @@ fun ProfileStatusScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         
                         // Goal
-                        goal?.let {
+                        userData?.goal?.let {
                             ProfileStatusItem(
                                 icon = Icons.Default.Flag,
                                 title = "Tujuan",
@@ -139,7 +202,7 @@ fun ProfileStatusScreen(
                         }
                         
                         // Diet Preference
-                        dietPreference?.let {
+                        userData?.dietPreference?.let {
                             ProfileStatusItem(
                                 icon = Icons.Default.Restaurant,
                                 title = "Preferensi Diet",
@@ -149,7 +212,7 @@ fun ProfileStatusScreen(
                         }
                         
                         // Activity Level
-                        activityLevel?.let {
+                        userData?.activityLevel?.let {
                             ProfileStatusItem(
                                 icon = Icons.AutoMirrored.Filled.DirectionsRun,
                                 title = "Level Aktivitas",
@@ -159,7 +222,7 @@ fun ProfileStatusScreen(
                         }
                         
                         // Address
-                        address?.let {
+                        userData?.address?.let {
                             ProfileStatusItem(
                                 icon = Icons.Default.LocationOn,
                                 title = "Alamat",
@@ -169,7 +232,7 @@ fun ProfileStatusScreen(
                         }
                         
                         // Language
-                        language?.let {
+                        userData?.language?.let {
                             ProfileStatusItem(
                                 icon = Icons.Default.Language,
                                 title = "Bahasa",
@@ -204,36 +267,44 @@ fun ProfileStatusScreen(
                         ) {
                             StatItem(
                                 title = "Total Scan",
-                                value = (user?.total_scan ?: 0).toString(),
+                                value = totalScans.toString(),
                                 color = MaterialTheme.colorScheme.primary
                             )
                             StatItem(
                                 title = "Halal",
-                                value = (user?.halal_count ?: 0).toString(),
+                                value = halalProducts.toString(),
                                 color = MaterialTheme.colorScheme.primary
                             )
                             StatItem(
                                 title = "Syubhat",
-                                value = (user?.syubhat_count ?: 0).toString(),
+                                value = (totalScans - halalProducts).coerceAtLeast(0).toString(),
                                 color = MushboohYellow
                             )
                         }
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
-                        user?.streak?.let { streak ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                StatItem(
-                                    title = "Hari Beruntun",
-                                    value = streak.toString(),
-                                    color = MaterialTheme.colorScheme.tertiary
-                                )
-                            }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            StatItem(
+                                title = "Hari Beruntun",
+                                value = currentStreak.toString(),
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
                         }
                     }
+                }
+            }
+
+            item {
+                Button(
+                    onClick = { navController.navigate("edit_profile") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Lengkapi Profil")
                 }
             }
 

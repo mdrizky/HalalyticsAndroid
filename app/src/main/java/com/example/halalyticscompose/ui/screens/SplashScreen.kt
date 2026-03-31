@@ -14,13 +14,13 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
 import com.example.halalyticscompose.ui.theme.*
-import com.example.halalyticscompose.utils.SessionManager
 import kotlinx.coroutines.delay
 
 @Composable
@@ -30,7 +30,8 @@ fun SplashScreen(
     onSplashComplete: () -> Unit
 ) {
     val context = LocalContext.current
-    val isDarkMode = MaterialTheme.colorScheme.background == DarkBackground
+    val color = MaterialTheme.colorScheme
+    val isDarkMode = color.background.luminance() < 0.5f
     
     // Animation states
     val scale = remember { Animatable(0f) }
@@ -68,15 +69,7 @@ fun SplashScreen(
         onSplashComplete()
         
         if (isLoggedIn) {
-            val sessionManager = SessionManager.getInstance(context)
-            val destination = if (sessionManager.getRole()?.equals("admin", ignoreCase = true) == true) {
-                sessionManager.logout()
-                "login"
-            } else {
-                "home"
-            }
-            
-            navController.navigate(destination) {
+            navController.navigate("home") {
                 popUpTo("splash") { inclusive = true }
             }
         } else {
@@ -92,9 +85,9 @@ fun SplashScreen(
             .background(
                 Brush.verticalGradient(
                     colors = if (isDarkMode) {
-                        listOf(DarkBackground, Color(0xFF0A1A0E))
+                        listOf(color.background, color.surface)
                     } else {
-                        listOf(LightBackground, Color(0xFFE2E8F0))
+                        listOf(color.background, color.surfaceVariant.copy(alpha = 0.8f))
                     }
                 )
             ),
@@ -163,7 +156,7 @@ fun SplashScreen(
             Text(
                 text = "Halal & Health Intelligence",
                 fontSize = 14.sp,
-                color = if (isDarkMode) TextGray else TextGrayDark,
+                color = color.onSurfaceVariant,
                 modifier = Modifier.alpha(textAlpha.value),
                 letterSpacing = 1.sp
             )
@@ -190,7 +183,7 @@ fun SplashScreen(
             Text(
                 text = "© 2026 Halalytics",
                 fontSize = 12.sp,
-                color = if (isDarkMode) TextMuted else TextMutedDark
+                color = color.onSurfaceVariant
             )
         }
     }

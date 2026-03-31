@@ -2,6 +2,7 @@ package com.example.halalyticscompose.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -10,13 +11,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Keyboard
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -26,8 +35,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
-import com.example.halalyticscompose.ui.theme.*
 
+// ═══════════════════════════════════════════════════════════════════
+// MANUAL INPUT SCREEN — PREMIUM SIMPLIFIED
+// Form input manual dengan desain modern dan interaktif
+// ═══════════════════════════════════════════════════════════════════
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,73 +47,54 @@ fun ManualInputScreen(
     navController: NavController,
     viewModel: MainViewModel = hiltViewModel()
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     var barcode by remember { mutableStateOf("") }
     var productName by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     
-    
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBackground)
-    ) {
-        // Top bar with clear button
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Back button
-            IconButton(onClick = { navController.navigateUp() }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextWhite)
-            }
-            
-            Text(
-                text = "Input Manual",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextWhite
-            )
-            
-            // Clear button
-            IconButton(
-                onClick = { 
-                    barcode = ""
-                    productName = ""
-                    errorMessage = ""
-                }
-            ) {
-                Icon(
-                    Icons.Default.Refresh,
-                    contentDescription = "Clear",
-                    tint = TextWhite,
-                    modifier = Modifier.size(24.dp)
+    val primaryGradient = Brush.horizontalGradient(
+        colors = listOf(Color(0xFF22C55E), Color(0xFF16A34A))
+    )
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Input Manual", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colorScheme.background,
+                    titleContentColor = colorScheme.onBackground,
+                    navigationIconContentColor = colorScheme.onBackground
                 )
-            }
-        }
-        
-        // Main content
+            )
+        },
+        containerColor = colorScheme.background
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(top = 80.dp, start = 24.dp, end = 24.dp, bottom = 24.dp),
+                .padding(horizontal = 24.dp, vertical = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Icon and title
+            // ─── Header Icon ────────────────────────────────
             Box(
                 modifier = Modifier
                     .size(80.dp)
                     .clip(CircleShape)
-                    .background(HalalGreen.copy(alpha = 0.15f)),
+                    .background(Color(0xFF22C55E).copy(alpha = 0.15f))
+                    .border(2.dp, Color(0xFF22C55E).copy(alpha = 0.3f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.Keyboard,
-                    contentDescription = "Manual Input",
-                    tint = HalalGreen,
+                    contentDescription = null,
+                    tint = Color(0xFF16A34A),
                     modifier = Modifier.size(40.dp)
                 )
             }
@@ -109,33 +102,32 @@ fun ManualInputScreen(
             Spacer(modifier = Modifier.height(24.dp))
             
             Text(
-                text = "Informasi Produk",
+                text = "Pencarian Produk",
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextWhite,
+                fontWeight = FontWeight.ExtraBold,
+                color = colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
             
             Text(
-                text = "Masukkan barcode atau nama produk\nuntuk mendapatkan detail status halal",
+                text = "Masukkan nomor barcode untuk mendapatkan detail status halal produk secara otomatis.",
                 fontSize = 14.sp,
-                color = TextGray,
+                color = colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
-                lineHeight = 20.sp
+                lineHeight = 20.sp,
+                modifier = Modifier.padding(top = 8.dp)
             )
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            // Input card
+            // ─── Input Form Card ────────────────────────────
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(DarkCard),
-                border = BorderStroke(1.dp, DarkBorder)
+                colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp)
-                ) {
+                Column(modifier = Modifier.padding(24.dp)) {
                     // Barcode Input
                     OutlinedTextField(
                         value = barcode,
@@ -144,49 +136,32 @@ fun ManualInputScreen(
                             errorMessage = ""
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Nomor Barcode", color = TextGray) },
-                        placeholder = { Text("Contoh: 8999999...", color = TextMuted) },
+                        label = { Text("Nomor Barcode") },
+                        placeholder = { Text("Contoh: 8999999...") },
                         leadingIcon = {
-                            Icon(
-                                Icons.Default.QrCodeScanner,
-                                contentDescription = "Barcode",
-                                tint = HalalGreen
-                            )
+                            Icon(Icons.Default.QrCodeScanner, contentDescription = null, tint = Color(0xFF22C55E))
                         },
                         trailingIcon = {
                             if (barcode.isNotEmpty()) {
-                                IconButton(
-                                    onClick = { 
-                                        barcode = ""
-                                        errorMessage = ""
-                                    }
-                                ) {
-                                    Icon(
-                                        Icons.Default.Clear,
-                                        contentDescription = "Clear",
-                                        tint = TextGray
-                                    )
+                                IconButton(onClick = { 
+                                    barcode = ""
+                                    errorMessage = ""
+                                }) {
+                                    Icon(Icons.Default.Clear, contentDescription = "Clear", tint = colorScheme.onSurfaceVariant)
                                 }
                             }
                         },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number
-                        ),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = HalalGreen,
-                            unfocusedBorderColor = DarkBorder,
-                            focusedTextColor = TextWhite,
-                            unfocusedTextColor = TextWhite,
-                            focusedContainerColor = DarkBackground,
-                            unfocusedContainerColor = DarkBackground,
-                            cursorColor = HalalGreen
+                            focusedBorderColor = Color(0xFF22C55E),
+                            unfocusedBorderColor = colorScheme.outlineVariant,
+                            cursorColor = Color(0xFF22C55E)
                         ),
-                        singleLine = true,
-                        maxLines = 1
+                        singleLine = true
                     )
                     
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     
                     // Product Name Input (optional)
                     OutlinedTextField(
@@ -196,184 +171,164 @@ fun ManualInputScreen(
                             errorMessage = ""
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Nama Produk (Opsional)", color = TextGray) },
-                        placeholder = { Text("Nama produk jika diketahui...", color = TextMuted) },
+                        label = { Text("Nama Produk (Opsional)") },
+                        placeholder = { Text("Ketik nama produk jika ada...") },
                         leadingIcon = {
-                            Icon(
-                                Icons.Default.ShoppingCart,
-                                contentDescription = "Product",
-                                tint = HalalGreen
-                            )
+                            Icon(Icons.Default.ShoppingCart, contentDescription = null, tint = Color(0xFF0EA5E9))
                         },
                         trailingIcon = {
                             if (productName.isNotEmpty()) {
-                                IconButton(
-                                    onClick = { 
-                                        productName = ""
-                                        errorMessage = ""
-                                    }
-                                ) {
-                                    Icon(
-                                        Icons.Default.Clear,
-                                        contentDescription = "Clear",
-                                        tint = TextGray
-                                    )
+                                IconButton(onClick = { productName = "" }) {
+                                    Icon(Icons.Default.Clear, contentDescription = "Clear", tint = colorScheme.onSurfaceVariant)
                                 }
                             }
                         },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text
-                        ),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = HalalGreen,
-                            unfocusedBorderColor = DarkBorder,
-                            focusedTextColor = TextWhite,
-                            unfocusedTextColor = TextWhite,
-                            focusedContainerColor = DarkBackground,
-                            unfocusedContainerColor = DarkBackground,
-                            cursorColor = HalalGreen
+                            focusedBorderColor = Color(0xFF0EA5E9),
+                            unfocusedBorderColor = colorScheme.outlineVariant,
+                            cursorColor = Color(0xFF0EA5E9)
                         ),
-                        singleLine = true,
-                        maxLines = 1
+                        singleLine = true
                     )
                     
                     Spacer(modifier = Modifier.height(24.dp))
                     
-                    // Error message
+                    // Error Message
                     if (errorMessage.isNotEmpty()) {
                         Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = Color(0xFFEF4444).copy(alpha = 0.1f),
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                            color = Color(0xFFFEF2F2),
                             shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, Color(0xFFEF4444))
+                            border = BorderStroke(1.dp, Color(0xFFFCA5A5))
                         ) {
                             Text(
                                 text = errorMessage,
                                 modifier = Modifier.padding(12.dp),
-                                color = Color(0xFFEF4444),
-                                fontSize = 14.sp,
-                                textAlign = TextAlign.Center
+                                color = Color(0xFFDC2626),
+                                fontSize = 13.sp,
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Medium
                             )
                         }
-                        Spacer(modifier = Modifier.height(20.dp))
                     }
                     
-                    // Search button - navigate directly to product_detail
+                    // Search Button
                     Button(
                         onClick = {
                             if (barcode.isEmpty()) {
-                                errorMessage = "Masukkan nomor barcode"
+                                errorMessage = "Mohon masukkan nomor barcode terlebih dahulu"
                                 return@Button
                             }
-                            
                             if (barcode.length < 8) {
-                                errorMessage = "Barcode minimal 8 digit"
+                                errorMessage = "Barcode tidak valid (minimal 8 digit)"
                                 return@Button
                             }
-                            
                             errorMessage = ""
-                            // Navigate directly - ProductDetailScreen will handle loading
                             navController.navigate("product_detail/$barcode")
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
-                        shape = RoundedCornerShape(28.dp),
+                        shape = RoundedCornerShape(100.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = HalalGreen,
-                            disabledContainerColor = HalalGreen.copy(alpha = 0.5f)
+                            containerColor = Color.Transparent
                         ),
-                        enabled = barcode.isNotEmpty()
+                        contentPadding = PaddingValues()
                     ) {
-                        Icon(
-                            Icons.Default.Search,
-                            contentDescription = "Search",
-                            tint = DarkBackground,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        
-                        Spacer(modifier = Modifier.width(10.dp))
-                        
-                        Text(
-                            text = "Cari Produk",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DarkBackground
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    brush = primaryGradient,
+                                    shape = RoundedCornerShape(100.dp)
+                                )
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Search, contentDescription = null, tint = Color.White)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "Cari Produk",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+                        }
                     }
                 }
             }
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            // Quick Actions
-            Text(
-                text = "Aksi Cepat",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextWhite,
-                modifier = Modifier.align(Alignment.Start)
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Action buttons grid
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Recent Scans
-                QuickActionCard(
+            // ─── Quick Actions ──────────────────────────────
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Aksi Cepat",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = colorScheme.onBackground
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                QuickActionRow(
                     title = "Riwayat Scan",
-                    subtitle = "Lihat produk yang pernah di-scan",
+                    subtitle = "Akses kembali produk yang pernah dicari",
                     icon = Icons.Default.History,
-                    iconColor = HalalGreen,
+                    iconTint = Color(0xFF22C55E),
                     onClick = { navController.navigate("history") }
                 )
                 
-                // Search External
-                QuickActionCard(
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                QuickActionRow(
                     title = "Database Eksternal",
-                    subtitle = "Cari di database halal publik",
+                    subtitle = "Pencarian meluas ke database BPOM & LPPOM",
                     icon = Icons.Default.Language,
-                    iconColor = Color(0xFF3B82F6),
+                    iconTint = Color(0xFF3B82F6),
                     onClick = { navController.navigate("search_external") }
                 )
             }
             
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }
 
 @Composable
-fun QuickActionCard(
+private fun QuickActionRow(
     title: String,
     subtitle: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    iconColor: Color,
+    iconTint: Color,
     onClick: () -> Unit
 ) {
-    Surface(
+    val colorScheme = MaterialTheme.colorScheme
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
-        color = DarkCard,
-        border = BorderStroke(1.dp, DarkBorder)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceVariant.copy(alpha = 0.5f))
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(iconColor.copy(alpha = 0.1f)),
+                    .background(colorScheme.surface),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = title, tint = iconColor, modifier = Modifier.size(24.dp))
+                Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(24.dp))
             }
             
             Spacer(modifier = Modifier.width(16.dp))
@@ -381,23 +336,22 @@ fun QuickActionCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextWhite
+                    color = colorScheme.onSurface
                 )
-                
                 Text(
                     text = subtitle,
                     fontSize = 12.sp,
-                    color = TextGray
+                    color = colorScheme.onSurfaceVariant
                 )
             }
             
             Icon(
                 Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                tint = TextMuted,
-                modifier = Modifier.size(20.dp)
+                tint = colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(24.dp)
             )
         }
     }

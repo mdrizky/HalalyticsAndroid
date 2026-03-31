@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -23,6 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.halalyticscompose.R
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 import com.example.halalyticscompose.ui.theme.ErrorColor
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +50,11 @@ fun AccountManagementScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = textColor)
                     }
                 },
+                actions = {
+                    IconButton(onClick = { navController.navigate("enhanced_profile") }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit Profile", tint = textColor)
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
                 )
@@ -70,12 +77,24 @@ fun AccountManagementScreen(
                     .background(cardColor, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.AccountCircle,
-                    contentDescription = null,
-                    modifier = Modifier.size(80.dp),
-                    tint = color.primary
-                )
+                val imageUrl = userData?.avatarUrl ?: userData?.image
+                if (!imageUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = "Foto profil",
+                        modifier = Modifier
+                            .size(84.dp)
+                            .background(cardColor, CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.AccountCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(80.dp),
+                        tint = color.primary
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -124,6 +143,36 @@ fun AccountManagementScreen(
                 label = stringResource(R.string.account_medical_history),
                 value = userData?.medicalHistory ?: "-",
                 icon = Icons.Default.Description
+            )
+
+            AccountInfoItem(
+                label = "Height",
+                value = userData?.height?.toString()?.let { "$it cm" } ?: "-",
+                icon = Icons.Default.Straighten
+            )
+
+            AccountInfoItem(
+                label = "Weight",
+                value = userData?.weight?.toString()?.let { "$it kg" } ?: "-",
+                icon = Icons.Default.FitnessCenter
+            )
+
+            AccountInfoItem(
+                label = "Age",
+                value = userData?.age?.toString() ?: "-",
+                icon = Icons.Default.CalendarMonth
+            )
+
+            AccountInfoItem(
+                label = "Goal",
+                value = userData?.goal ?: "-",
+                icon = Icons.Default.Flag
+            )
+
+            AccountInfoItem(
+                label = "Activity Level",
+                value = userData?.activityLevel ?: "-",
+                icon = Icons.Default.DirectionsRun
             )
             
             AccountInfoItem(

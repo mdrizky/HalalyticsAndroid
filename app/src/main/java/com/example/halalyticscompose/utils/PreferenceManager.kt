@@ -20,6 +20,10 @@ class PreferenceManager(private val context: Context) {
         val LANGUAGE_KEY = stringPreferencesKey("app_language")
         val NOTIF_ENABLED_KEY = booleanPreferencesKey("notif_enabled")
         val WATCHLIST_KEY = stringPreferencesKey("user_watchlist") // Comma separated string
+        val PRIVACY_MODE_KEY = booleanPreferencesKey("privacy_mode_enabled")
+        val BIOMETRIC_LOCK_KEY = booleanPreferencesKey("biometric_lock_enabled")
+        val AUTO_LOGOUT_ENABLED_KEY = booleanPreferencesKey("auto_logout_enabled")
+        val AUTO_LOGOUT_MINUTES_KEY = stringPreferencesKey("auto_logout_minutes")
     }
 
     val isDarkMode: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -40,6 +44,22 @@ class PreferenceManager(private val context: Context) {
 
     val userWatchlist: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[WATCHLIST_KEY] ?: ""
+    }
+
+    val privacyModeEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PRIVACY_MODE_KEY] ?: true
+    }
+
+    val biometricLockEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[BIOMETRIC_LOCK_KEY] ?: false
+    }
+
+    val autoLogoutEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[AUTO_LOGOUT_ENABLED_KEY] ?: false
+    }
+
+    val autoLogoutMinutes: Flow<Int> = context.dataStore.data.map { preferences ->
+        (preferences[AUTO_LOGOUT_MINUTES_KEY] ?: "5").toIntOrNull() ?: 5
     }
 
     suspend fun setDarkMode(isEnabled: Boolean) {
@@ -69,6 +89,30 @@ class PreferenceManager(private val context: Context) {
     suspend fun setWatchlist(watchlist: String) {
         context.dataStore.edit { preferences ->
             preferences[WATCHLIST_KEY] = watchlist
+        }
+    }
+
+    suspend fun setPrivacyModeEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PRIVACY_MODE_KEY] = enabled
+        }
+    }
+
+    suspend fun setBiometricLockEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[BIOMETRIC_LOCK_KEY] = enabled
+        }
+    }
+
+    suspend fun setAutoLogoutEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[AUTO_LOGOUT_ENABLED_KEY] = enabled
+        }
+    }
+
+    suspend fun setAutoLogoutMinutes(minutes: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[AUTO_LOGOUT_MINUTES_KEY] = minutes.toString()
         }
     }
 }

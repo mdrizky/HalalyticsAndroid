@@ -163,4 +163,39 @@
     <string name="health_suite_item_p3k_desc">First-aid guide during emergencies.</string>
     <string name="health_suite_item_qr_title">Emergency QR</string>
     <string name="health_suite_item_qr_desc">Quick medical ID card for responders.</string>
+
+    <!-- Error States -->
+    <string name="error_no_internet">No Internet Connection</string>
+    <string name="error_server">Server Error</string>
+    <string name="error_not_found">Not Found</string>
+    <string name="error_timeout">Connection Timeout</string>
+    <string name="error_unauthorized">Session Expired</string>
+    <string name="error_general">Something Went Wrong</string>
+    <string name="error_retry">Try Again</string>
+    <string name="error_check_internet">Check your internet connection</string>
+
+    <!-- Empty States -->
+    <string name="empty_products">No Products Yet</string>
+    <string name="empty_history">No History Yet</string>
+    <string name="empty_favorites">No Favorites Yet</string>
+    <string name="empty_search">Not Found</string>
+    <string name="empty_notifications">No Notifications</string>
+    <string name="empty_start_scan">Start Scan</string>
+
+    <!-- Offline -->
+    <string name="offline_banner">Offline Mode — Data may not be up to date</string>
+    <string name="offline_reconnecting">Reconnecting…</string>
+
+    <!-- Halal Status -->
+    <string name="halal_status_halal">HALAL</string>
+    <string name="halal_status_haram">HARAM</string>
+    <string name="halal_status_syubhat">DOUBTFUL</string>
+    <string name="halal_status_unknown">NOT VERIFIED</string>
+    <string name="halal_confidence_label">Halal Score</string>
+
+    <!-- AI Insight -->
+    <string name="ai_insight_title">AI Daily Insight</string>
+    <string name="ai_insight_loading">AI is analyzing</string>
+    <string name="ai_insight_fallback">Enable AI for daily insights on halal products &amp; your health.</string>
+    <string name="ai_powered_by">Powered by Gemini ✨</string>
 </resources>

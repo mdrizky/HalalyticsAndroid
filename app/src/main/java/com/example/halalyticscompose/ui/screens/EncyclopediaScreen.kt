@@ -1,6 +1,6 @@
 package com.example.halalyticscompose.ui.screens
 
-import androidx.compose.animation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,34 +22,43 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.halalyticscompose.data.api.Ingredient
-import com.example.halalyticscompose.ui.theme.*
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.halalyticscompose.ui.viewmodel.EncyclopediaViewModel
+import com.example.halalyticscompose.Data.Model.HealthEncyclopedia
+import com.example.halalyticscompose.ui.viewmodel.HealthEncyclopediaViewModel
+import com.example.halalyticscompose.ui.theme.*
+import java.net.URLEncoder
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun EncyclopediaScreen(
     navController: NavController,
     paddingValues: PaddingValues = PaddingValues(),
-    viewModel: EncyclopediaViewModel = hiltViewModel()
+    viewModel: HealthEncyclopediaViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedFilter by remember { mutableStateOf("All") }
+    var selectedFilter by remember { mutableStateOf("Semua") } // Semua, Penyakit, Obat
     
-    val ingredients by viewModel.ingredients.collectAsState()
+    val items by viewModel.items.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchIngredients()
+    LaunchedEffect(selectedFilter, searchQuery) {
+        val filterType = when (selectedFilter) {
+            "Penyakit" -> "penyakit"
+            "Obat" -> "obat"
+            "Hidup Sehat" -> "hidup_sehat"
+            "Keluarga" -> "keluarga"
+            else -> null
+        }
+        val query = if (searchQuery.isNotBlank()) searchQuery else null
+        viewModel.fetchEncyclopedia(filterType, query)
     }
 
     Scaffold(
         modifier = Modifier.padding(paddingValues),
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Ingredient Encyclopedia", style = MaterialTheme.typography.titleLarge) },
+                title = { Text("Health Encyclopedia", style = MaterialTheme.typography.titleLarge) },
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.navigateUp() },
@@ -68,31 +77,21 @@ fun EncyclopediaScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Search Section Premium
+            // Search Section
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(0.05f), RoundedCornerShape(24.dp))
-                    .padding(20.dp)
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
             ) {
                 OutlinedTextField(
                     value = searchQuery,
-                    onValueChange = { 
-                        searchQuery = it 
-                        viewModel.searchIngredients(it)
-                    },
+                    onValueChange = { searchQuery = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Search ingredients or E-numbers...", color = MaterialTheme.colorScheme.onSurface.copy(0.6f)) },
+                    placeholder = { Text("Cari penyakit atau obat...", color = MaterialTheme.colorScheme.onSurface.copy(0.6f)) },
                     leadingIcon = { Icon(Icons.Default.Search, null, tint = MaterialTheme.colorScheme.primary) },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { 
-                                searchQuery = "" 
-                                viewModel.searchIngredients("")
-                            }) {
+                            IconButton(onClick = { searchQuery = "" }) {
                                 Icon(Icons.Default.Close, null, tint = MaterialTheme.colorScheme.onSurface.copy(0.6f))
                             }
                         }
@@ -103,38 +102,31 @@ fun EncyclopediaScreen(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(0.1f),
                         focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
                     )
                 )
             }
 
-            // Filters Section
+            // Tabs / Filters Section
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                listOf("All", "Halal", "Syubhat", "Haram").forEach { filter ->
+                listOf("Semua", "Penyakit", "Obat", "Hidup Sehat", "Keluarga").forEach { filter ->
+                    val isSelected = selectedFilter == filter
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (selectedFilter == filter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
-                            .border(1.dp, if (selectedFilter == filter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(0.05f), RoundedCornerShape(12.dp))
-                            .clickable { 
-                                selectedFilter = filter
-                                viewModel.fetchIngredients(
-                                    query = if (searchQuery.isEmpty()) null else searchQuery,
-                                    status = if (filter == "All") null else filter.lowercase()
-                                )
-                            }
+                            .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
+                            .border(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(0.05f), RoundedCornerShape(12.dp))
+                            .clickable { selectedFilter = filter }
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
                             filter, 
-                            color = if (selectedFilter == filter) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface, 
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface, 
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp
                         )
@@ -142,30 +134,55 @@ fun EncyclopediaScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Main List
-            Box(modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 24.dp)) {
+            // Main List with Sticky Headers (A-Z)
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
                 } else if (error != null) {
                     Text(error!!, color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
-                } else if (ingredients.isEmpty()) {
+                } else if (items.isEmpty()) {
                     Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.Inventory, null, tint = MaterialTheme.colorScheme.onSurface.copy(0.1f), modifier = Modifier.size(64.dp))
+                        Icon(Icons.Default.LocalHospital, null, tint = MaterialTheme.colorScheme.onSurface.copy(0.1f), modifier = Modifier.size(64.dp))
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("No matching database entries", color = MaterialTheme.colorScheme.onSurface.copy(0.6f))
+                        Text("Tidak ada data ditemukan", color = MaterialTheme.colorScheme.onSurface.copy(0.6f))
                     }
                 } else {
+                    val groupedItems = items.groupBy { it.alphabet.uppercase() }
+                    
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(bottom = 32.dp)
+                        contentPadding = PaddingValues(bottom = 32.dp),
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        items(ingredients) { ingredient ->
-                            PremiumIngredientCard(
-                                ingredient = ingredient,
-                                onClick = { navController.navigate("ingredient_detail/${ingredient.id_ingredient}") }
-                            )
+                        groupedItems.toSortedMap().forEach { (letter, itemList) ->
+                            // Sticky Header for each letter
+                            stickyHeader {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                        .padding(horizontal = 24.dp, vertical = 8.dp)
+                                ) {
+                                    Text(
+                                        text = letter,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                }
+                            }
+
+                            // Items under the letter
+                            items(itemList) { item ->
+                                EncyclopediaItemRow(
+                                    item = item,
+                                    onClick = { 
+                                        val encodedTitle = URLEncoder.encode(item.title, "UTF-8")
+                                        navController.navigate("encyclopedia_detail/${item.id}/${encodedTitle}")
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -175,58 +192,65 @@ fun EncyclopediaScreen(
 }
 
 @Composable
-fun PremiumIngredientCard(ingredient: Ingredient, onClick: () -> Unit) {
-    val statusColor = when (ingredient.halal_status.lowercase()) {
-        "halal" -> MaterialTheme.colorScheme.primary
-        "haram" -> MaterialTheme.colorScheme.error
-        "syubhat" -> MushboohYellow
-        else -> MaterialTheme.colorScheme.onSurface.copy(0.6f)
-    }
-
-    Box(
+fun EncyclopediaItemRow(item: HealthEncyclopedia, onClick: () -> Unit) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(0.05f), RoundedCornerShape(20.dp))
             .clickable { onClick() }
-            .padding(16.dp)
+            .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier.size(48.dp).clip(CircleShape).background(statusColor.copy(0.1f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.Science, null, tint = statusColor)
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    ingredient.name, 
-                    style = MaterialTheme.typography.titleMedium, 
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold
+                    text = item.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
-                if (ingredient.e_number != null) {
-                    Text("E-Number: ${ingredient.e_number}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                if (!item.summary.isNullOrEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = item.summary,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(0.7f),
+                        maxLines = 2
+                    )
                 }
+            }
+            
+            // Badge for Obat / Penyakit / Hidup Sehat
+            val badgeColor = when (item.type.lowercase()) {
+                "obat" -> Color(0xFF1E88E5)
+                "hidup_sehat" -> Color(0xFFFF8F00)
+                "keluarga" -> Color(0xFFE91E63)
+                else -> Color(0xFF43A047)
+            }
+            val badgeText = when (item.type.lowercase()) {
+                "obat" -> "Obat"
+                "hidup_sehat" -> "Hidup Sehat"
+                "keluarga" -> "Keluarga"
+                else -> "Penyakit"
             }
             
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(statusColor.copy(0.1f))
-                    .border(1.dp, statusColor.copy(0.3f), RoundedCornerShape(8.dp))
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(badgeColor.copy(0.1f))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
-                    ingredient.halal_status.uppercase(), 
-                    color = statusColor, 
-                    fontWeight = FontWeight.Black, 
-                    fontSize = 10.sp
+                    text = badgeText,
+                    color = badgeColor,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(0.05f))
     }
 }

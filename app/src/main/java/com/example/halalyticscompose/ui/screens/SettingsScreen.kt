@@ -14,16 +14,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import com.example.halalyticscompose.R
 import com.example.halalyticscompose.ui.theme.HalalGreen
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
+import com.example.halalyticscompose.utils.BiometricAuthHelper
+import com.example.halalyticscompose.utils.CrashReporter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,9 +36,16 @@ fun SettingsScreen(
     navController: NavController,
     viewModel: MainViewModel
 ) {
+    val context = LocalContext.current
     val isDarkMode by viewModel.isDarkMode.collectAsState()
     val appLanguage by viewModel.appLanguage.collectAsState()
     val isNotifEnabled by viewModel.isNotifEnabled.collectAsState()
+    val privacyModeEnabled by viewModel.privacyModeEnabled.collectAsState()
+    val biometricLockEnabled by viewModel.biometricLockEnabled.collectAsState()
+    val autoLogoutEnabled by viewModel.autoLogoutEnabled.collectAsState()
+    val autoLogoutMinutes by viewModel.autoLogoutMinutes.collectAsState()
+    var crashInfo by remember { mutableStateOf(CrashReporter.getLastCrash(context)) }
+    var biometricNotice by remember { mutableStateOf<String?>(null) }
     
     val layoutDirection = if (appLanguage == "ar") LayoutDirection.Rtl else LayoutDirection.Ltr
 
@@ -116,6 +128,97 @@ fun SettingsScreen(
                     }
                 }
 
+                // Security Section
+                SettingsSectionTitle("Security")
+                SettingsCard {
+                    Column(modifier = Modifier.padding(8.dp)) {
+                        SettingsSwitchRow(
+                            title = "Privacy Mode (anti screenshot)",
+                            icon = Icons.Default.Shield,
+                            checked = privacyModeEnabled,
+                            onCheckedChange = viewModel::setPrivacyModeEnabled
+                        )
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp), thickness = 0.5.dp)
+                        SettingsSwitchRow(
+                            title = "Biometric Lock (medical screens)",
+                            icon = Icons.Default.Fingerprint,
+                            checked = biometricLockEnabled,
+                            onCheckedChange = { enabled ->
+                                if (!enabled) {
+                                    biometricNotice = null
+                                    viewModel.setBiometricLockEnabled(false)
+                                } else {
+                                    val activity = context as? FragmentActivity
+                                    if (activity == null) {
+                                        biometricNotice = "Biometrik tidak tersedia di perangkat ini."
+                                        viewModel.setBiometricLockEnabled(false)
+                                    } else if (!BiometricAuthHelper.canAuthenticate(activity)) {
+                                        biometricNotice = "Biometrik belum aktif. Aktifkan sidik jari/face unlock di pengaturan perangkat."
+                                        viewModel.setBiometricLockEnabled(false)
+                                    } else {
+                                        BiometricAuthHelper.authenticate(
+                                            activity = activity,
+                                            executor = ContextCompat.getMainExecutor(activity),
+                                            title = "Aktifkan Biometric Lock",
+                                            subtitle = "Lindungi halaman medis sensitif",
+                                            description = "Konfirmasi identitas untuk mengaktifkan kunci biometrik",
+                                            onSuccess = {
+                                                biometricNotice = "Biometric lock aktif."
+                                                viewModel.setBiometricLockEnabled(true)
+                                            },
+                                            onError = { err ->
+                                                biometricNotice = err
+                                                viewModel.setBiometricLockEnabled(false)
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                        biometricNotice?.let {
+                            Text(
+                                text = it,
+                                modifier = Modifier.padding(horizontal = 12.dp),
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp), thickness = 0.5.dp)
+                        SettingsSwitchRow(
+                            title = "Auto Logout",
+                            icon = Icons.Default.Timer,
+                            checked = autoLogoutEnabled,
+                            onCheckedChange = viewModel::setAutoLogoutEnabled
+                        )
+
+                        if (autoLogoutEnabled) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Timeout (minutes)",
+                                modifier = Modifier.padding(horizontal = 12.dp),
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                listOf(5, 15, 30).forEach { minutes ->
+                                    FilterChip(
+                                        selected = autoLogoutMinutes == minutes,
+                                        onClick = { viewModel.setAutoLogoutMinutes(minutes) },
+                                        label = { Text("$minutes mnt") }
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                        }
+                    }
+                }
+
                 // Watchlist Section (Quick implement)
                 SettingsSectionTitle(stringResource(R.string.watchlist))
                 SettingsCard {
@@ -146,8 +249,69 @@ fun SettingsScreen(
                         Text("© 2026 DeepMind Agentics Team", fontSize = 12.sp, color = androidx.compose.ui.graphics.Color.Gray)
                     }
                 }
+
+                // Diagnostics Section (helps troubleshoot force-close without adb)
+                SettingsSectionTitle("Crash Diagnostics")
+                SettingsCard {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        if (crashInfo.isNullOrBlank()) {
+                            Text(
+                                text = "No recorded crash.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            Text(
+                                text = "Last crash captured on device:",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = crashInfo!!.take(650),
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 12
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            OutlinedButton(
+                                onClick = {
+                                    CrashReporter.clearLastCrash(context)
+                                    crashInfo = null
+                                }
+                            ) {
+                                Text("Clear Crash Log")
+                            }
+                        }
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun SettingsSwitchRow(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, contentDescription = null, tint = HalalGreen)
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(title)
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
     }
 }
 

@@ -58,6 +58,11 @@ class SessionManager(private val context: Context) {
         private const val KEY_DARK_MODE = "dark_mode"
         private const val KEY_NOTIF_ENABLED = "notif_enabled"
         private const val KEY_LANGUAGE = "language"
+        private const val KEY_PRIVACY_MODE = "privacy_mode"
+        private const val KEY_BIOMETRIC_LOCK = "biometric_lock"
+        private const val KEY_AUTO_LOGOUT_ENABLED = "auto_logout_enabled"
+        private const val KEY_AUTO_LOGOUT_MINUTES = "auto_logout_minutes"
+        private const val KEY_LAST_BACKGROUND_TS = "last_background_ts"
         
         @Volatile
         private var instance: SessionManager? = null
@@ -264,6 +269,36 @@ class SessionManager(private val context: Context) {
     }
 
     fun getLanguage(): String = prefs.getString(KEY_LANGUAGE, "id") ?: "id"
+
+    fun savePrivacyModeEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_PRIVACY_MODE, enabled).apply()
+    }
+
+    fun isPrivacyModeEnabled(): Boolean = prefs.getBoolean(KEY_PRIVACY_MODE, true)
+
+    fun saveBiometricLockEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_BIOMETRIC_LOCK, enabled).apply()
+    }
+
+    fun isBiometricLockEnabled(): Boolean = prefs.getBoolean(KEY_BIOMETRIC_LOCK, false)
+
+    fun saveAutoLogoutEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_AUTO_LOGOUT_ENABLED, enabled).apply()
+    }
+
+    fun isAutoLogoutEnabled(): Boolean = prefs.getBoolean(KEY_AUTO_LOGOUT_ENABLED, false)
+
+    fun saveAutoLogoutMinutes(minutes: Int) {
+        prefs.edit().putInt(KEY_AUTO_LOGOUT_MINUTES, minutes).apply()
+    }
+
+    fun getAutoLogoutMinutes(): Int = prefs.getInt(KEY_AUTO_LOGOUT_MINUTES, 5)
+
+    fun setLastBackgroundTimestamp(ts: Long) {
+        prefs.edit().putLong(KEY_LAST_BACKGROUND_TS, ts).apply()
+    }
+
+    fun getLastBackgroundTimestamp(): Long = prefs.getLong(KEY_LAST_BACKGROUND_TS, 0L)
     
     // ========================================
     // Logout / Clear Session

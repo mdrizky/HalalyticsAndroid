@@ -3,7 +3,8 @@ package com.example.halalyticscompose.Data.Model
 import com.google.gson.annotations.SerializedName
 
 data class MealAnalysisRequest(
-    @SerializedName("image") val image: String // Base64 string
+    @SerializedName("image") val image: String, // Base64 string
+    @SerializedName("family_id") val familyId: Int? = null
 )
 
 data class MealAnalysisResponse(

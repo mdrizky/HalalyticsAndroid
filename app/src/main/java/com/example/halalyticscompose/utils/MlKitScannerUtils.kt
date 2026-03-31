@@ -71,3 +71,45 @@ object MlKitTextScanner {
             }
     }
 }
+
+/**
+ * Text analyzer for CameraX stream (Live OCR) with simple throttling.
+ */
+class TextRecognitionAnalyzer(
+    private val onTextDetected: (String) -> Unit,
+    private val throttleMs: Long = 1000L
+) : ImageAnalysis.Analyzer {
+
+    private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+    @Volatile
+    private var lastProcessedAt: Long = 0L
+
+    @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
+    override fun analyze(imageProxy: ImageProxy) {
+        val now = System.currentTimeMillis()
+        if (now - lastProcessedAt < throttleMs) {
+            imageProxy.close()
+            return
+        }
+
+        val mediaImage = imageProxy.image ?: run {
+            imageProxy.close()
+            return
+        }
+
+        lastProcessedAt = now
+        val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+        
+        recognizer.process(image)
+            .addOnSuccessListener { visionText ->
+                val text = visionText.text
+                if (text.isNotBlank()) {
+                    onTextDetected(text)
+                }
+            }
+            .addOnCompleteListener { 
+                imageProxy.close() 
+            }
+    }
+}

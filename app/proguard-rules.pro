@@ -212,3 +212,45 @@
 -dontwarn org.bouncycastle.**
 -dontwarn org.conscrypt.**
 -dontwarn org.openjsse.**
+
+# =====================================================
+# 21. BIOMETRIC
+# =====================================================
+-keep class androidx.biometric.** { *; }
+-dontwarn androidx.biometric.**
+
+# =====================================================
+# 22. RELEASE SAFETY GUARDS (R8 FALSE-CRASH PREVENTION)
+# =====================================================
+# Keep app startup/security entry points
+-keep class com.example.halalyticscompose.HalalyticsApplication { *; }
+-keep class com.example.halalyticscompose.MainActivity { *; }
+-keep class com.example.halalyticscompose.utils.CrashReporter { *; }
+
+# Keep Retrofit API interfaces and generic signatures
+-keep interface com.example.halalyticscompose.**ApiService { *; }
+-keepattributes Signature, RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
+
+# Keep Room schema details used by generated code
+-keep class * extends androidx.room.RoomDatabase { *; }
+-keep class androidx.room.RoomDatabase_Impl { *; }
+
+# Keep WorkManager workers and receivers referenced by manifest/runtime
+-keep class com.example.halalyticscompose.data.worker.** { *; }
+-keep class com.example.halalyticscompose.data.notification.** { *; }
+-keep class com.example.halalyticscompose.messaging.** { *; }
+
+# =====================================================
+# 22. APPLICATION / STARTUP SAFETY
+# =====================================================
+-keep class com.example.halalyticscompose.HalalyticsApplication { *; }
+-keep class com.example.halalyticscompose.MainActivity { *; }
+-keep class com.example.halalyticscompose.data.worker.** { *; }
+
+# =====================================================
+# 23. GEMINI / VERTEX AI SAFETY
+# =====================================================
+-keep class com.google.ai.client.generativeai.** { *; }
+-dontwarn com.google.ai.client.generativeai.**
+-keep class com.google.firebase.vertexai.** { *; }
+-dontwarn com.google.firebase.vertexai.**

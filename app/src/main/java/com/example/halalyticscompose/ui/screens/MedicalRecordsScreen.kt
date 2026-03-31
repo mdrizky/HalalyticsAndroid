@@ -24,20 +24,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.halalyticscompose.Data.Model.MedicalRecordRequest
-import com.example.halalyticscompose.ui.theme.DarkBackground
-import com.example.halalyticscompose.ui.theme.DarkCard
-import com.example.halalyticscompose.ui.theme.HalalGreen
-import com.example.halalyticscompose.ui.theme.TextGray
 import com.example.halalyticscompose.ui.viewmodel.MedicalRecordsViewModel
 import com.example.halalyticscompose.utils.SessionManager
 import java.io.ByteArrayOutputStream
@@ -54,6 +47,7 @@ fun MedicalRecordsScreen(
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager.getInstance(context) }
+    val color = MaterialTheme.colorScheme
     
     val isLoading by viewModel.isLoading.collectAsState()
     val records by viewModel.records.collectAsState()
@@ -68,39 +62,107 @@ fun MedicalRecordsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Rekam Medis Digital") },
+                title = { 
+                    Text(
+                        "Rekam Medis Digital",
+                        fontWeight = FontWeight.ExtraBold,
+                        style = MaterialTheme.typography.titleLarge
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DarkBackground,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = color.background,
+                    titleContentColor = color.onBackground,
+                    navigationIconContentColor = color.onBackground
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showAddDialog = true },
-                containerColor = HalalGreen
+                containerColor = color.primary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Record")
+                Icon(Icons.Default.Add, contentDescription = "Add Record", tint = color.onPrimary)
             }
         },
-        containerColor = DarkBackground
+        containerColor = color.background
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             
             if (isLoading && records.isEmpty()) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = HalalGreen)
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = color.primary)
+            } else if (!error.isNullOrBlank() && records.isEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = 20.dp),
+                    colors = CardDefaults.cardColors(containerColor = color.errorContainer),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("Gagal memuat rekam medis", color = color.onErrorContainer, fontWeight = FontWeight.Bold)
+                        Text(error.orEmpty(), color = color.onErrorContainer, style = MaterialTheme.typography.bodySmall)
+                        Button(onClick = { viewModel.loadRecords() }) {
+                            Text("Coba Lagi")
+                        }
+                    }
+                }
             } else if (records.isEmpty()) {
-                Text(
-                    "Belum ada histori rekam medis.",
-                    color = TextGray,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .background(color.primary.copy(alpha = 0.1f), RoundedCornerShape(32.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Description,
+                            contentDescription = null,
+                            modifier = Modifier.size(60.dp),
+                            tint = color.primary
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        "Belum ada histori rekam medis",
+                        fontWeight = FontWeight.ExtraBold,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = color.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Simpan hasil lab, resep, diagnosis, atau vaksinasi Anda di sini agar mudah diakses kapan saja.",
+                        color = color.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Button(
+                        onClick = { showAddDialog = true },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        contentPadding = PaddingValues(16.dp)
+                    ) {
+                        Text("Tambah Rekam Medis", fontWeight = FontWeight.Bold)
+                    }
+                }
             } else {
                 LazyColumn(
                     contentPadding = PaddingValues(16.dp),
@@ -108,23 +170,51 @@ fun MedicalRecordsScreen(
                 ) {
                     items(records) { record ->
                         Card(
-                            modifier = Modifier.fillMaxWidth().clickable { /* Show Detail */ },
-                            colors = CardDefaults.cardColors(containerColor = DarkCard),
-                            shape = RoundedCornerShape(12.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { /* Show Detail */ },
+                            colors = CardDefaults.cardColors(containerColor = color.surface),
+                            shape = RoundedCornerShape(16.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
-                            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Box(
-                                    modifier = Modifier.size(50.dp).background(Color(0xFF2A2A2A), RoundedCornerShape(8.dp)),
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .background(color.primary.copy(alpha = 0.1f), RoundedCornerShape(14.dp)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.Default.Description, contentDescription = "Doc", tint = HalalGreen)
+                                    Icon(
+                                        Icons.Default.Description,
+                                        contentDescription = "Doc",
+                                        tint = color.primary,
+                                        modifier = Modifier.size(28.dp)
+                                    )
                                 }
                                 Spacer(modifier = Modifier.width(16.dp))
-                                Column {
-                                    Text(record.title, fontWeight = FontWeight.Bold, color = Color.White)
-                                    Text("${record.recordType} • ${record.recordDate}", color = TextGray, style = MaterialTheme.typography.bodySmall)
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        record.title,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = color.onSurface
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        "${record.recordType} • ${record.recordDate}",
+                                        color = color.onSurfaceVariant,
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
                                     if (!record.hospitalName.isNullOrEmpty()) {
-                                        Text(record.hospitalName, color = HalalGreen, style = MaterialTheme.typography.bodySmall)
+                                        Text(
+                                            record.hospitalName,
+                                            color = color.primary,
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
                                     }
                                 }
                             }
@@ -225,7 +315,7 @@ fun AddMedicalRecordDialog(
                 }
                 
                 if (selectedImageBitmap != null) {
-                    Text("Foto dipilih", color = HalalGreen, style = MaterialTheme.typography.bodySmall)
+                    Text("Foto dipilih", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
                 }
             }
         },

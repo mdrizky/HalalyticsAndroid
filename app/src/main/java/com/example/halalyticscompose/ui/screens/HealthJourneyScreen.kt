@@ -23,6 +23,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.halalyticscompose.ui.viewmodel.HealthAiViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,6 +34,9 @@ fun HealthJourneyScreen(
     viewModel: HealthAiViewModel = hiltViewModel()
 ) {
     var selectedTab by remember { mutableStateOf("Weight") }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var metricValue by remember { mutableStateOf("") }
+    var metricNotes by remember { mutableStateOf("") }
     val metrics = listOf("Weight", "Blood Pressure", "Blood Sugar", "Cholesterol")
     
     val metricHistory by viewModel.metricHistory.collectAsState()
@@ -121,7 +127,11 @@ fun HealthJourneyScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("Riwayat Terakhir", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                IconButton(onClick = { /* Add data dialog */ }) {
+                IconButton(onClick = { 
+                    metricValue = ""
+                    metricNotes = ""
+                    showAddDialog = true
+                }) {
                     Icon(Icons.Default.AddCircle, contentDescription = "Add", tint = Color(0xFF3B82F6), modifier = Modifier.size(32.dp))
                 }
             }
@@ -146,6 +156,55 @@ fun HealthJourneyScreen(
                 }
             }
         }
+    }
+
+    if (showAddDialog) {
+        val metricType = selectedTab.lowercase().replace(" ", "_")
+        val dateNow = remember {
+            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+        }
+
+        AlertDialog(
+            onDismissRequest = { showAddDialog = false },
+            title = { Text("Tambah Data $selectedTab") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = metricValue,
+                        onValueChange = { metricValue = it },
+                        label = { Text("Nilai $selectedTab") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = metricNotes,
+                        onValueChange = { metricNotes = it },
+                        label = { Text("Catatan (opsional)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 2
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = metricValue.isNotBlank(),
+                    onClick = {
+                        viewModel.recordMetric(
+                            type = metricType,
+                            value = metricValue.trim(),
+                            date = dateNow,
+                            notes = metricNotes.trim().ifBlank { null }
+                        )
+                        showAddDialog = false
+                    }
+                ) { Text("Simpan") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddDialog = false }) {
+                    Text("Batal")
+                }
+            }
+        )
     }
 }
 

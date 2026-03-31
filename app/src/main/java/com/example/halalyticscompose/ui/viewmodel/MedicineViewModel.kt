@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.halalyticscompose.Data.Model.Product
 import com.example.halalyticscompose.Data.API.ApiService
+import com.example.halalyticscompose.Data.Network.ApiErrorHandler
 import com.example.halalyticscompose.utils.SessionManager
 import com.example.halalyticscompose.Data.Model.SymptomsAnalysisResponse
 import com.example.halalyticscompose.Data.Model.MedicineSearchResponse
@@ -22,16 +23,32 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import android.util.Log
 import org.json.JSONObject
-import retrofit2.HttpException
 
 @HiltViewModel
 class MedicineViewModel @Inject constructor(
     private val apiService: ApiService,
     private val sessionManager: SessionManager
 ) : ViewModel() {
+    private fun sanitizeErrorMessage(raw: String?): String? {
+        val message = raw?.trim()?.takeIf { it.isNotBlank() } ?: return null
+        val lower = message.lowercase()
+        return if (
+            "sqlstate" in lower ||
+            "base table or view not found" in lower ||
+            "syntax error or access violation" in lower
+        ) {
+            "Layanan data sedang bermasalah. Silakan coba lagi."
+        } else {
+            message
+        }
+    }
+
     private fun parseApiErrorMessage(raw: String?): String? {
         if (raw.isNullOrBlank()) return null
-        return runCatching { JSONObject(raw).optString("message").takeIf { it.isNotBlank() } }.getOrNull()
+        return runCatching {
+            sanitizeErrorMessage(JSONObject(raw).optString("message"))
+                ?: sanitizeErrorMessage(raw)
+        }.getOrNull()
     }
 
     private val _medicines = MutableStateFlow<List<com.example.halalyticscompose.Data.Model.MedicineData>>(emptyList())
@@ -102,22 +119,25 @@ class MedicineViewModel @Inject constructor(
 
                 val response = apiService.analyzeSymptoms(token, cleanedSymptoms, userId.toString(), familyId)
                 val body = response.body()
-                if (response.isSuccessful && body?.success == true && body.symptoms_analysis != null) {
-                    Log.d("MedicineVM", "Symptom analysis success: ${body.symptoms_analysis.condition}")
-                    _symptomsAnalysis.value = body.symptoms_analysis
+                val symptomsAnalysis = body?.symptoms_analysis
+                if (response.isSuccessful && body?.success == true && symptomsAnalysis != null) {
+                    Log.d("MedicineVM", "Symptom analysis success: ${symptomsAnalysis.condition}")
+                    _symptomsAnalysis.value = symptomsAnalysis
                     _recommendedMedicines.value = body.recommended_medicines ?: emptyList()
                 } else {
-                    val apiMsg = parseApiErrorMessage(response.errorBody()?.string())
-                    val msg = apiMsg
-                        ?: body?.message
-                        ?: if (response.code() == 422) "Format keluhan belum valid. Coba tulis gejala lebih rinci."
-                        else "Analisis keluhan gagal (${response.code()})"
+                    val errorBody = response.errorBody()?.string()
+                    val handledError = ApiErrorHandler.fromResponse<com.example.halalyticscompose.Data.Model.SymptomsAnalysisResponse>(
+                        code = response.code(),
+                        rawBody = errorBody
+                    )
+                    val apiMsg = parseApiErrorMessage(errorBody)
+                    val msg = apiMsg ?: body?.message ?: handledError.message
                     Log.e("MedicineVM", "Symptom analysis failure: $msg")
                     _errorMessage.value = msg
                 }
             } catch (e: Exception) {
                 Log.e("MedicineVM", "Symptom analysis error: ${e.message}", e)
-                _errorMessage.value = e.localizedMessage ?: "Terjadi kendala saat analisis keluhan"
+                _errorMessage.value = ApiErrorHandler.fromThrowable<com.example.halalyticscompose.Data.Model.SymptomsAnalysisResponse>(e).message
             } finally {
                 _isLoading.value = false
             }
@@ -139,17 +159,19 @@ class MedicineViewModel @Inject constructor(
                     Log.d("MedicineVM", "Search success: Found $count medicines for '$query'")
                     _medicines.value = response.body()?.data ?: emptyList()
                 } else {
-                    val apiMsg = parseApiErrorMessage(response.errorBody()?.string())
-                    val msg = apiMsg ?: response.body()?.message ?: "Failed to search medicine (${response.code()})"
+                    val errorBody = response.errorBody()?.string()
+                    val apiMsg = parseApiErrorMessage(errorBody)
+                    val handledError = ApiErrorHandler.fromResponse<MedicineSearchResponse>(
+                        code = response.code(),
+                        rawBody = errorBody
+                    )
+                    val msg = apiMsg ?: response.body()?.message ?: handledError.message
                     Log.e("MedicineVM", "Search failure: $msg")
                     _errorMessage.value = msg
                 }
             } catch (e: Exception) {
                 Log.e("MedicineVM", "Search error: ${e.message}", e)
-                _errorMessage.value = when (e) {
-                    is HttpException -> "Layanan obat tidak tersedia (${e.code()})"
-                    else -> "Error: ${e.message}"
-                }
+                _errorMessage.value = ApiErrorHandler.fromThrowable<MedicineSearchResponse>(e).message
             } finally {
                 _isLoading.value = false
             }

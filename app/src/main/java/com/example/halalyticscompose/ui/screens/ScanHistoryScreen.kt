@@ -54,6 +54,8 @@ import com.example.halalyticscompose.Data.Model.ScanHistoryItem
 import com.example.halalyticscompose.ui.viewmodel.ScanHistoryViewModel
 import com.example.halalyticscompose.utils.SessionManager
 import android.widget.Toast
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 
 private val Danger = Color(0xFFFF4757)
 private val Warning = Color(0xFFF5A623)
@@ -286,7 +288,16 @@ private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: ()
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                Text("📦")
+                if (!item.productImage.isNullOrBlank()) {
+                    AsyncImage(
+                        model = item.productImage,
+                        contentDescription = item.productName,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text("📦")
+                }
             }
             Spacer(modifier = Modifier.size(10.dp))
             Column(modifier = Modifier.weight(1f)) {

@@ -147,6 +147,30 @@ fun ReportIssueScreen(
                     fontWeight = FontWeight.Bold,
                     color = HalalGreen
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { navController.navigate("ai_report") },
+                    colors = CardDefaults.cardColors(containerColor = HalalGreen.copy(alpha = 0.05f)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, HalalGreen.copy(alpha = 0.5f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.AutoGraph, contentDescription = null, tint = HalalGreen)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text("Lihat Smart Report AI", fontWeight = FontWeight.Bold, color = HalalGreen)
+                            Text("Dapatkan analisis kesehatan mendalam dari AI", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = HalalGreen)
+                    }
+                }
                 
                 Spacer(modifier = Modifier.height(24.dp))
 

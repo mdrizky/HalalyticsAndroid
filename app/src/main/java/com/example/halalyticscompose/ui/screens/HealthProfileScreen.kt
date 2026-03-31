@@ -19,9 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.halalyticscompose.ui.theme.*
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,14 +27,21 @@ fun HealthProfileScreen(
     navController: NavController,
     viewModel: MainViewModel
 ) {
-    val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    val color = MaterialTheme.colorScheme
     
     // Health data
     val bmi by viewModel.bmi.collectAsState()
     val activityLevel by viewModel.activityLevel.collectAsState()
     val totalScans by viewModel.totalScans.collectAsState()
     val halalProducts by viewModel.halalProducts.collectAsState()
+    val userData by viewModel.userData.collectAsState()
+
+    var showBmiDialog by remember { mutableStateOf(false) }
+    var showActivityDialog by remember { mutableStateOf(false) }
+    var heightInput by remember { mutableStateOf(userData?.height?.toString().orEmpty()) }
+    var weightInput by remember { mutableStateOf(userData?.weight?.toString().orEmpty()) }
+    var selectedActivity by remember { mutableStateOf(activityLevel) }
 
     Scaffold(
         topBar = {
@@ -45,7 +50,7 @@ fun HealthProfileScreen(
                     Text(
                         "Profil Kesehatan", 
                         fontWeight = FontWeight.Bold,
-                        color = TextWhite
+                        color = color.onBackground
                     ) 
                 },
                 navigationIcon = {
@@ -53,16 +58,16 @@ fun HealthProfileScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = TextWhite
+                            tint = color.onBackground
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DarkBackground
+                    containerColor = color.background
                 )
             )
         },
-        containerColor = DarkBackground
+        containerColor = color.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -71,9 +76,9 @@ fun HealthProfileScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            DarkBackground,
-                            DarkBackground,
-                            HalalGreen.copy(alpha = 0.05f)
+                            color.background,
+                            color.background,
+                            color.primary.copy(alpha = 0.04f)
                         )
                     )
                 )
@@ -85,26 +90,28 @@ fun HealthProfileScreen(
             HealthCard(
                 title = "Indeks Massa Tubuh (BMI)",
                 icon = Icons.Default.MonitorWeight,
-                color = Color(0xFF3B82F6)
+                accentColor = Color(0xFF3B82F6)
             ) {
                 Column {
                     Text(
                         text = bmi,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Bold,
-                        color = TextWhite
+                        color = color.onSurface
                     )
                     Text(
                         text = getBMICategory(bmi),
                         fontSize = 14.sp,
-                        color = TextGray
+                        color = color.onSurfaceVariant
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     Button(
                         onClick = { 
-                            // TODO: Open BMI calculator
+                            heightInput = userData?.height?.toString().orEmpty()
+                            weightInput = userData?.weight?.toString().orEmpty()
+                            showBmiDialog = true
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
@@ -120,21 +127,22 @@ fun HealthProfileScreen(
             HealthCard(
                 title = "Tingkat Aktivitas",
                 icon = Icons.AutoMirrored.Filled.DirectionsRun,
-                color = Color(0xFF10B981)
+                accentColor = Color(0xFF10B981)
             ) {
                 Column {
                     Text(
                         text = activityLevel,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = TextWhite
+                        color = color.onSurface
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     Button(
                         onClick = { 
-                            // TODO: Open activity level selector
+                            selectedActivity = activityLevel
+                            showActivityDialog = true
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
@@ -150,7 +158,7 @@ fun HealthProfileScreen(
             HealthCard(
                 title = "Statistik Scan",
                 icon = Icons.Default.QrCodeScanner,
-                color = Color(0xFF8B5CF6)
+                accentColor = Color(0xFF8B5CF6)
             ) {
                 Column {
                     Row(
@@ -181,7 +189,7 @@ fun HealthProfileScreen(
             HealthCard(
                 title = "Alat Kesehatan",
                 icon = Icons.Default.HealthAndSafety,
-                color = Color(0xFF0EA5E9)
+                accentColor = Color(0xFF0EA5E9)
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -210,20 +218,105 @@ fun HealthProfileScreen(
             }
         }
     }
+
+    if (showBmiDialog) {
+        AlertDialog(
+            onDismissRequest = { showBmiDialog = false },
+            title = { Text("Hitung BMI") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = heightInput,
+                        onValueChange = { heightInput = it },
+                        label = { Text("Tinggi (cm)") },
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = weightInput,
+                        onValueChange = { weightInput = it },
+                        label = { Text("Berat (kg)") },
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val h = heightInput.toDoubleOrNull()
+                        val w = weightInput.toDoubleOrNull()
+                        if (h != null && w != null && h > 0 && w > 0) {
+                            viewModel.updateProfile(
+                                height = h,
+                                weight = w
+                            )
+                        }
+                        showBmiDialog = false
+                    }
+                ) { Text("Simpan") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBmiDialog = false }) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
+
+    if (showActivityDialog) {
+        val activityOptions = listOf("Rendah", "Sedang", "Tinggi", "Sangat Tinggi")
+        AlertDialog(
+            onDismissRequest = { showActivityDialog = false },
+            title = { Text("Pilih Tingkat Aktivitas") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    activityOptions.forEach { option ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { selectedActivity = option }
+                                .padding(vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedActivity.equals(option, ignoreCase = true),
+                                onClick = { selectedActivity = option }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(option)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.updateProfile(activityLevel = selectedActivity)
+                        showActivityDialog = false
+                    }
+                ) { Text("Simpan") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showActivityDialog = false }) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
 }
 
 @Composable
 fun HealthCard(
     title: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    color: Color,
+    accentColor: Color,
     content: @Composable () -> Unit
 ) {
+    val color = MaterialTheme.colorScheme
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = DarkCard
+            containerColor = color.surface
         )
     ) {
         Column(
@@ -236,7 +329,7 @@ fun HealthCard(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = color,
+                    tint = accentColor,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
@@ -244,7 +337,7 @@ fun HealthCard(
                     text = title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextWhite
+                    color = color.onSurface
                 )
             }
             content()
@@ -254,6 +347,7 @@ fun HealthCard(
 
 @Composable
 fun StatItem(label: String, value: String) {
+    val color = MaterialTheme.colorScheme
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -261,12 +355,12 @@ fun StatItem(label: String, value: String) {
             text = value,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = TextWhite
+            color = color.onSurface
         )
         Text(
             text = label,
             fontSize = 12.sp,
-            color = TextGray
+            color = color.onSurfaceVariant
         )
     }
 }
@@ -278,13 +372,14 @@ fun HealthToolItem(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     onClick: () -> Unit
 ) {
+    val color = MaterialTheme.colorScheme
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF2A2A2A)
+            containerColor = color.surfaceVariant.copy(alpha = 0.6f)
         )
     ) {
         Row(
@@ -307,18 +402,18 @@ fun HealthToolItem(
                     text = title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextWhite
+                    color = color.onSurface
                 )
                 Text(
                     text = description,
                     fontSize = 12.sp,
-                    color = TextGray
+                    color = color.onSurfaceVariant
                 )
             }
             Icon(
                 Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = TextGray,
+                tint = color.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
         }

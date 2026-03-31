@@ -29,6 +29,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,11 +39,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.compose.runtime.collectAsState
+import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HealthMonitorScreen(navController: NavController) {
+fun HealthMonitorScreen(
+    navController: NavController,
+    viewModel: MainViewModel
+) {
     val color = MaterialTheme.colorScheme
+    val bmi by viewModel.bmi.collectAsState()
+    val dailyIntake by viewModel.dailyIntake.collectAsState()
+
+    val bmiValue = remember(bmi) { bmi.toDoubleOrNull() ?: 0.0 }
+    val bmiStatus = remember(bmiValue) { getBmiStatus(bmiValue) }
+    val sugarPct = remember(dailyIntake) {
+        val sugar = dailyIntake?.dailyIntake?.totalSugarG ?: 0
+        val limit = (dailyIntake?.targets?.sugarLimitG ?: 50).coerceAtLeast(1)
+        ((sugar.toFloat() / limit.toFloat()) * 100f).coerceIn(0f, 300f)
+    }
+    val sugarStatus = remember(sugarPct) { getSugarStatus(sugarPct) }
+    val hydrationPct = remember(dailyIntake) { dailyIntake?.progress?.waterPercentage ?: 0f }
+    val hydrationStatus = remember(hydrationPct) { getHydrationStatus(hydrationPct) }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -69,9 +90,9 @@ fun HealthMonitorScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                MetricChip("Tekanan Darah", "Normal", Icons.Default.Favorite)
-                MetricChip("IMT", "Ideal", Icons.Default.MonitorWeight)
-                MetricChip("Gula Darah", "Stabil", Icons.Default.WaterDrop)
+                MetricChip("Hidrasi", hydrationStatus, Icons.Default.WaterDrop)
+                MetricChip("IMT", bmiStatus, Icons.Default.MonitorWeight)
+                MetricChip("Gula", sugarStatus, Icons.Default.Favorite)
             }
 
             Card(
@@ -81,10 +102,19 @@ fun HealthMonitorScreen(navController: NavController) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("Status Indeks Massa Tubuh", color = color.onSurfaceVariant, fontSize = 13.sp)
                     Spacer(modifier = Modifier.height(6.dp))
-                    Text("Ideal", fontWeight = FontWeight.ExtraBold, color = Color(0xFF17A34A), fontSize = 28.sp)
+                    Text(
+                        "${if (bmiValue > 0) "%.1f".format(bmiValue) else "0.0"} (${bmiStatus})",
+                        fontWeight = FontWeight.ExtraBold,
+                        color = getBmiColor(bmiValue),
+                        fontSize = 28.sp
+                    )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        "Pertahankan IMT normal dengan pola makan seimbang, olahraga rutin, dan tidur cukup.",
+                        buildMonitorSummary(
+                            bmiStatus = bmiStatus,
+                            sugarPct = sugarPct,
+                            hydrationPct = hydrationPct
+                        ),
                         color = color.onSurface,
                         fontSize = 13.sp,
                         lineHeight = 20.sp
@@ -93,6 +123,61 @@ fun HealthMonitorScreen(navController: NavController) {
             }
         }
     }
+}
+
+private fun getBmiStatus(bmi: Double): String {
+    if (bmi <= 0.0) return "Belum diisi"
+    return when {
+        bmi < 18.5 -> "Kurus"
+        bmi < 25.0 -> "Ideal"
+        bmi < 30.0 -> "Berlebih"
+        else -> "Obesitas"
+    }
+}
+
+private fun getBmiColor(bmi: Double): Color {
+    if (bmi <= 0.0) return Color(0xFF6B7280)
+    return when {
+        bmi < 18.5 -> Color(0xFFF59E0B)
+        bmi < 25.0 -> Color(0xFF17A34A)
+        bmi < 30.0 -> Color(0xFFF97316)
+        else -> Color(0xFFDC2626)
+    }
+}
+
+private fun getSugarStatus(percentage: Float): String {
+    return when {
+        percentage < 50f -> "Aman"
+        percentage <= 100f -> "Waspada"
+        else -> "Tinggi"
+    }
+}
+
+private fun getHydrationStatus(percentage: Float): String {
+    return when {
+        percentage < 50f -> "Kurang"
+        percentage < 100f -> "Cukup"
+        else -> "Terpenuhi"
+    }
+}
+
+private fun buildMonitorSummary(
+    bmiStatus: String,
+    sugarPct: Float,
+    hydrationPct: Float
+): String {
+    val sugarText = when {
+        sugarPct < 50f -> "asupan gula masih rendah"
+        sugarPct <= 100f -> "asupan gula mendekati batas harian"
+        else -> "asupan gula melewati batas harian"
+    }
+    val hydrationText = when {
+        hydrationPct < 50f -> "hidrasi masih kurang"
+        hydrationPct < 100f -> "hidrasi cukup baik"
+        else -> "hidrasi harian sudah tercapai"
+    }
+    return "BMI Anda saat ini $bmiStatus, $sugarText, dan $hydrationText. " +
+        "Jaga pola makan seimbang, aktivitas rutin, serta minum air yang cukup."
 }
 
 @Composable

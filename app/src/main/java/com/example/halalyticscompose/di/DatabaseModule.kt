@@ -33,25 +33,17 @@ object DatabaseModule {
         val factory = SupportFactory(passphrase)
 
         return try {
-            Room.databaseBuilder(
-                context,
-                HalalyticsDatabase::class.java,
-                "halalytics_database"
-            )
-                .openHelperFactory(factory)
-                .fallbackToDestructiveMigration()
-                .build()
+            val db = buildEncryptedDatabase(context, factory)
+            // Force-open to catch encrypted/plain mismatch at startup.
+            db.openHelper.writableDatabase
+            db
         } catch (e: Exception) {
             // Recovery path for passphrase mismatch / legacy plain DB state.
             context.deleteDatabase("halalytics_database")
-            Room.databaseBuilder(
-                context,
-                HalalyticsDatabase::class.java,
-                "halalytics_database"
-            )
-                .openHelperFactory(factory)
-                .fallbackToDestructiveMigration()
-                .build()
+            val rebuilt = buildEncryptedDatabase(context, factory)
+            // If this still fails, let it throw so crash reporter captures it.
+            rebuilt.openHelper.writableDatabase
+            rebuilt
         }
     }
     
@@ -73,5 +65,19 @@ object DatabaseModule {
     private fun generatePassphrase(context: Context): ByteArray {
         val seed = "Halalytics_DB_Key_${context.packageName}_v1"
         return SQLiteDatabase.getBytes(seed.toCharArray())
+    }
+
+    private fun buildEncryptedDatabase(
+        context: Context,
+        factory: SupportFactory
+    ): HalalyticsDatabase {
+        return Room.databaseBuilder(
+            context,
+            HalalyticsDatabase::class.java,
+            "halalytics_database"
+        )
+            .openHelperFactory(factory)
+            .fallbackToDestructiveMigration()
+            .build()
     }
 }

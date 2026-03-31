@@ -59,13 +59,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import android.net.Uri
 import coil.compose.AsyncImage
 import com.example.halalyticscompose.Data.API.BeautyProduct
+import com.example.halalyticscompose.Data.API.bestId
 import com.example.halalyticscompose.Data.API.bestIngredientsText
 import com.example.halalyticscompose.Data.Model.MedicineData
 import com.example.halalyticscompose.Data.Model.ProductItem
+import com.google.gson.Gson
 import com.example.halalyticscompose.ui.viewmodel.MedicineViewModel
 import com.example.halalyticscompose.ui.viewmodel.ProductExternalViewModel
 import com.example.halalyticscompose.ui.viewmodel.SkincareViewModel
@@ -80,7 +82,7 @@ private enum class SearchTab(val title: String) {
 @Composable
 fun SearchHubScreen(
     navController: NavController,
-    foodViewModel: ProductExternalViewModel = viewModel(),
+    foodViewModel: ProductExternalViewModel = hiltViewModel(),
     medicineViewModel: MedicineViewModel = hiltViewModel(),
     skincareViewModel: SkincareViewModel = hiltViewModel()
 ) {
@@ -105,11 +107,11 @@ fun SearchHubScreen(
 
     fun submitSearch() {
         val q = query.trim()
-        if (q.length < 2) return
+        if (q.isEmpty()) return
         focusManager.clearFocus()
         when (selectedTab) {
             SearchTab.MEDICINE -> medicineViewModel.searchMedicine(q)
-            SearchTab.FOOD -> foodViewModel.searchProducts(q)
+            SearchTab.FOOD -> foodViewModel.searchProducts(query = q, pageSize = 100, page = 1)
             SearchTab.COSMETIC -> skincareViewModel.searchSkincare(q)
         }
     }
@@ -253,7 +255,16 @@ fun SearchHubScreen(
                                 items(cosmeticResults) { cosmetic ->
                                     CosmeticResultCard(cosmetic = cosmetic) {
                                         skincareViewModel.selectProduct(cosmetic)
-                                        navController.navigate("cosmetic_detail")
+                                        navController.currentBackStackEntry?.savedStateHandle?.set(
+                                            "selected_cosmetic_json",
+                                            Gson().toJson(cosmetic)
+                                        )
+                                        val id = cosmetic.bestId
+                                        if (!id.isNullOrBlank()) {
+                                            navController.navigate("cosmetic_detail/${Uri.encode(id)}")
+                                        } else {
+                                            navController.navigate("cosmetic_detail")
+                                        }
                                     }
                                 }
                                 item { Spacer(modifier = Modifier.height(20.dp)) }

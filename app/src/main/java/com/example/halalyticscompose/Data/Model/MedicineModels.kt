@@ -33,6 +33,8 @@ data class MedicineData(
     @SerializedName("dosage_form") val dosageForm: String? = null,
     @SerializedName("category") val kategori: String? = null,
     @SerializedName("source") val source: String? = "local",
+    @SerializedName("is_imported_from_fda") val isImportedFromFda: Boolean? = false,
+    @SerializedName("external_reference") val externalReference: String? = null,
     @SerializedName("is_prescription_required") val isPrescriptionRequired: Boolean? = false,
     @SerializedName("is_verified_by_admin") val isVerifiedByAdmin: Boolean? = false,
     @SerializedName("active") val active: Boolean? = true

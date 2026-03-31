@@ -5,26 +5,43 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.example.halalyticscompose.ui.screens.*
 import com.example.halalyticscompose.ui.components.MainLayout
 import com.example.halalyticscompose.ui.theme.*
 import com.example.halalyticscompose.healthcare.screens.*
 import com.example.halalyticscompose.healthcare.viewmodel.HealthScannerViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.ui.platform.LocalContext
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import com.example.halalyticscompose.ui.viewmodel.NotificationViewModel
 
 import com.example.halalyticscompose.utils.LanguageManager
+import com.example.halalyticscompose.utils.BiometricAuthHelper
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import dagger.hilt.android.AndroidEntryPoint
 
 @Composable
@@ -41,22 +58,121 @@ fun HalalyticsComposeTheme(
     )
 }
 
+@Composable
+private fun MedicalRouteGuard(
+    enabled: Boolean,
+    content: @Composable () -> Unit
+) {
+    if (!enabled) {
+        content()
+        return
+    }
+
+    val context = LocalContext.current
+    val activity = context as? FragmentActivity
+    var isUnlocked by rememberSaveable { mutableStateOf(false) }
+    var authError by remember { mutableStateOf<String?>(null) }
+
+    if (isUnlocked) {
+        content()
+        return
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+                Text(
+                    text = "Akses Medis Terkunci",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Gunakan biometrik untuk membuka halaman medis sensitif.",
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                authError?.let {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp, textAlign = TextAlign.Center)
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        val act = activity
+                        if (act == null) {
+                            authError = "Biometrik tidak tersedia di perangkat ini."
+                            return@Button
+                        }
+                        if (!BiometricAuthHelper.canAuthenticate(act)) {
+                            authError = "Biometrik belum aktif. Buka pengaturan perangkat untuk mengaktifkan."
+                            return@Button
+                        }
+                        BiometricAuthHelper.authenticate(
+                            activity = act,
+                            executor = ContextCompat.getMainExecutor(act),
+                            onSuccess = {
+                                authError = null
+                                isUnlocked = true
+                            },
+                            onError = { message ->
+                                authError = message
+                            }
+                        )
+                    }
+                ) {
+                    Text("Buka dengan Biometrik")
+                }
+            }
+        }
+    }
+}
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // 🔒 SECURITY: Prevent screenshots and hide app in Recent Apps (Privacy Screen)
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_SECURE,
-            WindowManager.LayoutParams.FLAG_SECURE
-        )
-        
+
         setContent {
             val mainViewModel: MainViewModel = hiltViewModel()
             // Database and DAO are now injected via Hilt
             val isDarkMode by mainViewModel.isDarkMode.collectAsState()
             val appLanguage by mainViewModel.appLanguage.collectAsState()
+            val privacyModeEnabled by mainViewModel.privacyModeEnabled.collectAsState()
+            val biometricLockEnabled by mainViewModel.biometricLockEnabled.collectAsState()
+            val autoLogoutEnabled by mainViewModel.autoLogoutEnabled.collectAsState()
+            val autoLogoutMinutes by mainViewModel.autoLogoutMinutes.collectAsState()
+            val isLoggedIn by mainViewModel.isLoggedIn.collectAsState()
+            val isAdmin by mainViewModel.isAdmin.collectAsState()
 
             HalalyticsComposeTheme(darkTheme = isDarkMode) {
                 Surface(
@@ -66,14 +182,57 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
                     val context = LocalContext.current
+                    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
 
                 LaunchedEffect(appLanguage) {
                     LanguageManager.applyLanguageIfNeeded(this@MainActivity, appLanguage)
+                }
+
+                LaunchedEffect(privacyModeEnabled) {
+                    val shouldUseSecureWindow = privacyModeEnabled && !BuildConfig.DEBUG
+                    if (shouldUseSecureWindow) {
+                        window.setFlags(
+                            WindowManager.LayoutParams.FLAG_SECURE,
+                            WindowManager.LayoutParams.FLAG_SECURE
+                        )
+                    } else {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    }
                 }
                 
                 // Initialize SessionManager
                 val sessionManager = remember {
                     com.example.halalyticscompose.utils.SessionManager.getInstance(context)
+                }
+
+                DisposableEffect(lifecycleOwner, autoLogoutEnabled, autoLogoutMinutes, isLoggedIn) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        if (!autoLogoutEnabled) return@LifecycleEventObserver
+                        when (event) {
+                            Lifecycle.Event.ON_STOP -> {
+                                if (isLoggedIn) {
+                                    sessionManager.setLastBackgroundTimestamp(System.currentTimeMillis())
+                                }
+                            }
+                            Lifecycle.Event.ON_START -> {
+                                if (isLoggedIn) {
+                                    val lastTs = sessionManager.getLastBackgroundTimestamp()
+                                    if (lastTs > 0L) {
+                                        val timeoutMs = autoLogoutMinutes * 60_000L
+                                        val idleMs = System.currentTimeMillis() - lastTs
+                                        if (idleMs >= timeoutMs) {
+                                            mainViewModel.logout(navController)
+                                        }
+                                    }
+                                }
+                            }
+                            else -> Unit
+                        }
+                    }
+                    lifecycleOwner.lifecycle.addObserver(observer)
+                    onDispose {
+                        lifecycleOwner.lifecycle.removeObserver(observer)
+                    }
                 }
                 
                 // Health Scanner Feature ViewModel
@@ -114,7 +273,7 @@ class MainActivity : ComponentActivity() {
                 val startDestination = remember {
                     when {
                         !sessionManager.isLoggedIn() -> "splash"
-                        sessionManager.getRole()?.equals("admin", ignoreCase = true) == true -> "login"
+                        sessionManager.getRole()?.equals("admin", ignoreCase = true) == true -> "home"
                         else -> "home" // Authenticated users go to home
                     }
                 }
@@ -153,6 +312,15 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
+
+                    composable("basic_profile") {
+                        MainLayout(navController = navController) { paddingValues ->
+                            BasicProfileScreen(
+                                navController = navController,
+                                viewModel = mainViewModel
+                            )
+                        }
+                    }
                     
                     // Home Screen
                     composable("home") {
@@ -176,6 +344,16 @@ class MainActivity : ComponentActivity() {
                     composable("cosmetic_detail") {
                         MainLayout(navController = navController) {
                             CosmeticDetailScreen(navController = navController)
+                        }
+                    }
+
+                    composable("cosmetic_detail/{productId}") { backStackEntry ->
+                        val productId = backStackEntry.arguments?.getString("productId")
+                        MainLayout(navController = navController) {
+                            CosmeticDetailScreen(
+                                navController = navController,
+                                productId = productId
+                            )
                         }
                     }
 
@@ -228,6 +406,15 @@ class MainActivity : ComponentActivity() {
                             ProfileScreen(navController = navController, viewModel = mainViewModel)
                         }
                     }
+
+                    composable("profile_status") {
+                        MainLayout(navController = navController) { paddingValues ->
+                            ProfileStatusScreen(
+                                navController = navController,
+                                viewModel = mainViewModel
+                            )
+                        }
+                    }
                     
                     // Account Management Screen
                     composable("account_management") {
@@ -242,7 +429,7 @@ class MainActivity : ComponentActivity() {
                             PrivacyPolicyScreen(navController = navController)
                         }
                     }
-                    
+
                     // Enhanced OCR Screen
                     composable("enhanced_ocr") {
                         MainLayout(navController = navController) { paddingValues ->
@@ -325,6 +512,20 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
+                    composable("admin_notifications_app") {
+                        if (isAdmin) {
+                            MainLayout(navController = navController) { paddingValues ->
+                                AdminNotificationScreen(
+                                    navController = navController
+                                )
+                            }
+                        } else {
+                            LaunchedEffect(Unit) {
+                                navController.popBackStack()
+                            }
+                        }
+                    }
+
                     // Favorites Screen (New)
                     composable("favorites") {
                         MainLayout(navController = navController) { paddingValues ->
@@ -334,10 +535,10 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     
-                    // Enhanced Profile Screen
-                    composable("enhanced_profile") {
+                    // Edit Profile Screen
+                    composable("edit_profile") {
                         MainLayout(navController = navController) { paddingValues ->
-                            EnhancedProfileScreen(
+                            EditProfileScreen(
                                 navController = navController
                             )
                         }
@@ -362,17 +563,6 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 barcode = barcode ?: "",
                                 mainViewModel = mainViewModel
-                            )
-                        }
-                    }
-                    
-                    // Simple Product Detail Screen
-                    composable("simple_product_detail/{barcode}") { backStackEntry ->
-                        MainLayout(navController = navController) { paddingValues ->
-                            val barcode = backStackEntry.arguments?.getString("barcode")
-                            SimpleProductDetailScreen(
-                                navController = navController,
-                                barcode = barcode ?: ""
                             )
                         }
                     }
@@ -418,11 +608,24 @@ class MainActivity : ComponentActivity() {
                     }
 
                     // Health Scanner Feature Routes
-                    composable("health_assistant") {
+                    composable(
+                        "health_assistant?symptom={symptom}",
+                        arguments = listOf(
+                            navArgument("symptom") {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) { backStackEntry ->
+                        val symptom = backStackEntry.arguments?.getString("symptom")
                         MainLayout(navController = navController) { paddingValues ->
-                            HealthAssistantScreen(
-                                navController = navController
-                            )
+                            MedicalRouteGuard(enabled = biometricLockEnabled) {
+                                HealthAssistantScreen(
+                                    navController = navController,
+                                    initialSymptom = symptom
+                                )
+                            }
                         }
                     }
                     composable("medicine_reminders") {
@@ -476,14 +679,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    // Pharmacy Screen
-                    composable("pharmacy") {
-                        MainLayout(navController = navController) { paddingValues ->
-                            PharmacyScreen(
-                                navController = navController
-                            )
-                        }
-                    }
+
 
                     // ⚠️ ADDED: AI Weekly Report Screen
                     composable("weekly_report") {
@@ -501,6 +697,39 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 paddingValues = paddingValues
                             )
+                        }
+                    }
+
+                    // ⚠️ ADDED: Encyclopedia Detail Screen
+                    composable("encyclopedia_detail/{id}/{title}") { backStackEntry ->
+                        val itemId = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 0
+                        val viewModel: com.example.halalyticscompose.ui.viewmodel.HealthEncyclopediaViewModel = hiltViewModel()
+                        val selectedItem by viewModel.selectedItem.collectAsState()
+                        val isLoading by viewModel.isLoading.collectAsState()
+
+                        LaunchedEffect(itemId) {
+                            viewModel.fetchById(itemId)
+                        }
+
+                        if (isLoading) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                            }
+                        } else if (selectedItem != null) {
+                            EncyclopediaDetailScreen(
+                                navController = navController,
+                                item = selectedItem!!
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Item tidak ditemukan", color = MaterialTheme.colorScheme.error)
+                            }
                         }
                     }
 
@@ -544,9 +773,11 @@ class MainActivity : ComponentActivity() {
                     // Emergency QR Screen
                     composable("emergency_qr") {
                         MainLayout(navController = navController) { paddingValues ->
-                            EmergencyQRScreen(
-                                navController = navController
-                            )
+                            MedicalRouteGuard(enabled = biometricLockEnabled) {
+                                EmergencyQRScreen(
+                                    navController = navController
+                                )
+                            }
                         }
                     }
 
@@ -563,7 +794,12 @@ class MainActivity : ComponentActivity() {
                     // Body Monitor Screen
                     composable("health_monitor") {
                         MainLayout(navController = navController) { paddingValues ->
-                            HealthMonitorScreen(navController = navController)
+                            MedicalRouteGuard(enabled = biometricLockEnabled) {
+                                HealthMonitorScreen(
+                                    navController = navController,
+                                    viewModel = mainViewModel
+                                )
+                            }
                         }
                     }
 
@@ -575,13 +811,17 @@ class MainActivity : ComponentActivity() {
 
                     composable("medical_resume") {
                         MainLayout(navController = navController) { paddingValues ->
-                            MedicalResumeScreen(navController = navController)
+                            MedicalRouteGuard(enabled = biometricLockEnabled) {
+                                MedicalResumeScreen(navController = navController)
+                            }
                         }
                     }
 
                     composable("health_pass") {
                         MainLayout(navController = navController) { paddingValues ->
-                            HealthPassScreen(navController = navController)
+                            MedicalRouteGuard(enabled = biometricLockEnabled) {
+                                HealthPassScreen(navController = navController)
+                            }
                         }
                     }
 
@@ -614,7 +854,9 @@ class MainActivity : ComponentActivity() {
 
                     composable("drug_interaction") {
                         MainLayout(navController = navController) { paddingValues ->
-                            DrugInteractionScreen(navController = navController)
+                            MedicalRouteGuard(enabled = biometricLockEnabled) {
+                                DrugInteractionScreen(navController = navController)
+                            }
                         }
                     }
 
@@ -638,13 +880,17 @@ class MainActivity : ComponentActivity() {
 
                     composable("health_journey") {
                         MainLayout(navController = navController) { paddingValues ->
-                            HealthJourneyScreen(navController = navController)
+                            MedicalRouteGuard(enabled = biometricLockEnabled) {
+                                HealthJourneyScreen(navController = navController)
+                            }
                         }
                     }
 
                     composable("nutrition_scanner") {
                         MainLayout(navController = navController) { paddingValues ->
-                            NutritionScannerScreen(navController = navController)
+                            MedicalRouteGuard(enabled = biometricLockEnabled) {
+                                NutritionScannerScreen(navController = navController)
+                            }
                         }
                     }
 
@@ -676,7 +922,9 @@ class MainActivity : ComponentActivity() {
 
                     composable("medical_records") {
                         MainLayout(navController = navController) { paddingValues ->
-                            MedicalRecordsScreen(navController = navController)
+                            MedicalRouteGuard(enabled = biometricLockEnabled) {
+                                MedicalRecordsScreen(navController = navController)
+                            }
                         }
                     }
 
@@ -694,7 +942,9 @@ class MainActivity : ComponentActivity() {
 
                     composable("halal_specialist") {
                         MainLayout(navController = navController) { paddingValues ->
-                            HalalSpecialistScreen(navController = navController)
+                            MedicalRouteGuard(enabled = biometricLockEnabled) {
+                                HalalSpecialistScreen(navController = navController)
+                            }
                         }
                     }
 
@@ -736,6 +986,21 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
+                    composable("admin_panel_app") {
+                        if (isAdmin) {
+                            MainLayout(navController = navController) { paddingValues ->
+                                AdminPanelScreen(
+                                    navController = navController,
+                                    mainViewModel = mainViewModel
+                                )
+                            }
+                        } else {
+                            LaunchedEffect(Unit) {
+                                navController.popBackStack()
+                            }
+                        }
+                    }
+
                     composable("comparison_result") {
                         MainLayout(navController = navController) { paddingValues ->
                             ComparisonResultScreen(
@@ -756,6 +1021,85 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         }
+
+                    // ═══════════════════════════════════════
+                    // 🆕 EXPANSION SCREENS
+                    // ═══════════════════════════════════════
+
+                    composable("onboarding") {
+                        OnboardingScreen(
+                            navController = navController,
+                            onFinish = {
+                                navController.navigate("login") {
+                                    popUpTo("onboarding") { inclusive = true }
+                                }
+                            }
+                        )
+                    }
+
+                    composable("points_rewards") {
+                        MainLayout(navController = navController) { paddingValues ->
+                            PointsRewardsScreen(navController = navController)
+                        }
+                    }
+
+                    composable("leaderboard") {
+                        MainLayout(navController = navController) { paddingValues ->
+                            LeaderboardScreen(navController = navController)
+                        }
+                    }
+
+                    composable("notification_settings") {
+                        MainLayout(navController = navController) { paddingValues ->
+                            NotificationSettingsScreen(navController = navController)
+                        }
+                    }
+
+                    composable("halal_cert_verify") {
+                        MainLayout(navController = navController) { paddingValues ->
+                            HalalCertVerifyScreen(navController = navController)
+                        }
+                    }
+
+                    composable("barcode_gallery") {
+                        MainLayout(navController = navController) { paddingValues ->
+                            BarcodeGalleryScreen(navController = navController)
+                        }
+                    }
+
+                    // ═══ HEALTH EXPANSION ROUTES ═══
+
+                    composable("medical_info") {
+                        MedicalInfoScreen(navController = navController)
+                    }
+
+                    composable("bmi_calculator") {
+                        BMICalculatorScreen(navController = navController)
+                    }
+
+                    composable("medicine_search") {
+                        MedicineSearchScreen(navController = navController)
+                    }
+
+                    composable("add_medicine_reminder") {
+                        AddMedicineReminderScreen(navController = navController)
+                    }
+
+                    composable("mental_health_hub") {
+                        MentalHealthHubScreen(navController = navController)
+                    }
+
+                    composable(
+                        "mental_health_quiz/{quizType}",
+                        arguments = listOf(navArgument("quizType") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val quizType = backStackEntry.arguments?.getString("quizType") ?: "gad7"
+                        MentalHealthQuizScreen(navController = navController, quizType = quizType)
+                    }
+
+                    composable("help_center") {
+                        HelpCenterScreen(navController = navController)
+                    }
                     }
                 }
                 } // End of Surface

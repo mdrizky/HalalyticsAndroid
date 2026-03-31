@@ -1,5 +1,8 @@
 package com.example.halalyticscompose.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -16,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -25,6 +29,11 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.halalyticscompose.ui.viewmodel.MedicineViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
+
+// ═══════════════════════════════════════════════════════════════════
+// MEDICINE DETAIL SCREEN — DIGITAL PHARMACIST
+// Enhanced UI with structured layout, schedule, conflict check
+// ═══════════════════════════════════════════════════════════════════
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +50,10 @@ fun MedicineDetailScreen(
     val isConflictLoading by viewModel.isConflictLoading.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val colorScheme = MaterialTheme.colorScheme
     var mealRelation by remember { mutableStateOf("after_meal") }
+    var showScheduleSection by remember { mutableStateOf(false) }
+    var showConflictSection by remember { mutableStateOf(false) }
 
     LaunchedEffect(medicineId) {
         viewModel.getMedicineDetail(medicineId)
@@ -62,40 +74,39 @@ fun MedicineDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail Obat", fontWeight = FontWeight.Bold) },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.LocalPharmacy,
+                            contentDescription = null,
+                            tint = Color(0xFF3B82F6),
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Digital Pharmacist", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        androidx.compose.material3.Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground
+                    containerColor = colorScheme.background,
+                    titleContentColor = colorScheme.onBackground,
+                    navigationIconContentColor = colorScheme.onBackground
                 )
             )
         },
-        containerColor = Color(0xFFF8FAFC)
+        containerColor = colorScheme.background
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
-            // Background Header Gradient
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(260.dp)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(Color(0xFF0F172A), Color(0xFF334155))
-                        )
-                    )
-            )
-
-            if (isLoading) {
+            if (isLoading && medicine == null) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
                     color = Color(0xFF3B82F6)
                 )
-            } else if (errorMessage != null) {
+            } else if (errorMessage != null && medicine == null) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -103,9 +114,19 @@ fun MedicineDetailScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    androidx.compose.material3.Icon(Icons.Default.Error, contentDescription = null, tint = Color.Red, modifier = Modifier.size(64.dp))
+                    Icon(
+                        Icons.Default.Error,
+                        contentDescription = null,
+                        tint = colorScheme.error,
+                        modifier = Modifier.size(64.dp)
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(errorMessage ?: "Gagal memuat data", textAlign = TextAlign.Center)
+                    Text(
+                        errorMessage ?: "Gagal memuat data",
+                        textAlign = TextAlign.Center,
+                        color = colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
                     Button(onClick = { viewModel.getMedicineDetail(medicineId) }) {
                         Text("Coba Lagi")
                     }
@@ -118,297 +139,357 @@ fun MedicineDetailScreen(
                             .padding(paddingValues)
                             .verticalScroll(rememberScrollState())
                     ) {
-                        // Medicine Card Header
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = 20.dp)
-                                .fillMaxWidth()
-                                .height(220.dp)
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(Color.White)
-                                .shadowCustom(8.dp, RoundedCornerShape(24.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (!med.imageUrl.isNullOrBlank()) {
-                                AsyncImage(
-                                    model = med.imageUrl,
-                                    contentDescription = med.name,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Fit
-                                )
-                            } else {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Icon(
-                                        Icons.Default.Medication,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(80.dp),
-                                        tint = Color(0xFFCBD5E1)
-                                    )
-                                    Text("Tidak ada gambar", color = Color(0xFF94A3B8))
-                                }
-                            }
-                            
-                            // Halal Badge Overlay
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(16.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(
-                                        when (med.halalStatus.lowercase()) {
-                                            "halal" -> Color(0xFFDCFCE7)
-                                            "haram" -> Color(0xFFFEE2E2)
-                                            else -> Color(0xFFFEF3C7)
-                                        }
-                                    )
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = when (med.halalStatus.lowercase()) {
-                                            "halal" -> Icons.Default.CheckCircle
-                                            "haram" -> Icons.Default.Cancel
-                                            else -> Icons.AutoMirrored.Filled.Help
-                                        },
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp),
-                                        tint = when (med.halalStatus.lowercase()) {
-                                            "halal" -> Color(0xFF166534)
-                                            "haram" -> Color(0xFF991B1B)
-                                            else -> Color(0xFF92400E)
-                                        }
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = med.halalStatus.uppercase(),
-                                        color = when (med.halalStatus.lowercase()) {
-                                            "halal" -> Color(0xFF166534)
-                                            "haram" -> Color(0xFF991B1B)
-                                            else -> Color(0xFF92400E)
-                                        },
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                        }
+                        // ─── Medicine Hero Card ──────────────────
+                        MedicineHeroCard(med = med)
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
-                        // Info Section
+                        // ─── Name & Badges ───────────────────────
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 24.dp)
+                                .padding(horizontal = 20.dp)
                         ) {
                             Text(
                                 text = med.name,
-                                fontSize = 28.sp,
+                                fontSize = 26.sp,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = Color(0xFF0F172A)
+                                color = colorScheme.onSurface
                             )
                             med.genericName?.let {
                                 Text(
                                     text = it,
-                                    fontSize = 16.sp,
-                                    color = Color(0xFF64748B),
+                                    fontSize = 15.sp,
+                                    color = colorScheme.onSurfaceVariant,
                                     fontWeight = FontWeight.Medium
                                 )
                             }
-                            
-                            Spacer(modifier = Modifier.height(8.dp))
-                            
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Badge(containerColor = Color(0xFFE2E8F0)) {
-                                    Text(med.dosageForm ?: "Tablet", color = Color(0xFF475569))
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Badge(containerColor = Color(0xFFE2E8F0)) {
-                                    Text(med.kategori ?: "Umum", color = Color(0xFF475569))
-                                }
-                            }
-                            
-                            Spacer(modifier = Modifier.height(24.dp))
 
-                            InfoCard(title = "Indikasi / Kegunaan", content = med.description ?: "Informasi tidak tersedia", icon = Icons.Default.Info)
-                            InfoCard(title = "Dosis", content = med.dosageInfo ?: "Gunakan sesuai petunjuk dokter", icon = Icons.Default.Straighten)
-                            
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                MedBadge(
+                                    text = med.dosageForm ?: "Tablet",
+                                    icon = Icons.Default.Medication,
+                                    color = Color(0xFF3B82F6)
+                                )
+                                MedBadge(
+                                    text = med.kategori ?: "Umum",
+                                    icon = Icons.Default.Category,
+                                    color = Color(0xFF8B5CF6)
+                                )
+                                MedBadge(
+                                    text = med.halalStatus.uppercase(),
+                                    icon = when (med.halalStatus.lowercase()) {
+                                        "halal" -> Icons.Default.CheckCircle
+                                        "haram" -> Icons.Default.Cancel
+                                        else -> Icons.AutoMirrored.Filled.Help
+                                    },
+                                    color = when (med.halalStatus.lowercase()) {
+                                        "halal" -> Color(0xFF22C55E)
+                                        "haram" -> Color(0xFFEF4444)
+                                        else -> Color(0xFFF59E0B)
+                                    }
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // ─── Info Cards ──────────────────────────
+                        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                            InfoCard(
+                                title = "Indikasi / Kegunaan",
+                                content = med.description ?: "Informasi tidak tersedia",
+                                icon = Icons.Default.Info
+                            )
+                            InfoCard(
+                                title = "Dosis",
+                                content = med.dosageInfo ?: "Gunakan sesuai petunjuk dokter",
+                                icon = Icons.Default.Straighten
+                            )
                             if (!med.ingredients.isNullOrEmpty()) {
-                                InfoCard(title = "Komposisi", content = med.ingredients!!.joinToString(", "), icon = Icons.Default.Science)
-                            }
-                            
-                            InfoCard(title = "Efek Samping", content = med.sideEffects ?: "Efek samping minimal jika sesuai dosis", icon = Icons.Default.Warning, tint = Color(0xFFF59E0B))
-                            
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            Text(
-                                "Generate Jadwal Aman",
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF334155),
-                                fontSize = 16.sp
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                ScheduleChip(
-                                    text = "Sesudah makan",
-                                    selected = mealRelation == "after_meal"
-                                ) { mealRelation = "after_meal" }
-                                ScheduleChip(
-                                    text = "Sebelum makan",
-                                    selected = mealRelation == "before_meal"
-                                ) { mealRelation = "before_meal" }
-                                ScheduleChip(
-                                    text = "Saat makan",
-                                    selected = mealRelation == "with_meal"
-                                ) { mealRelation = "with_meal" }
-                            }
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Button(
-                                onClick = {
-                                    viewModel.generateSafeSchedule(
-                                        medicineId = med.idMedicine ?: med.id,
-                                        medicineName = med.genericName ?: med.name,
-                                        frequencyPerDay = med.frequencyPerDay ?: 3,
-                                        mealRelation = mealRelation
-                                    )
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(52.dp),
-                                shape = RoundedCornerShape(14.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0EA5E9))
-                            ) {
-                                Icon(Icons.Default.Schedule, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Generate Jadwal Aman", fontWeight = FontWeight.Bold)
-                            }
-
-                            safeSchedule?.let { schedule ->
-                                Spacer(modifier = Modifier.height(12.dp))
                                 InfoCard(
-                                    title = "Jadwal Aman (${schedule.scheduleTimes.size}x)",
-                                    content = schedule.scheduleTimes.joinToString(", "),
-                                    icon = Icons.Default.AccessTime,
-                                    tint = Color(0xFF0EA5E9)
-                                )
-                                InfoCard(
-                                    title = "Disclaimer Medis",
-                                    content = schedule.disclaimer ?: "Data ini hanya referensi dan bukan pengganti konsultasi dokter.",
-                                    icon = Icons.Default.Info,
-                                    tint = Color(0xFFEF4444)
+                                    title = "Komposisi",
+                                    content = med.ingredients!!.joinToString(", "),
+                                    icon = Icons.Default.Science
                                 )
                             }
-
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                "Personal Health Risk Score",
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF334155),
-                                fontSize = 16.sp
+                            InfoCard(
+                                title = "Efek Samping",
+                                content = med.sideEffects ?: "Efek samping minimal jika sesuai dosis",
+                                icon = Icons.Default.Warning,
+                                tint = Color(0xFFF59E0B)
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Button(
-                                onClick = { viewModel.fetchPersonalRiskScore() },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F766E))
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 20.dp),
+                            color = colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // ─── Digital Pharmacist Section ──────────
+                        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                            Text(
+                                "🩺 Digital Pharmacist",
+                                fontWeight = FontWeight.ExtraBold,
+                                color = colorScheme.onSurface,
+                                fontSize = 20.sp
+                            )
+                            Text(
+                                "Fitur cerdas untuk membantu jadwal & keamanan obat",
+                                color = colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Schedule Generator Toggle
+                            PharmacistFeatureCard(
+                                title = "Generate Jadwal Aman",
+                                subtitle = "AI membuat jadwal minum obat optimal",
+                                icon = Icons.Default.Schedule,
+                                gradientColors = listOf(Color(0xFF0EA5E9), Color(0xFF38BDF8)),
+                                expanded = showScheduleSection,
+                                onToggle = { showScheduleSection = !showScheduleSection }
+                            )
+
+                            AnimatedVisibility(
+                                visible = showScheduleSection,
+                                enter = fadeIn() + expandVertically()
                             ) {
-                                Icon(Icons.Default.Favorite, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Refresh Risk Score")
+                                Column(modifier = Modifier.padding(top = 10.dp)) {
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        ScheduleChip("Sesudah makan", mealRelation == "after_meal") { mealRelation = "after_meal" }
+                                        ScheduleChip("Sebelum makan", mealRelation == "before_meal") { mealRelation = "before_meal" }
+                                        ScheduleChip("Saat makan", mealRelation == "with_meal") { mealRelation = "with_meal" }
+                                    }
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Button(
+                                        onClick = {
+                                            viewModel.generateSafeSchedule(
+                                                medicineId = med.idMedicine ?: med.id,
+                                                medicineName = med.genericName ?: med.name,
+                                                frequencyPerDay = med.frequencyPerDay ?: 3,
+                                                mealRelation = mealRelation
+                                            )
+                                        },
+                                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                                        shape = RoundedCornerShape(14.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0EA5E9))
+                                    ) {
+                                        Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Generate", fontWeight = FontWeight.Bold)
+                                    }
+
+                                    safeSchedule?.let { schedule ->
+                                        Spacer(modifier = Modifier.height(10.dp))
+                                        Card(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            shape = RoundedCornerShape(14.dp),
+                                            colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF6FF))
+                                        ) {
+                                            Column(modifier = Modifier.padding(14.dp)) {
+                                                Text(
+                                                    "Jadwal: ${schedule.scheduleTimes.joinToString(" • ")}",
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color(0xFF1E40AF),
+                                                    fontSize = 14.sp
+                                                )
+                                                Spacer(modifier = Modifier.height(6.dp))
+                                                Text(
+                                                    schedule.disclaimer ?: "Data ini hanya referensi dan bukan pengganti konsultasi dokter.",
+                                                    color = Color(0xFF64748B),
+                                                    fontSize = 11.sp
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                            if (isRiskLoading) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Drug-Food Conflict Toggle
+                            PharmacistFeatureCard(
+                                title = "Drug-Food Conflict",
+                                subtitle = "Cek interaksi obat dengan makanan terakhir",
+                                icon = Icons.Default.ReportProblem,
+                                gradientColors = listOf(Color(0xFF7C3AED), Color(0xFFA78BFA)),
+                                expanded = showConflictSection,
+                                onToggle = { showConflictSection = !showConflictSection }
+                            )
+
+                            AnimatedVisibility(
+                                visible = showConflictSection,
+                                enter = fadeIn() + expandVertically()
+                            ) {
+                                Column(modifier = Modifier.padding(top = 10.dp)) {
+                                    Button(
+                                        onClick = {
+                                            viewModel.checkDrugFoodConflict(
+                                                medicineName = med.genericName ?: med.name,
+                                                medicineId = med.idMedicine ?: med.id,
+                                                lookbackMinutes = 180
+                                            )
+                                        },
+                                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                                        shape = RoundedCornerShape(14.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C3AED))
+                                    ) {
+                                        Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Cek Ulang Konflik", fontWeight = FontWeight.Bold)
+                                    }
+
+                                    if (isConflictLoading) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                                    }
+
+                                    drugFoodConflict?.let { conflict ->
+                                        Spacer(modifier = Modifier.height(10.dp))
+                                        val level = (conflict.severity ?: "none").lowercase()
+                                        val conflictColor = when (level) {
+                                            "major", "contraindicated" -> Color(0xFFDC2626)
+                                            "moderate" -> Color(0xFFD97706)
+                                            "minor" -> Color(0xFF16A34A)
+                                            else -> Color(0xFF0EA5E9)
+                                        }
+                                        val conflictBg = when (level) {
+                                            "major", "contraindicated" -> Color(0xFFFEF2F2)
+                                            "moderate" -> Color(0xFFFFFBEB)
+                                            "minor" -> Color(0xFFF0FDF4)
+                                            else -> Color(0xFFF0F9FF)
+                                        }
+
+                                        Card(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            shape = RoundedCornerShape(14.dp),
+                                            colors = CardDefaults.cardColors(containerColor = conflictBg)
+                                        ) {
+                                            Column(modifier = Modifier.padding(14.dp)) {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Icon(
+                                                        if (conflict.hasConflict) Icons.Default.Warning else Icons.Default.CheckCircle,
+                                                        contentDescription = null,
+                                                        tint = conflictColor,
+                                                        modifier = Modifier.size(20.dp)
+                                                    )
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Text(
+                                                        if (conflict.hasConflict) "Konflik Terdeteksi (${conflict.severity ?: "-"})" else "Tidak Ada Konflik Besar",
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = conflictColor,
+                                                        fontSize = 14.sp
+                                                    )
+                                                }
+                                                Spacer(modifier = Modifier.height(8.dp))
+
+                                                val topMatch = conflict.matches.firstOrNull()
+                                                val conflictText = buildString {
+                                                    if (conflict.hasConflict && topMatch != null) {
+                                                        append("Pemicu: ${topMatch.foodName ?: "-"}\n")
+                                                        append("Alasan: ${topMatch.reason ?: "-"}\n\n")
+                                                    }
+                                                    append(conflict.recommendation ?: "")
+                                                    if (!conflict.disclaimer.isNullOrBlank()) {
+                                                        append("\n\n${conflict.disclaimer}")
+                                                    }
+                                                }
+                                                Text(
+                                                    conflictText,
+                                                    color = Color(0xFF475569),
+                                                    fontSize = 12.sp,
+                                                    lineHeight = 18.sp
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
                             }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Risk Score Section
                             personalRiskScore?.let { risk ->
                                 val riskColor = when ((risk.riskLevel ?: "").lowercase()) {
                                     "high" -> Color(0xFFDC2626)
                                     "moderate" -> Color(0xFFD97706)
                                     else -> Color(0xFF16A34A)
                                 }
-                                InfoCard(
-                                    title = "Risk ${risk.riskLevel?.uppercase() ?: "-"} (${risk.riskScore ?: 0})",
-                                    content = buildString {
-                                        append("Sugar: ${risk.totals?.sugarG ?: 0.0}g / ${risk.limits?.sugarG ?: 50.0}g\n")
-                                        append("Sodium: ${risk.totals?.sodiumMg ?: 0.0}mg / ${risk.limits?.sodiumMg ?: 2300.0}mg\n")
-                                        append("Fat: ${risk.totals?.fatG ?: 0.0}g / ${risk.limits?.fatG ?: 67.0}g\n")
-                                        risk.alerts.firstOrNull()?.let { append("\nAlert: $it\n") }
-                                        append("\n${risk.recommendation ?: ""}")
-                                    },
-                                    icon = Icons.Default.HealthAndSafety,
-                                    tint = riskColor
-                                )
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = CardDefaults.cardColors(containerColor = colorScheme.surface)
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                Icons.Default.HealthAndSafety,
+                                                contentDescription = null,
+                                                tint = riskColor,
+                                                modifier = Modifier.size(22.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                "Health Risk: ${risk.riskLevel?.uppercase() ?: "-"} (${risk.riskScore ?: 0})",
+                                                fontWeight = FontWeight.Bold,
+                                                color = riskColor,
+                                                fontSize = 15.sp
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(10.dp))
+
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            NutrientMini("Sugar", "${risk.totals?.sugarG ?: 0.0}g", "${risk.limits?.sugarG ?: 50.0}g")
+                                            NutrientMini("Sodium", "${risk.totals?.sodiumMg ?: 0.0}mg", "${risk.limits?.sodiumMg ?: 2300.0}mg")
+                                            NutrientMini("Fat", "${risk.totals?.fatG ?: 0.0}g", "${risk.limits?.fatG ?: 67.0}g")
+                                        }
+
+                                        risk.recommendation?.takeIf { it.isNotBlank() }?.let {
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Text(it, color = colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                                        }
+                                    }
+                                }
                             }
 
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                "Drug-Food Conflict Lite",
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF334155),
-                                fontSize = 16.sp
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Button(
-                                onClick = {
-                                    viewModel.checkDrugFoodConflict(
-                                        medicineName = med.genericName ?: med.name,
-                                        medicineId = med.idMedicine ?: med.id,
-                                        lookbackMinutes = 180
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C3AED))
-                            ) {
-                                Icon(Icons.Default.ReportProblem, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Cek Konflik Obat-Makanan")
-                            }
-                            if (isConflictLoading) {
+                            if (isRiskLoading) {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                             }
-                            drugFoodConflict?.let { conflict ->
-                                val level = (conflict.severity ?: "none").lowercase()
-                                val conflictColor = when (level) {
-                                    "major", "contraindicated" -> Color(0xFFDC2626)
-                                    "moderate" -> Color(0xFFD97706)
-                                    "minor" -> Color(0xFF16A34A)
-                                    else -> Color(0xFF0EA5E9)
-                                }
-                                val topMatch = conflict.matches.firstOrNull()
-                                InfoCard(
-                                    title = if (conflict.hasConflict) "Konflik Terdeteksi (${conflict.severity ?: "-"})" else "Tidak Ada Konflik Besar",
-                                    content = buildString {
-                                        if (conflict.hasConflict && topMatch != null) {
-                                            append("Pemicu: ${topMatch.foodName ?: "-"}\n")
-                                            append("Alasan: ${topMatch.reason ?: "-"}\n\n")
-                                        }
-                                        append(conflict.recommendation ?: "")
-                                        append("\n\n")
-                                        append(conflict.disclaimer ?: "")
-                                    },
-                                    icon = Icons.Default.LocalHospital,
-                                    tint = conflictColor
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(32.dp))
-                            
-                            Button(
-                                onClick = { /* Navigate to add reminder */ },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(56.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
-                            ) {
-                                Icon(Icons.Default.AlarmAdd, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Pasang Pengingat Minum Obat", fontWeight = FontWeight.Bold)
-                            }
-                            
-                            Spacer(modifier = Modifier.height(40.dp))
                         }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // ─── Set Reminder Button ─────────────────
+                        Button(
+                            onClick = { /* Navigate to add reminder */ },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                                .height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF1A237E)
+                            )
+                        ) {
+                            Icon(Icons.Default.AlarmAdd, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Pasang Pengingat Minum Obat", fontWeight = FontWeight.Bold)
+                        }
+
+                        Spacer(modifier = Modifier.height(40.dp))
                     }
                 }
             }
@@ -416,31 +497,143 @@ fun MedicineDetailScreen(
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// SUB-COMPOSABLES
+// ═══════════════════════════════════════════════════════════════════
+
 @Composable
-fun InfoCard(title: String, content: String, icon: androidx.compose.ui.graphics.vector.ImageVector, tint: Color = Color(0xFF3B82F6)) {
+private fun MedicineHeroCard(med: com.example.halalyticscompose.Data.Model.MedicineData) {
+    val colorScheme = MaterialTheme.colorScheme
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 20.dp)
+            .fillMaxWidth()
+            .height(200.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                Brush.linearGradient(
+                    listOf(Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155))
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        if (!med.imageUrl.isNullOrBlank()) {
+            AsyncImage(
+                model = med.imageUrl,
+                contentDescription = med.name,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(24.dp)),
+                contentScale = ContentScale.Fit
+            )
+        } else {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    Icons.Default.Medication,
+                    contentDescription = null,
+                    modifier = Modifier.size(72.dp),
+                    tint = Color.White.copy(alpha = 0.3f)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Tidak ada gambar", color = Color.White.copy(alpha = 0.4f), fontSize = 12.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MedBadge(text: String, icon: ImageVector, color: Color) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(100.dp))
+            .background(color.copy(alpha = 0.1f))
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(14.dp), tint = color)
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(text, color = color, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun PharmacistFeatureCard(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    gradientColors: List<Color>,
+    expanded: Boolean,
+    onToggle: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onToggle() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Brush.linearGradient(gradientColors))
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text(subtitle, color = Color.White.copy(alpha = 0.8f), fontSize = 11.sp)
+                }
+                Icon(
+                    if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.8f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun NutrientMini(label: String, current: String, limit: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(label, color = Color(0xFF64748B), fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+        Text(current, color = Color(0xFF0F172A), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        Text("/ $limit", color = Color(0xFF94A3B8), fontSize = 10.sp)
+    }
+}
+
+@Composable
+fun InfoCard(title: String, content: String, icon: ImageVector, tint: Color = Color(0xFF3B82F6)) {
+    val colorScheme = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp)
+            .padding(vertical = 8.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = tint)
+            Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp), tint = tint)
             Spacer(modifier = Modifier.width(8.dp))
-            Text(title, fontWeight = FontWeight.Bold, color = Color(0xFF334155), fontSize = 16.sp)
+            Text(title, fontWeight = FontWeight.Bold, color = colorScheme.onSurface, fontSize = 15.sp)
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color.White)
-                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(12.dp))
-                .padding(16.dp)
+                .background(colorScheme.surface)
+                .border(1.dp, colorScheme.outlineVariant.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                .padding(14.dp)
         ) {
             Text(
                 text = content,
-                color = Color(0xFF475569),
-                lineHeight = 22.sp
+                color = colorScheme.onSurfaceVariant,
+                lineHeight = 22.sp,
+                fontSize = 13.sp
             )
         }
     }

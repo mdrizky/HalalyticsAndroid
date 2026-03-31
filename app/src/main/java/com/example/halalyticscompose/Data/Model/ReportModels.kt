@@ -19,3 +19,10 @@ data class ReportData(
     @SerializedName("status") val status: String,
     @SerializedName("admin_notes") val adminNotes: String?
 )
+
+data class ExportReportResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("message") val message: String? = null,
+    @SerializedName("report_url") val reportUrl: String? = null,
+    @SerializedName("month") val month: String? = null
+)

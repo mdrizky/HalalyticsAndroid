@@ -1,10 +1,13 @@
 package com.example.halalyticscompose.Data.Network
 
 import android.util.Log
+import com.example.halalyticscompose.BuildConfig
 import com.example.halalyticscompose.Data.API.ApiService
-// import com.example.halalyticscompose.Data.Network.ExternalApiService
+import okhttp3.CertificatePinner
 import okhttp3.OkHttpClient
 import okhttp3.Interceptor
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -18,8 +21,7 @@ object ApiConfig {
     // For Real Device: use your computer's IP address (e.g., 192.168.1.100)
     // For Production: use your domain (e.g., https://api.halalytics.com/api/)
     
-    private const val BASE_DOMAIN = "http://10.0.2.2:8000"
-    private const val BASE_URL = "$BASE_DOMAIN/api/"
+    private const val DEFAULT_BASE_URL = "http://10.0.2.2:8000/api/"
     private const val TAG = "HalalyticsApiConfig"
     
     // Alternative URLs (uncomment as needed):
@@ -31,7 +33,11 @@ object ApiConfig {
      */
     private fun provideOkHttpClient(): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BASIC
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
         }
 
         val requestMetricsInterceptor = Interceptor { chain ->
@@ -72,22 +78,36 @@ object ApiConfig {
             }
         }
         
-        return OkHttpClient.Builder()
+        val builder = OkHttpClient.Builder()
             .addInterceptor(requestMetricsInterceptor)
             .addInterceptor(loggingInterceptor)
             .connectTimeout(120, TimeUnit.SECONDS)
             .readTimeout(120, TimeUnit.SECONDS)
             .writeTimeout(120, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
-            .build()
+
+        // Optional SSL pinning when API_BASE_URL is HTTPS and API_CERT_PIN is provided.
+        val baseUrl = BuildConfig.API_BASE_URL.ifBlank { DEFAULT_BASE_URL }
+        val host = baseUrl.toHttpUrlOrNull()?.host
+        val pin = BuildConfig.API_CERT_PIN
+        if (!host.isNullOrBlank() && pin.isNotBlank() && baseUrl.startsWith("https://")) {
+            builder.certificatePinner(
+                CertificatePinner.Builder()
+                    .add(host, pin)
+                    .build()
+            )
+        }
+
+        return builder.build()
     }
     
     /**
      * Create Retrofit instance
      */
     private val retrofit: Retrofit by lazy {
+        val baseUrl = BuildConfig.API_BASE_URL.ifBlank { DEFAULT_BASE_URL }
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(provideOkHttpClient())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -129,7 +149,7 @@ object ApiConfig {
             .build()
         
         val authenticatedRetrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.API_BASE_URL.ifBlank { DEFAULT_BASE_URL })
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -157,6 +177,18 @@ object ApiConfig {
     }
 
     /**
+     * Get OpenFoodFacts public API service (direct fallback when backend external bridge fails).
+     */
+    fun getOpenFoodFactsApiService(): com.example.halalyticscompose.Data.API.OpenFoodFactsApiService {
+        val retrofitOpenFoodFacts = Retrofit.Builder()
+            .baseUrl("https://world.openfoodfacts.org/")
+            .client(provideOkHttpClient())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofitOpenFoodFacts.create(com.example.halalyticscompose.Data.API.OpenFoodFactsApiService::class.java)
+    }
+
+    /**
      * Get full image URL from relative path
      */
     fun getFullImageUrl(relativePath: String?): String? {
@@ -166,6 +198,26 @@ object ApiConfig {
         // Ensure starting slash
         val cleanPath = relativePath.trim()
         val path = if (cleanPath.startsWith("/")) cleanPath else "/$cleanPath"
-        return "$BASE_DOMAIN$path"
+        return "${getBaseDomain()}$path"
+    }
+
+    private fun getBaseDomain(): String {
+        val url = BuildConfig.API_BASE_URL.ifBlank { DEFAULT_BASE_URL }.toHttpUrlOrNull()
+            ?: return "http://10.0.2.2:8000"
+        val includePort = !isDefaultPort(url)
+        return buildString {
+            append(url.scheme)
+            append("://")
+            append(url.host)
+            if (includePort) {
+                append(":")
+                append(url.port)
+            }
+        }
+    }
+
+    private fun isDefaultPort(url: HttpUrl): Boolean {
+        return (url.scheme == "http" && url.port == 80) ||
+            (url.scheme == "https" && url.port == 443)
     }
 }

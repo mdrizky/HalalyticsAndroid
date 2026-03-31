@@ -41,6 +41,7 @@ fun FoodAnalysisScreen(
 ) {
     val context = LocalContext.current
     val sessionManager = SessionManager(context)
+    val color = MaterialTheme.colorScheme
     
     // Set auth token and load analysis
     LaunchedEffect(foodId) {
@@ -60,7 +61,7 @@ fun FoodAnalysisScreen(
                     Text(
                         foodAnalysis?.foodName ?: "Analisis Nutrisi",
                         fontWeight = FontWeight.Bold,
-                        color = TextWhite
+                        color = color.onBackground
                     )
                 },
                 navigationIcon = {
@@ -68,16 +69,16 @@ fun FoodAnalysisScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = TextWhite
+                            tint = color.onBackground
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DarkBackground
+                    containerColor = color.background
                 )
             )
         },
-        containerColor = DarkBackground
+        containerColor = color.background
     ) { paddingValues ->
         if (isLoading && foodAnalysis == null) {
             Box(
@@ -162,7 +163,7 @@ fun FoodAnalysisScreen(
                     Text(
                         text = errorMessage ?: "Gagal memuat data",
                         fontSize = 14.sp,
-                        color = TextGray
+                        color = color.onSurfaceVariant
                     )
                 }
             }
@@ -175,12 +176,13 @@ fun HealthScoreCard(
     healthInfo: FoodHealthInfo?,
     viewModel: FoodScanViewModel
 ) {
+    val color = MaterialTheme.colorScheme
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkCard)
+        colors = CardDefaults.cardColors(containerColor = color.surface)
     ) {
         Column(
             modifier = Modifier
@@ -191,7 +193,7 @@ fun HealthScoreCard(
             Text(
                 text = "Health Score",
                 fontSize = 14.sp,
-                color = TextGray
+                color = color.onSurfaceVariant
             )
             
             Spacer(modifier = Modifier.height(12.dp))
@@ -201,7 +203,7 @@ fun HealthScoreCard(
                 modifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
-                    .background(DarkCardLight)
+                    .background(color.surfaceVariant)
                     .border(
                         width = 6.dp,
                         color = Color(viewModel.getHealthScoreColor(healthInfo?.score ?: 50)),
@@ -231,7 +233,7 @@ fun HealthScoreCard(
                 Text(
                     text = notes,
                     fontSize = 12.sp,
-                    color = TextGray,
+                    color = color.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             }
@@ -272,13 +274,14 @@ fun PortionSelectorCard(
     onPortionChange: (Double) -> Unit
 ) {
     val portions = listOf(0.5, 1.0, 1.5, 2.0)
+    val color = MaterialTheme.colorScheme
     
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkCard)
+        colors = CardDefaults.cardColors(containerColor = color.surface)
     ) {
         Column(
             modifier = Modifier
@@ -294,14 +297,14 @@ fun PortionSelectorCard(
                     text = "Ukuran Porsi",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = TextWhite
+                    color = color.onSurface
                 )
                 
                 servingSize?.let {
                     Text(
                         text = it.description,
                         fontSize = 13.sp,
-                        color = TextGray
+                        color = color.onSurfaceVariant
                     )
                 }
             }
@@ -320,7 +323,7 @@ fun PortionSelectorCard(
                             .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
                             .background(
-                                if (isSelected) HalalGreen else DarkCardLight
+                                if (isSelected) HalalGreen else color.surfaceVariant
                             )
                             .clickable { onPortionChange(portion) }
                             .padding(vertical = 12.dp),
@@ -330,7 +333,7 @@ fun PortionSelectorCard(
                             text = "${portion}x",
                             fontSize = 14.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) DarkBackground else TextGray
+                            color = if (isSelected) color.onPrimary else color.onSurfaceVariant
                         )
                     }
                 }
@@ -341,12 +344,13 @@ fun PortionSelectorCard(
 
 @Composable
 fun NutritionCard(nutrition: NutritionInfo?) {
+    val color = MaterialTheme.colorScheme
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkCard)
+        colors = CardDefaults.cardColors(containerColor = color.surface)
     ) {
         Column(
             modifier = Modifier
@@ -357,7 +361,7 @@ fun NutritionCard(nutrition: NutritionInfo?) {
                 text = "Informasi Nutrisi",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = TextWhite
+                color = color.onSurface
             )
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -384,7 +388,7 @@ fun NutritionCard(nutrition: NutritionInfo?) {
                         text = "Kalori",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = TextWhite
+                        color = color.onSurface
                     )
                 }
                 Text(
@@ -433,19 +437,19 @@ fun NutritionCard(nutrition: NutritionInfo?) {
                     modifier = Modifier.weight(1f),
                     label = "Serat",
                     value = "${nutrition?.fiber ?: 0}g",
-                    color = TextGray
+                    color = color.onSurfaceVariant
                 )
                 NutrientItem(
                     modifier = Modifier.weight(1f),
                     label = "Gula",
                     value = "${nutrition?.sugar ?: 0}g",
-                    color = TextGray
+                    color = color.onSurfaceVariant
                 )
                 NutrientItem(
                     modifier = Modifier.weight(1f),
                     label = "Natrium",
                     value = "${(nutrition?.sodium ?: 0).toInt()}mg",
-                    color = TextGray
+                    color = color.onSurfaceVariant
                 )
             }
         }
@@ -459,10 +463,11 @@ fun NutrientItem(
     value: String,
     color: Color
 ) {
+    val themeColor = MaterialTheme.colorScheme
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(DarkCardLight)
+            .background(themeColor.surfaceVariant)
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -476,7 +481,7 @@ fun NutrientItem(
         Text(
             text = label,
             fontSize = 11.sp,
-            color = TextGray,
+            color = themeColor.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
     }
@@ -488,13 +493,14 @@ fun HalalInfoCard(
     viewModel: FoodScanViewModel
 ) {
     val statusColor = Color(viewModel.getHalalStatusColor(halalInfo?.status ?: "halal_umum"))
+    val color = MaterialTheme.colorScheme
     
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkCard)
+        colors = CardDefaults.cardColors(containerColor = color.surface)
     ) {
         Column(
             modifier = Modifier
@@ -510,7 +516,7 @@ fun HalalInfoCard(
                     text = "Status Halal",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = TextWhite
+                    color = color.onSurface
                 )
                 
                 Box(
@@ -539,7 +545,7 @@ fun HalalInfoCard(
                             if (halalInfo.status == "tergantung_bahan" || halalInfo.status == "syubhat")
                                 MushboohColor.copy(alpha = 0.1f)
                             else
-                                DarkCardLight
+                                color.surfaceVariant
                         )
                         .padding(12.dp),
                     verticalAlignment = Alignment.Top
@@ -557,7 +563,7 @@ fun HalalInfoCard(
                     Text(
                         text = notes,
                         fontSize = 13.sp,
-                        color = TextGray,
+                        color = color.onSurfaceVariant,
                         lineHeight = 18.sp
                     )
                 }
@@ -568,12 +574,13 @@ fun HalalInfoCard(
 
 @Composable
 fun RecommendationsCard(recommendations: List<String>) {
+    val color = MaterialTheme.colorScheme
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkCard)
+        colors = CardDefaults.cardColors(containerColor = color.surface)
     ) {
         Column(
             modifier = Modifier
@@ -594,7 +601,7 @@ fun RecommendationsCard(recommendations: List<String>) {
                     text = "Rekomendasi",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = TextWhite
+                    color = color.onSurface
                 )
             }
             
@@ -614,7 +621,7 @@ fun RecommendationsCard(recommendations: List<String>) {
                     Text(
                         text = recommendation,
                         fontSize = 13.sp,
-                        color = TextGray,
+                        color = color.onSurfaceVariant,
                         lineHeight = 18.sp
                     )
                 }
@@ -625,12 +632,13 @@ fun RecommendationsCard(recommendations: List<String>) {
 
 @Composable
 fun DisclaimerCard(text: String) {
+    val color = MaterialTheme.colorScheme
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkCardLight)
+        colors = CardDefaults.cardColors(containerColor = color.surfaceVariant)
     ) {
         Row(
             modifier = Modifier
@@ -641,14 +649,14 @@ fun DisclaimerCard(text: String) {
             Icon(
                 Icons.Outlined.Info,
                 contentDescription = null,
-                tint = TextMuted,
+                tint = color.onSurfaceVariant,
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = text,
                 fontSize = 11.sp,
-                color = TextMuted,
+                color = color.onSurfaceVariant,
                 lineHeight = 16.sp
             )
         }

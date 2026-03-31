@@ -2,6 +2,7 @@ package com.example.halalyticscompose.ui.screens
 
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,10 +34,11 @@ import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 import com.example.halalyticscompose.utils.SessionManager
 import java.io.File
 import java.io.FileOutputStream
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EnhancedProfileScreen(
+fun EditProfileScreen(
     navController: NavController,
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
@@ -51,6 +54,7 @@ fun EnhancedProfileScreen(
     var age by remember { mutableStateOf("28") }
     var selectedDiet by remember { mutableStateOf("None") }
     var gender by remember { mutableStateOf("Male") }
+    var activityLevel by remember { mutableStateOf("medium") }
     var allergy by remember { mutableStateOf("") }
     var medicalHistory by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
@@ -63,21 +67,80 @@ fun EnhancedProfileScreen(
     )
 
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
-    var showSaveSuccessDialog by remember { mutableStateOf(false) }
+    var isInitialized by remember { mutableStateOf(false) }
     
     // Sync state when userData arrives
     LaunchedEffect(userData) {
         userData?.let { user ->
-            fullName = user.fullName ?: ""
-            phone = user.phone ?: ""
-            height = user.height?.toString() ?: "175"
-            weight = user.weight?.toString() ?: "70"
-            age = user.age?.toString() ?: "28"
-            selectedDiet = user.dietPreference ?: "None"
-            gender = user.gender ?: "Male"
-            allergy = user.allergy ?: ""
-            medicalHistory = user.medicalHistory ?: ""
-            bio = user.bio ?: ""
+            if (!isInitialized) {
+                fullName = user.fullName ?: ""
+                phone = user.phone ?: ""
+                height = user.height?.toString() ?: "175"
+                weight = user.weight?.toString() ?: "70"
+                age = user.age?.toString() ?: "28"
+                selectedDiet = user.dietPreference ?: "None"
+                gender = user.gender ?: "Male"
+                activityLevel = user.activityLevel ?: "medium"
+                allergy = user.allergy ?: ""
+                medicalHistory = user.medicalHistory ?: ""
+                bio = user.bio ?: ""
+                isInitialized = true
+            }
+        }
+    }
+
+    fun buildSelectedImageFile(): File? {
+        return selectedImageUri?.let { uri ->
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val file = File(context.cacheDir, "profile_${System.currentTimeMillis()}.jpg")
+                val outputStream = FileOutputStream(file)
+                inputStream?.copyTo(outputStream)
+                inputStream?.close()
+                outputStream.close()
+                file
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
+    fun persistProfile(redirectAfterSave: Boolean = false, showSuccessToast: Boolean = false) {
+        val imageFile = buildSelectedImageFile()
+
+        mainViewModel.updateProfile(
+            fullName = fullName,
+            phone = phone,
+            height = height.toDoubleOrNull(),
+            weight = weight.toDoubleOrNull(),
+            age = age.toIntOrNull(),
+            dietPreference = selectedDiet,
+            gender = gender,
+            activityLevel = activityLevel,
+            allergy = allergy,
+            medicalHistory = medicalHistory,
+            bio = bio,
+            image = imageFile,
+            onSuccess = {
+                if (showSuccessToast) {
+                    Toast.makeText(context, "Profil berhasil diperbarui ✓", Toast.LENGTH_SHORT).show()
+                }
+                if (redirectAfterSave) {
+                    navController.navigate("profile_status")
+                }
+            },
+            onError = { msg ->
+                Toast.makeText(context, "Gagal save: $msg", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+    
+    // Auto-save debouncer
+    LaunchedEffect(fullName, phone, height, weight, age, selectedDiet, gender, activityLevel, allergy, medicalHistory, bio, selectedImageUri) {
+        if (isInitialized) {
+            kotlinx.coroutines.delay(1000)
+
+            persistProfile()
         }
     }
     
@@ -130,66 +193,27 @@ fun EnhancedProfileScreen(
         )
     }
     
-    // Save Success Dialog
-    if (showSaveSuccessDialog) {
-        AlertDialog(
-            onDismissRequest = { showSaveSuccessDialog = false },
-            title = { Text("✅ Berhasil") },
-            text = { Text("Profil berhasil disimpan!") },
-            confirmButton = {
-                TextButton(onClick = { showSaveSuccessDialog = false }) {
-                    Text("OK")
-                }
-            }
-        )
-    }
+    // Removed save success dialog as it is auto-save now
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("👤 Enhanced Profile") },
+                title = { Text("Edit Profile") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = { 
-                            isLoading = true
-                            
-                            val imageFile = selectedImageUri?.let { uri ->
-                                try {
-                                    val inputStream = context.contentResolver.openInputStream(uri)
-                                    val file = File(context.cacheDir, "profile_${System.currentTimeMillis()}.jpg")
-                                    val outputStream = FileOutputStream(file)
-                                    inputStream?.copyTo(outputStream)
-                                    inputStream?.close()
-                                    outputStream.close()
-                                    file
-                                } catch (e: Exception) { null }
-                            }
-                            
-                            mainViewModel.updateProfile(
-                                fullName = fullName,
-                                phone = phone,
-                                height = height.toDoubleOrNull(),
-                                weight = weight.toDoubleOrNull(),
-                                age = age.toIntOrNull(),
-                                dietPreference = selectedDiet,
-                                gender = gender,
-                                allergy = allergy,
-                                medicalHistory = medicalHistory,
-                                bio = bio,
-                                image = imageFile,
-                                onComplete = { 
-                                    isLoading = false
-                                    showSaveSuccessDialog = true
-                                }
+                    TextButton(
+                        onClick = {
+                            persistProfile(
+                                redirectAfterSave = true,
+                                showSuccessToast = true
                             )
                         }
                     ) {
-                        Icon(Icons.Default.Save, contentDescription = "Save")
+                        Text("Simpan")
                     }
                 }
             )
@@ -217,6 +241,49 @@ fun EnhancedProfileScreen(
                 item {
                     ProfileHeaderSection(userData)
                 }
+
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (selectedImageUri != null) {
+                                    AsyncImage(
+                                        model = selectedImageUri,
+                                        contentDescription = "Preview foto profil",
+                                        modifier = Modifier
+                                            .size(44.dp)
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(44.dp))
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text("Foto Profil", fontWeight = FontWeight.SemiBold)
+                            }
+                            OutlinedButton(
+                                onClick = {
+                                    photoPickerLauncher.launch(
+                                        PickVisualMediaRequest(
+                                            ActivityResultContracts.PickVisualMedia.ImageOnly
+                                        )
+                                    )
+                                }
+                            ) {
+                                Text("Ganti")
+                            }
+                        }
+                    }
+                }
                 
                 // Health Profile
                 item {
@@ -224,10 +291,14 @@ fun EnhancedProfileScreen(
                         height = height,
                         weight = weight,
                         age = age,
+                        gender = gender,
+                        activityLevel = activityLevel,
                         medicalHistory = medicalHistory,
                         onHeightChange = { height = it },
                         onWeightChange = { weight = it },
                         onAgeChange = { age = it },
+                        onGenderChange = { gender = it },
+                        onActivityLevelChange = { activityLevel = it },
                         onMedicalHistoryChange = { medicalHistory = it }
                     )
                 }
@@ -352,15 +423,16 @@ fun HealthProfileSection(
     height: String,
     weight: String,
     age: String,
+    gender: String,
+    activityLevel: String,
     medicalHistory: String,
     onHeightChange: (String) -> Unit,
     onWeightChange: (String) -> Unit,
     onAgeChange: (String) -> Unit,
+    onGenderChange: (String) -> Unit,
+    onActivityLevelChange: (String) -> Unit,
     onMedicalHistoryChange: (String) -> Unit
 ) {
-    var gender by remember { mutableStateOf("Male") }
-    var activityLevel by remember { mutableStateOf("medium") }
-    
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -427,7 +499,7 @@ fun HealthProfileSection(
                 listOf("Male", "Female", "Other").forEach { option ->
                     FilterChip(
                         selected = gender == option,
-                        onClick = { gender = option },
+                        onClick = { onGenderChange(option) },
                         label = { Text(option) }
                     )
                 }
@@ -451,7 +523,7 @@ fun HealthProfileSection(
                 listOf("Low", "Medium", "High").forEach { level ->
                     FilterChip(
                         selected = activityLevel == level.lowercase(),
-                        onClick = { activityLevel = level.lowercase() },
+                        onClick = { onActivityLevelChange(level.lowercase()) },
                         label = { Text(level) }
                     )
                 }
