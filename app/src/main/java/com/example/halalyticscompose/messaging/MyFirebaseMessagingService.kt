@@ -44,9 +44,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(TAG, "Refreshed token: $token")
-        
-        // Note: The actual sync to MySQL is handled in MainActivity or Login flow 
-        // to ensure we have the Firebase UID associated with this token.
+
+        getSharedPreferences("halalytics_fcm", Context.MODE_PRIVATE)
+            .edit()
+            .putString("latest_fcm_token", token)
+            .apply()
+
+        // Sinkronisasi ke backend tetap dilakukan dari login/main flow
+        // setelah access token user tersedia.
     }
 
     private fun sendNotification(

@@ -44,13 +44,13 @@ fun OnboardingScreen(
             icon = Icons.Default.QrCodeScanner,
             title = "Scan & Cek Halal",
             description = "Scan barcode produk dan langsung ketahui status halal, bahan berbahaya, dan info BPOM dalam hitungan detik.",
-            gradient = listOf(Color(0xFF0D47A1), Color(0xFF1565C0))
+            gradient = listOf(Color(0xFF004D40), Color(0xFF00695C))
         ),
         OnboardingSlide(
             icon = Icons.Default.Psychology,
             title = "AI Kesehatan Pintar",
             description = "Konsultasi gejala, cek interaksi obat, dan dapatkan rekomendasi obat halal dari AI Health Assistant.",
-            gradient = listOf(Color(0xFF00695C), Color(0xFF4DB6AC))
+            gradient = listOf(Color(0xFF00695C), Color(0xFF26A69A))
         ),
         OnboardingSlide(
             icon = Icons.Default.Storage,
@@ -115,7 +115,7 @@ fun OnboardingScreen(
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
-                        contentColor = Color(0xFF0D47A1)
+                        contentColor = Color(0xFF004D40)
                     )
                 ) {
                     Text("Daftar Sekarang", fontWeight = FontWeight.Bold, fontSize = 16.sp)

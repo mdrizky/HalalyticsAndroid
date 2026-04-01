@@ -1,16 +1,11 @@
 package com.example.halalyticscompose.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 
 // Theme data class
 data class ThemePreferences(
@@ -33,23 +28,23 @@ object ThemeManager {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// LIGHT COLOR SCHEME — Minimalist Professional
-// Navy (#0D47A1) + Mint (#4DB6AC) + White Surface + #F5F7FA Background
+// LIGHT COLOR SCHEME — Emerald Forest Premium
+// Deep Teal (#004D40) + Modern Mint (#26A69A) + White + #F4F9F8
 // ═══════════════════════════════════════════════════════════════════
 val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF0D47A1),               // Deep Navy — primary buttons, FAB, icons
-    onPrimary = Color(0xFFFFFFFF),             // White on navy
-    primaryContainer = Color(0xFFE3F2FD),      // Light navy wash
-    onPrimaryContainer = Color(0xFF0D47A1),    // Navy text on container
+    primary = Color(0xFF004D40),               // Deep Emerald — primary buttons, FAB, icons
+    onPrimary = Color(0xFFFFFFFF),             // White on emerald
+    primaryContainer = Color(0xFFE0F2F1),      // Soft Sage wash
+    onPrimaryContainer = Color(0xFF004D40),    // Emerald text on container
 
-    secondary = Color(0xFF4DB6AC),             // Mint accent
+    secondary = Color(0xFF26A69A),             // Modern Mint accent
     onSecondary = Color(0xFFFFFFFF),           // White on mint
-    secondaryContainer = Color(0xFFE0F7FA),    // Mint very light
-    onSecondaryContainer = Color(0xFF00695C),  // Dark teal on container
+    secondaryContainer = Color(0xFFE0F2F1),    // Soft Sage
+    onSecondaryContainer = Color(0xFF004D40),  // Deep teal on container
 
-    tertiary = Color(0xFF4DB6AC),              // Mint (same as secondary for consistency)
+    tertiary = Color(0xFF26A69A),              // Modern Mint
     onTertiary = Color(0xFFFFFFFF),
-    tertiaryContainer = Color(0xFFE0F7FA),
+    tertiaryContainer = Color(0xFFE0F2F1),
     onTertiaryContainer = Color(0xFF004D40),
 
     error = Color(0xFFD32F2F),                 // Medical red
@@ -57,13 +52,13 @@ val LightColorScheme = lightColorScheme(
     errorContainer = Color(0xFFFFEBEE),
     onErrorContainer = Color(0xFFB71C1C),
 
-    background = Color(0xFFF5F7FA),            // Light gray — clean & elegant
+    background = Color(0xFFF4F9F8),            // Off-White Green — clean & elegant
     onBackground = Color(0xFF212121),          // Almost black text
 
     surface = Color(0xFFFFFFFF),               // Pure white cards
     onSurface = Color(0xFF212121),             // Dark text on white
     
-    surfaceVariant = Color(0xFFF0F2F5),        // Slightly darker surface for contrast
+    surfaceVariant = Color(0xFFF0F5F4),        // Slightly tinted surface
     onSurfaceVariant = Color(0xFF757575),      // Secondary text
 
     outline = Color(0xFFE0E0E0),               // Light border
@@ -72,22 +67,22 @@ val LightColorScheme = lightColorScheme(
     scrim = Color(0xFF000000),
     inverseSurface = Color(0xFF303030),
     inverseOnSurface = Color(0xFFF5F5F5),
-    inversePrimary = Color(0xFF90CAF9)         // Light blue for inverted
+    inversePrimary = Color(0xFF80CBC4)          // Light teal for inverted
 )
 
 // ═══════════════════════════════════════════════════════════════════
-// DARK COLOR SCHEME — Professional Dark Mode
+// DARK COLOR SCHEME — Professional Dark Mode (Emerald Tint)
 // ═══════════════════════════════════════════════════════════════════
 val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF90CAF9),               // Light blue for dark mode
-    onPrimary = Color(0xFF0D47A1),             // Navy text on light primary
-    primaryContainer = Color(0xFF0D47A1),      // Navy container
-    onPrimaryContainer = Color(0xFFE3F2FD),    // Light on navy
+    primary = Color(0xFF80CBC4),               // Light teal for dark mode
+    onPrimary = Color(0xFF004D40),             // Deep emerald on light primary
+    primaryContainer = Color(0xFF004D40),      // Deep emerald container
+    onPrimaryContainer = Color(0xFFE0F2F1),    // Light sage on emerald
 
     secondary = Color(0xFF80CBC4),             // Mint lighter for dark
     onSecondary = Color(0xFF00332F),
     secondaryContainer = Color(0xFF004D40),
-    onSecondaryContainer = Color(0xFFE0F7FA),
+    onSecondaryContainer = Color(0xFFE0F2F1),
 
     tertiary = Color(0xFF80CBC4),
     onTertiary = Color(0xFF00332F),
@@ -103,16 +98,16 @@ val DarkColorScheme = darkColorScheme(
     surface = Color(0xFF1E1E1E),               // Dark surface
     onSurface = Color(0xFFECECEC),
     
-    surfaceVariant = Color(0xFF2C2C2C),
+    surfaceVariant = Color(0xFF1A2E2B),        // Dark emerald surface
     onSurfaceVariant = Color(0xFFB0B0B0),
 
     outline = Color(0xFF444444),
     outlineVariant = Color(0xFF333333),
 
     scrim = Color(0xFF000000),
-    inverseSurface = Color(0xFFE3F2FD),
+    inverseSurface = Color(0xFFE0F2F1),
     inverseOnSurface = Color(0xFF1C1B1F),
-    inversePrimary = Color(0xFF0D47A1)
+    inversePrimary = Color(0xFF004D40)
 )
 
 // ═══════════════════════════════════════════════════════════════════
@@ -123,11 +118,11 @@ object CustomColors {
     val LightTextPrimary = Color(0xFF212121)
     val LightTextSecondary = Color(0xFF757575)
     val LightTextTertiary = Color(0xFF9E9E9E)
-    val LightBackground = Color(0xFFF5F7FA)
+    val LightBackground = Color(0xFFF4F9F8)
     val LightSurface = Color(0xFFFFFFFF)
     val LightBorder = Color(0xFFE0E0E0)
     val LightCard = Color(0xFFFFFFFF)
-    val LightIcon = Color(0xFF0D47A1)        // Navy icons in light mode
+    val LightIcon = Color(0xFF004D40)        // Emerald icons in light mode
 
     // Dark theme
     val DarkTextPrimary = Color(0xFFFFFFFF)
@@ -137,13 +132,17 @@ object CustomColors {
     val DarkSurface = Color(0xFF1E1E1E)
     val DarkBorder = Color(0xFF333333)
     val DarkCard = Color(0xFF2A2A2A)
-    val DarkIcon = Color(0xFF90CAF9)         // Light blue icons in dark mode
+    val DarkIcon = Color(0xFF80CBC4)         // Light teal icons in dark mode
 
     // Status colors (work for both themes)
     val Success = Color(0xFF388E3C)           // Professional green
     val Warning = Color(0xFFF57C00)           // Deep orange
     val Error = Color(0xFFD32F2F)             // Medical red
-    val Info = Color(0xFF0D47A1)              // Navy
+    val Info = Color(0xFF004D40)              // Deep Emerald
+
+    // Premium Gold
+    val Gold = Color(0xFFD4AF37)
+    val GoldPale = Color(0xFFFFF8E1)
 }
 
 // Theme utilities

@@ -42,8 +42,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.halalyticscompose.R
 
-private val FabGradientStart = Color(0xFF00C896)
-private val FabGradientEnd = Color(0xFF00A878)
+private val FabGradientStart = Color(0xFF004D40)
+private val FabGradientEnd = Color(0xFF26A69A)
 
 sealed class BottomNavItem(
     val route: String,

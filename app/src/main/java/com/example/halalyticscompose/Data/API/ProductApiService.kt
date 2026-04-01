@@ -104,6 +104,12 @@ interface ProductApiService {
         @Header("Authorization") token: String,
         @Body request: Map<String, String>
     ): Response<ApiResponse<String>>
+
+    @POST("sync/scan-logs")
+    suspend fun syncScanLogs(
+        @Header("Authorization") token: String,
+        @Body request: Map<String, @JvmSuppressWildcards Any>
+    ): Response<ApiResponse<Any>>
     
     @GET("products/scan-history")
     suspend fun getScanHistory(

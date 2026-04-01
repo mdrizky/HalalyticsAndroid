@@ -4,6 +4,11 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -281,7 +286,27 @@ class MainActivity : ComponentActivity() {
                 NavHost(
                     navController = navController,
                     startDestination = startDestination,
-                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                    modifier = Modifier.background(MaterialTheme.colorScheme.background),
+                    // ═══ GLOBAL TRANSITION ANIMATIONS ═══
+                    // Subtle slide-up + fade for all screen transitions
+                    enterTransition = {
+                        slideInVertically(
+                            initialOffsetY = { 200 },
+                            animationSpec = tween(300)
+                        ) + fadeIn(animationSpec = tween(300))
+                    },
+                    exitTransition = {
+                        fadeOut(animationSpec = tween(200))
+                    },
+                    popEnterTransition = {
+                        fadeIn(animationSpec = tween(300))
+                    },
+                    popExitTransition = {
+                        slideOutVertically(
+                            targetOffsetY = { 200 },
+                            animationSpec = tween(300)
+                        ) + fadeOut(animationSpec = tween(200))
+                    }
                 ) {
                     // Splash Screen
                     composable("splash") {
@@ -866,11 +891,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    composable("medication_reminder_advanced") {
-                        MainLayout(navController = navController) { paddingValues ->
-                            MedicationReminderScreen(navController = navController)
-                        }
-                    }
 
                     composable("lab_analysis") {
                         MainLayout(navController = navController) { paddingValues ->

@@ -109,7 +109,7 @@ fun ScanHubScreen(
                 title = stringResource(R.string.scan_hub_barcode_title),
                 subtitle = "Barcode & QR",
                 icon = Icons.Default.QrCodeScanner,
-                gradientColors = listOf(Color(0xFF0D47A1), Color(0xFF1565C0)),
+                gradientColors = listOf(Color(0xFF004D40), Color(0xFF00695C)),
                 modifier = Modifier.weight(1f),
                 onClick = { navController.navigate("scan") }
             )
@@ -117,7 +117,7 @@ fun ScanHubScreen(
                 title = stringResource(R.string.scan_hub_ocr_title),
                 subtitle = "Baca Komposisi",
                 icon = Icons.Default.TextSnippet,
-                gradientColors = listOf(Color(0xFF1565C0), Color(0xFF42A5F5)),
+                gradientColors = listOf(Color(0xFF00695C), Color(0xFF42A5F5)),
                 modifier = Modifier.weight(1f),
                 onClick = { navController.navigate("enhanced_ocr") }
             )
@@ -131,7 +131,7 @@ fun ScanHubScreen(
                 title = stringResource(R.string.scan_hub_meal_title),
                 subtitle = "Foto Makanan",
                 icon = Icons.Default.Restaurant,
-                gradientColors = listOf(Color(0xFF0D47A1), Color(0xFF4DB6AC)),
+                gradientColors = listOf(Color(0xFF004D40), Color(0xFF26A69A)),
                 modifier = Modifier.weight(1f),
                 onClick = { navController.navigate("food_scan") }
             )
@@ -139,7 +139,7 @@ fun ScanHubScreen(
                 title = stringResource(R.string.scan_hub_bpom_title),
                 subtitle = "Cek Registrasi",
                 icon = Icons.Default.VerifiedUser,
-                gradientColors = listOf(Color(0xFF0D47A1), Color(0xFF1976D2)),
+                gradientColors = listOf(Color(0xFF004D40), Color(0xFF26A69A)),
                 modifier = Modifier.weight(1f),
                 onClick = { navController.navigate("bpom_scanner") }
             )
@@ -165,7 +165,7 @@ fun ScanHubScreen(
             title = "Skincare Scanner",
             subtitle = "Analisis keamanan bahan skincare",
             icon = Icons.Default.Face,
-            iconTint = Color(0xFF4DB6AC),
+            iconTint = Color(0xFF26A69A),
             onClick = { navController.navigate("skincare_scanner") }
         )
 
@@ -218,7 +218,7 @@ private fun SmartScanHeroCard(onClick: () -> Unit) {
                 .fillMaxWidth()
                 .background(
                     Brush.linearGradient(
-                        listOf(Color(0xFF0D47A1), Color(0xFF1565C0), Color(0xFF1976D2))
+                        listOf(Color(0xFF004D40), Color(0xFF00695C), Color(0xFF26A69A))
                     )
                 )
                 .padding(24.dp)
@@ -232,13 +232,13 @@ private fun SmartScanHeroCard(onClick: () -> Unit) {
                         Icon(
                             Icons.Default.AutoAwesome,
                             contentDescription = null,
-                            tint = Color(0xFF4DB6AC),
+                            tint = Color(0xFF26A69A),
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             "AI Smart Scan",
-                            color = Color(0xFF4DB6AC),
+                            color = Color(0xFF26A69A),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -262,7 +262,7 @@ private fun SmartScanHeroCard(onClick: () -> Unit) {
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(100.dp))
-                            .background(Color(0xFF4DB6AC))
+                            .background(Color(0xFF26A69A))
                             .padding(horizontal = 18.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -290,14 +290,14 @@ private fun SmartScanHeroCard(onClick: () -> Unit) {
                         .size(80.dp)
                         .scale(pulseScale)
                         .clip(CircleShape)
-                        .background(Color(0xFF4DB6AC).copy(alpha = 0.15f)),
+                        .background(Color(0xFF26A69A).copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
                         modifier = Modifier
                             .size(56.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF4DB6AC).copy(alpha = 0.3f)),
+                            .background(Color(0xFF26A69A).copy(alpha = 0.3f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

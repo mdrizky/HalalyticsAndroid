@@ -90,7 +90,7 @@ fun LeaderboardScreen(
                             .fillMaxWidth()
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(Color(0xFF0D47A1), Color(0xFF1976D2))
+                                    listOf(Color(0xFF004D40), Color(0xFF26A69A))
                                 )
                             )
                             .padding(20.dp)
@@ -165,7 +165,7 @@ fun LeaderboardScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = if (entry.isCurrentUser) {
-                        CardDefaults.cardColors(containerColor = Color(0xFF0D47A1).copy(alpha = 0.08f))
+                        CardDefaults.cardColors(containerColor = Color(0xFF004D40).copy(alpha = 0.08f))
                     } else CardDefaults.cardColors()
                 ) {
                     Row(
@@ -195,7 +195,7 @@ fun LeaderboardScreen(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF4DB6AC).copy(alpha = 0.2f)),
+                                .background(Color(0xFF26A69A).copy(alpha = 0.2f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -223,7 +223,7 @@ fun LeaderboardScreen(
                         Text(
                             text = "%,d".format(entry.totalPoints),
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0D47A1),
+                            color = Color(0xFF004D40),
                             fontSize = 15.sp
                         )
                     }
@@ -245,7 +245,7 @@ private fun PodiumEntry(entry: LeaderboardEntry, height: Int, medal: String) {
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF4DB6AC).copy(alpha = 0.2f)),
+                .background(Color(0xFF26A69A).copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -265,7 +265,7 @@ private fun PodiumEntry(entry: LeaderboardEntry, height: Int, medal: String) {
         Text(
             "%,d".format(entry.totalPoints),
             fontSize = 11.sp,
-            color = Color(0xFF0D47A1),
+            color = Color(0xFF004D40),
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(4.dp))
@@ -276,7 +276,7 @@ private fun PodiumEntry(entry: LeaderboardEntry, height: Int, medal: String) {
                 .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
                 .background(
                     Brush.verticalGradient(
-                        listOf(Color(0xFF0D47A1).copy(alpha = 0.7f), Color(0xFF0D47A1).copy(alpha = 0.3f))
+                        listOf(Color(0xFF004D40).copy(alpha = 0.7f), Color(0xFF004D40).copy(alpha = 0.3f))
                     )
                 )
         )

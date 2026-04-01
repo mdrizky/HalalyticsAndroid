@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -25,10 +26,21 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import com.example.halalyticscompose.R
-import com.example.halalyticscompose.ui.theme.HalalGreen
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 import com.example.halalyticscompose.utils.BiometricAuthHelper
 import com.example.halalyticscompose.utils.CrashReporter
+
+// ═══════════════════════════════════════════════════════════════════
+// EMERALD FOREST COLORS
+// ═══════════════════════════════════════════════════════════════════
+private val EmeraldDark = Color(0xFF004D40)
+private val EmeraldMedium = Color(0xFF00695C)
+private val EmeraldLight = Color(0xFF26A69A)
+private val SoftSage = Color(0xFFE0F2F1)
+private val BgLight = Color(0xFFF4F9F8)
+private val CardBg = Color(0xFFFFFFFF)
+private val TextDark = Color(0xFF212121)
+private val TextMedium = Color(0xFF757575)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,14 +63,23 @@ fun SettingsScreen(
 
     CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
         Scaffold(
+            containerColor = BgLight,
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.settings_title), fontWeight = FontWeight.Bold) },
+                    title = {
+                        Text(
+                            stringResource(R.string.settings_title),
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            fontSize = 18.sp
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = { navController.navigateUp() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back), tint = Color.White)
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = EmeraldDark)
                 )
             }
         ) { paddingValues ->
@@ -68,9 +89,9 @@ fun SettingsScreen(
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Appearance Section
+                // ── Appearance Section ──
                 SettingsSectionTitle(stringResource(R.string.dark_mode))
                 SettingsCard {
                     Row(
@@ -81,9 +102,17 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.DarkMode, contentDescription = null, tint = HalalGreen)
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(stringResource(R.string.dark_mode))
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(SoftSage),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.DarkMode, contentDescription = null, tint = EmeraldDark, modifier = Modifier.size(20.dp))
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(stringResource(R.string.dark_mode), fontWeight = FontWeight.Medium)
                         }
                         Switch(
                             checked = isDarkMode,
@@ -92,7 +121,7 @@ fun SettingsScreen(
                     }
                 }
 
-                // Language Section
+                // ── Language Section ──
                 SettingsSectionTitle(stringResource(R.string.language))
                 SettingsCard {
                     Column(modifier = Modifier.padding(8.dp)) {
@@ -106,7 +135,7 @@ fun SettingsScreen(
                     }
                 }
 
-                // Notifications Section
+                // ── Notifications Section ──
                 SettingsSectionTitle(stringResource(R.string.notifications))
                 SettingsCard {
                     Row(
@@ -117,9 +146,17 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Notifications, contentDescription = null, tint = HalalGreen)
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(stringResource(R.string.notifications))
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color(0xFFFFF3E0)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.Notifications, contentDescription = null, tint = Color(0xFFF57C00), modifier = Modifier.size(20.dp))
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(stringResource(R.string.notifications), fontWeight = FontWeight.Medium)
                         }
                         Switch(
                             checked = isNotifEnabled,
@@ -128,13 +165,15 @@ fun SettingsScreen(
                     }
                 }
 
-                // Security Section
+                // ── Security Section ──
                 SettingsSectionTitle("Security")
                 SettingsCard {
                     Column(modifier = Modifier.padding(8.dp)) {
                         SettingsSwitchRow(
                             title = "Privacy Mode (anti screenshot)",
                             icon = Icons.Default.Shield,
+                            iconBg = Color(0xFFF3E5F5),
+                            iconTint = Color(0xFF6A1B9A),
                             checked = privacyModeEnabled,
                             onCheckedChange = viewModel::setPrivacyModeEnabled
                         )
@@ -142,6 +181,8 @@ fun SettingsScreen(
                         SettingsSwitchRow(
                             title = "Biometric Lock (medical screens)",
                             icon = Icons.Default.Fingerprint,
+                            iconBg = SoftSage,
+                            iconTint = EmeraldDark,
                             checked = biometricLockEnabled,
                             onCheckedChange = { enabled ->
                                 if (!enabled) {
@@ -180,13 +221,15 @@ fun SettingsScreen(
                                 text = it,
                                 modifier = Modifier.padding(horizontal = 12.dp),
                                 fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = TextMedium
                             )
                         }
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp), thickness = 0.5.dp)
                         SettingsSwitchRow(
                             title = "Auto Logout",
                             icon = Icons.Default.Timer,
+                            iconBg = Color(0xFFFFEBEE),
+                            iconTint = Color(0xFFD32F2F),
                             checked = autoLogoutEnabled,
                             onCheckedChange = viewModel::setAutoLogoutEnabled
                         )
@@ -197,7 +240,7 @@ fun SettingsScreen(
                                 text = "Timeout (minutes)",
                                 modifier = Modifier.padding(horizontal = 12.dp),
                                 fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = TextMedium
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Row(
@@ -219,7 +262,7 @@ fun SettingsScreen(
                     }
                 }
 
-                // Watchlist Section (Quick implement)
+                // ── Watchlist Section ──
                 SettingsSectionTitle(stringResource(R.string.watchlist))
                 SettingsCard {
                     Row(
@@ -231,45 +274,54 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.RemoveRedEye, contentDescription = null, tint = HalalGreen)
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(stringResource(R.string.watchlist))
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(SoftSage),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.RemoveRedEye, contentDescription = null, tint = EmeraldDark, modifier = Modifier.size(20.dp))
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(stringResource(R.string.watchlist), fontWeight = FontWeight.Medium)
                         }
-                        Icon(Icons.Default.ChevronRight, contentDescription = null)
+                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = TextMedium)
                     }
                 }
 
-                // About Section
+                // ── About Section ──
                 SettingsSectionTitle("About Halalytics")
                 SettingsCard {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Halalytics v2.5.0 Premium", fontWeight = FontWeight.Bold, color = HalalGreen)
-                        Text("Advanced AI-Powered Halal & Health Analyzer for a better lifestyle.", fontSize = 14.sp)
+                        Text("Halalytics v2.5.0 Premium", fontWeight = FontWeight.Bold, color = EmeraldDark)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text("Advanced AI-Powered Halal & Health Analyzer for a better lifestyle.", fontSize = 14.sp, color = TextMedium)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("© 2026 DeepMind Agentics Team", fontSize = 12.sp, color = androidx.compose.ui.graphics.Color.Gray)
+                        Text("© 2026 DeepMind Agentics Team", fontSize = 12.sp, color = Color.Gray)
                     }
                 }
 
-                // Diagnostics Section (helps troubleshoot force-close without adb)
+                // ── Crash Diagnostics ──
                 SettingsSectionTitle("Crash Diagnostics")
                 SettingsCard {
                     Column(modifier = Modifier.padding(16.dp)) {
                         if (crashInfo.isNullOrBlank()) {
                             Text(
                                 text = "No recorded crash.",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = TextMedium
                             )
                         } else {
                             Text(
                                 text = "Last crash captured on device:",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = TextMedium,
                                 fontSize = 12.sp
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = crashInfo!!.take(650),
                                 fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = TextDark,
                                 maxLines = 12
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -284,15 +336,23 @@ fun SettingsScreen(
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// SETTINGS COMPONENTS
+// ═══════════════════════════════════════════════════════════════════
+
 @Composable
 private fun SettingsSwitchRow(
     title: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconBg: Color = SoftSage,
+    iconTint: Color = EmeraldDark,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
@@ -303,10 +363,18 @@ private fun SettingsSwitchRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, contentDescription = null, tint = HalalGreen)
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(title)
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(iconBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(20.dp))
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(title, fontWeight = FontWeight.Medium, fontSize = 14.sp)
         }
         Switch(
             checked = checked,
@@ -321,7 +389,8 @@ fun SettingsSectionTitle(title: String) {
         text = title.uppercase(),
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
-        color = HalalGreen,
+        color = EmeraldDark,
+        letterSpacing = 0.5.sp,
         modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
     )
 }
@@ -331,8 +400,8 @@ fun SettingsCard(content: @Composable () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         content()
     }
@@ -363,7 +432,7 @@ fun LanguageOption(
         RadioButton(
             selected = code == currentCode,
             onClick = { onSelect() },
-            colors = RadioButtonDefaults.colors(selectedColor = HalalGreen)
+            colors = RadioButtonDefaults.colors(selectedColor = EmeraldDark)
         )
     }
 }

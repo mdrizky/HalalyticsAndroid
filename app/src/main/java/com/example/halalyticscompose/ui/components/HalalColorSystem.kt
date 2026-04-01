@@ -1,5 +1,9 @@
 package com.example.halalyticscompose.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -23,6 +27,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -108,24 +117,32 @@ fun HalalStatusBadge(
     val textColor = getHalalColorDark(status)
     val borderColor = getHalalColorMain(status)
     
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        shape = RoundedCornerShape(20.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
+    var isVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { isVisible = true }
+
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = scaleIn(animationSpec = tween(350)) + fadeIn(animationSpec = tween(350))
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Card(
+            modifier = modifier,
+            colors = CardDefaults.cardColors(containerColor = backgroundColor),
+            shape = RoundedCornerShape(20.dp),
+            border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
         ) {
-            getHalalIcon(status)
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = status.uppercase(),
-                color = textColor,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                getHalalIcon(status)
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = status.uppercase(),
+                    color = textColor,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
@@ -139,67 +156,75 @@ fun HalalMeterIndicator(
     val backgroundColor = getHalalColor(status)
     val progressColor = getHalalColorMain(status)
     
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        shape = RoundedCornerShape(12.dp)
+    var isVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { isVisible = true }
+
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = scaleIn(animationSpec = tween(400)) + fadeIn(animationSpec = tween(400))
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Card(
+            modifier = modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = backgroundColor),
+            shape = RoundedCornerShape(12.dp)
         ) {
-            // Status Icon
-            getHalalIcon(status)
-            
-            Spacer(modifier = Modifier.width(12.dp))
-            
-            // Status Text
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = when (status.lowercase()) {
-                        "halal" -> "PRODUK HALAL ✓"
-                        "syubhat", "doubtful" -> "PRODUK SYUBHAT ⚠️"
-                        "haram", "non_halal" -> "PRODUK TIDAK HALAL ✗"
-                        else -> "STATUS TIDAK DIKETAHUI"
-                    },
-                    color = getHalalColorDark(status),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Status Icon
+                getHalalIcon(status)
                 
-                confidence?.let {
+                Spacer(modifier = Modifier.width(12.dp))
+                
+                // Status Text
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Tingkat Kepercayaan: ${(it * 100).toInt()}%",
+                        text = when (status.lowercase()) {
+                            "halal" -> "PRODUK HALAL ✓"
+                            "syubhat", "doubtful" -> "PRODUK SYUBHAT ⚠️"
+                            "haram", "non_halal" -> "PRODUK TIDAK HALAL ✗"
+                            else -> "STATUS TIDAK DIKETAHUI"
+                        },
                         color = getHalalColorDark(status),
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
+                    
+                    confidence?.let {
+                        Text(
+                            text = "Tingkat Kepercayaan: ${(it * 100).toInt()}%",
+                            color = getHalalColorDark(status),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
             }
-        }
-        
-        // Confidence Bar (if available)
-        confidence?.let {
-            Spacer(modifier = Modifier.height(8.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(4.dp)
-                    .background(
-                        color = Color.Black.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(2.dp)
-                    )
-            ) {
+            
+            // Confidence Bar (if available)
+            confidence?.let {
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(it)
+                        .fillMaxWidth()
                         .height(4.dp)
                         .background(
-                            color = progressColor,
+                            color = Color.Black.copy(alpha = 0.1f),
                             shape = RoundedCornerShape(2.dp)
                         )
-                )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(it)
+                            .height(4.dp)
+                            .background(
+                                color = progressColor,
+                                shape = RoundedCornerShape(2.dp)
+                            )
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
             }
-            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }

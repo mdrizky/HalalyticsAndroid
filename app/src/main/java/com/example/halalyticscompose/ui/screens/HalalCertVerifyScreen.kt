@@ -76,7 +76,7 @@ fun HalalCertVerifyScreen(
                         .fillMaxWidth()
                         .background(
                             Brush.horizontalGradient(
-                                listOf(Color(0xFF00695C), Color(0xFF4DB6AC))
+                                listOf(Color(0xFF00695C), Color(0xFF26A69A))
                             )
                         )
                         .padding(24.dp),

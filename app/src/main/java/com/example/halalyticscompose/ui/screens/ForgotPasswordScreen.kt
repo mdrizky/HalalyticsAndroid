@@ -56,6 +56,34 @@ fun ForgotPasswordScreen(
             countdown--
         }
     }
+
+    fun sendResetEmail() {
+        if (email.isEmpty()) {
+            errorMessage = "Please enter your email address"
+            return
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            errorMessage = "Please enter a valid email address"
+            return
+        }
+
+        isLoading = true
+        errorMessage = ""
+
+        viewModel.resetPassword(
+            email = email,
+            onSuccess = {
+                isLoading = false
+                isEmailSent = true
+                countdown = 60
+            },
+            onError = { error ->
+                isLoading = false
+                errorMessage = error
+            }
+        )
+    }
     
     Box(
         modifier = Modifier
@@ -208,20 +236,7 @@ fun ForgotPasswordScreen(
                         // Send button
                         Button(
                             onClick = {
-                                if (email.isEmpty()) {
-                                    errorMessage = "Please enter your email address"
-                                    return@Button
-                                }
-                                
-                                if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                                    errorMessage = "Please enter a valid email address"
-                                } else {
-                                    isLoading = true
-                                    errorMessage = ""
-                                    
-                                    // Simulate API call logic should be handled by ViewModel or properly
-                                    isEmailSent = true
-                                }
+                                sendResetEmail()
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -308,8 +323,8 @@ fun ForgotPasswordScreen(
                                 } else {
                                     Button(
                                         onClick = {
-                                            isEmailSent = false
                                             countdown = 60
+                                            sendResetEmail()
                                         },
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = Color.Transparent

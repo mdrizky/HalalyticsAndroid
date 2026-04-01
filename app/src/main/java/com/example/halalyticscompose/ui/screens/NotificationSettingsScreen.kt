@@ -84,7 +84,7 @@ fun NotificationSettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF0D47A1).copy(alpha = 0.05f)
+                        containerColor = Color(0xFF004D40).copy(alpha = 0.05f)
                     )
                 ) {
                     Row(
@@ -94,7 +94,7 @@ fun NotificationSettingsScreen(
                         Icon(
                             Icons.Default.Notifications,
                             contentDescription = null,
-                            tint = Color(0xFF0D47A1)
+                            tint = Color(0xFF004D40)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
@@ -126,7 +126,7 @@ fun NotificationSettingsScreen(
                             Icon(
                                 imageVector = cat.icon,
                                 contentDescription = null,
-                                tint = if (isEnabled) Color(0xFF0D47A1) else Color.Gray,
+                                tint = if (isEnabled) Color(0xFF004D40) else Color.Gray,
                                 modifier = Modifier.size(28.dp)
                             )
                             Spacer(modifier = Modifier.width(16.dp))

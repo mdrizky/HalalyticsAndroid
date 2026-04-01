@@ -131,6 +131,7 @@ interface ApiService {
         @Field("device_type") deviceType: String = "android",
         @Field("device_id") deviceId: String? = null
     ): GenericResponse
+
     @GET("user/family")
     suspend fun getFamilyProfiles(
         @Header("Authorization") bearer: String
@@ -141,11 +142,11 @@ interface ApiService {
     suspend fun addFamilyProfile(
         @Header("Authorization") bearer: String,
         @Field("name") name: String,
-        @Field("relationship") relationship: String?,
-        @Field("age") age: Int?,
-        @Field("gender") gender: String?,
-        @Field("allergies") allergies: String?,
-        @Field("medical_history") medicalHistory: String?
+        @Field("relationship") relationship: String? = null,
+        @Field("age") age: Int? = null,
+        @Field("gender") gender: String? = null,
+        @Field("allergies") allergies: String? = null,
+        @Field("medical_history") medicalHistory: String? = null
     ): FamilyDetailResponse
 
     @Multipart

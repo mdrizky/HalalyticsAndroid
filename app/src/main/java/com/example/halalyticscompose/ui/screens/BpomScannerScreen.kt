@@ -58,7 +58,7 @@ import com.example.halalyticscompose.Data.Model.BpomProduct
 import com.example.halalyticscompose.ui.viewmodel.BpomViewModel
 
 private val NavyA = Color(0xFF1A237E)
-private val NavyB = Color(0xFF1565C0)
+private val NavyB = Color(0xFF00695C)
 private val TextDark = Color(0xFF0A2540)
 private val TextMuted = Color(0xFF64748B)
 private val Safe = Color(0xFF00C896)
@@ -325,7 +325,7 @@ private fun BpomProductListCard(product: BpomProduct, onClick: () -> Unit) {
                 modifier = Modifier
                     .size(42.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFE3F2FD)),
+                    .background(Color(0xFFE0F2F1)),
                 contentAlignment = Alignment.Center
             ) {
                 Text("BP", color = NavyA, fontWeight = FontWeight.ExtraBold)

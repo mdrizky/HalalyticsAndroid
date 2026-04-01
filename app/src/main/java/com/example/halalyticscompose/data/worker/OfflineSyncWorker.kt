@@ -31,33 +31,44 @@ class OfflineSyncWorker @AssistedInject constructor(
             return Result.success()
         }
 
-        var successCount = 0
-        for (product in unsyncedProducts) {
-            try {
-                val request = mapOf(
-                    "product_id" to (product.barcode), // Using barcode as identifier or if ID exists
-                    "nama_produk" to product.name,
+        return try {
+            val payload = unsyncedProducts.map { product ->
+                mapOf(
                     "barcode" to product.barcode,
-                    "status_halal" to product.status,
-                    "status_kesehatan" to "sehat",
-                    "tanggal_scan" to java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date(product.timestamp))
+                    "product_name" to product.name,
+                    "halal_status" to normalizeHalalStatus(product.status),
+                    "ai_analysis" to (product.sources ?: ""),
+                    "scanned_at" to product.timestamp
                 )
-
-                val response = productApiService.addToScanHistory(token, request)
-
-                if (response.isSuccessful && response.body()?.success == true) {
-                    productHistoryDao.markAsSynced(product.barcode)
-                    successCount++
-                    Log.d("OfflineSyncWorker", "Synced product: ${product.name}")
-                } else {
-                    Log.e("OfflineSyncWorker", "Failed to sync product: ${product.name}. Error: ${response.message()}")
-                }
-            } catch (e: Exception) {
-                Log.e("OfflineSyncWorker", "Exception during sync for ${product.name}: ${e.message}")
             }
-        }
 
-        Log.d("OfflineSyncWorker", "Sync complete. Synced $successCount products.")
-        return if (successCount == unsyncedProducts.size) Result.success() else Result.retry()
+            val response = productApiService.syncScanLogs(
+                token = token,
+                request = mapOf("logs" to payload)
+            )
+
+            if (response.isSuccessful && response.body()?.success == true) {
+                unsyncedProducts.forEach { product ->
+                    productHistoryDao.markAsSynced(product.barcode)
+                }
+
+                Log.d("OfflineSyncWorker", "Sync complete. Synced ${unsyncedProducts.size} products.")
+                Result.success()
+            } else {
+                Log.e("OfflineSyncWorker", "Batch sync failed: ${response.message()}")
+                Result.retry()
+            }
+        } catch (e: Exception) {
+            Log.e("OfflineSyncWorker", "Exception during batch sync: ${e.message}", e)
+            Result.retry()
+        }
+    }
+
+    private fun normalizeHalalStatus(status: String): String {
+        return when (status.trim().lowercase()) {
+            "halal" -> "halal"
+            "haram", "tidak halal", "non-halal" -> "haram"
+            else -> "syubhat"
+        }
     }
 }

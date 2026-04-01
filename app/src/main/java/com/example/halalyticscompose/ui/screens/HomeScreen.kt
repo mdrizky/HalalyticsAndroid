@@ -109,23 +109,29 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import com.example.halalyticscompose.utils.toRelativeTime
+import com.example.halalyticscompose.ui.components.ShimmerProductItem
+import com.example.halalyticscompose.ui.components.ShimmerArticleItem
+import com.example.halalyticscompose.ui.components.ShimmerBanner
+import com.example.halalyticscompose.ui.components.ShimmerBentoGrid
 
 // ═══════════════════════════════════════════════════════════════════
-// COLOR CONSTANTS — Minimalist Professional Palette
+// COLOR CONSTANTS — Emerald Forest Premium Palette
 // ═══════════════════════════════════════════════════════════════════
-private val Navy = Color(0xFF0D47A1)
-private val NavyLight = Color(0xFF1565C0)
-private val Mint = Color(0xFF4DB6AC)
-private val MintPale = Color(0xFFE0F7FA)
-private val BgLight = Color(0xFFF5F7FA)
+private val Navy = Color(0xFF004D40)        // Deep Emerald
+private val NavyLight = Color(0xFF00695C)   // Slightly lighter emerald
+private val Mint = Color(0xFF26A69A)        // Modern Mint
+private val MintPale = Color(0xFFE0F2F1)   // Soft Sage
+private val BgLight = Color(0xFFF4F9F8)    // Off-White Green
 private val CardWhite = Color(0xFFFFFFFF)
 private val BorderGray = Color(0xFFE0E0E0)
 private val TextDark = Color(0xFF212121)
 private val TextMedium = Color(0xFF757575)
 private val TextLight = Color(0xFF9E9E9E)
+private val GoldAccent = Color(0xFFD4AF37)  // Premium Gold
 
 // ═══════════════════════════════════════════════════════════════════
-// HOME SCREEN — Minimalist Professional (GoPay / Dana Style)
+// HOME SCREEN — Premium Emerald Forest (Halodoc-Level)
 // ═══════════════════════════════════════════════════════════════════
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -239,14 +245,18 @@ fun HomeScreen(
                 ) { navController.navigate("health_articles") }
             }
 
-            items(articles.take(4)) { article ->
-                ArticleCard(
-                    article = article,
-                    onClick = {
-                        val slug = article.slug ?: article.id
-                        navController.navigate("health_article_detail/${Uri.encode(slug)}")
-                    }
-                )
+            if (articles.isEmpty()) {
+                items(3) { ShimmerArticleItem() }
+            } else {
+                items(articles.take(4)) { article ->
+                    ArticleCard(
+                        article = article,
+                        onClick = {
+                            val slug = article.slug ?: article.id
+                            navController.navigate("health_article_detail/${Uri.encode(slug)}")
+                        }
+                    )
+                }
             }
 
             // ─── RECENT SCANS ────────────────────────────────────
@@ -258,12 +268,16 @@ fun HomeScreen(
                 ) { navController.navigate("history") }
             }
 
-            items(scanHistory.take(4)) { item ->
-                RecentScanCard(item = item) {
-                    if (item.id > 0) {
-                        navController.navigate("scan_history_detail/${item.id}")
-                    } else {
-                        navController.navigate("history")
+            if (scanHistory.isEmpty()) {
+                items(4) { ShimmerProductItem() }
+            } else {
+                items(scanHistory.take(4)) { item ->
+                    RecentScanCard(item = item) {
+                        if (item.id > 0) {
+                            navController.navigate("scan_history_detail/${item.id}")
+                        } else {
+                            navController.navigate("history")
+                        }
                     }
                 }
             }
@@ -414,7 +428,7 @@ private fun FloatingQuickActionCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                QuickActionIcon(Icons.Default.QrCode2, "Scan AI", Color(0xFF1565C0), Color(0xFFE3F2FD), onScan)
+                QuickActionIcon(Icons.Default.QrCode2, "Scan AI", Color(0xFF004D40), Color(0xFFE0F2F1), onScan)
                 QuickActionIcon(Icons.Default.Medication, "Cek Obat", Color(0xFFC62828), Color(0xFFFFEBEE), onMedicine)
                 QuickActionIcon(Icons.Default.AutoAwesome, "Kosmetik", Color(0xFF6A1B9A), Color(0xFFF3E5F5), onCosmetic)
                 QuickActionIcon(Icons.Default.Biotech, "Lab Scan", Color(0xFF2E7D32), Color(0xFFE8F5E9), onLabScan)
@@ -424,10 +438,10 @@ private fun FloatingQuickActionCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                QuickActionIcon(Icons.Default.VerifiedUser, "Halal", Color(0xFFF57F17), Color(0xFFFFF8E1), onPoints)
-                QuickActionIcon(Icons.Default.HealthAndSafety, "BPOM", Color(0xFF006064), Color(0xFFE0F7FA), onBpom)
-                QuickActionIcon(Icons.Default.SmartToy, "AI Chat", Color(0xFFBF360C), Color(0xFFFBE9E7), onInsight)
-                QuickActionIcon(Icons.Default.History, "Riwayat", Color(0xFF283593), Color(0xFFE8EAF6), onHistory)
+                QuickActionIcon(Icons.Default.VerifiedUser, "Halal", Color(0xFFD4AF37), Color(0xFFFFF8E1), onPoints)
+                QuickActionIcon(Icons.Default.HealthAndSafety, "BPOM", Color(0xFF00695C), Color(0xFFE0F2F1), onBpom)
+                QuickActionIcon(Icons.Default.SmartToy, "AI Chat", Color(0xFF004D40), Color(0xFFE0F2F1), onInsight)
+                QuickActionIcon(Icons.Default.History, "Riwayat", Color(0xFF004D40), Color(0xFFE0F2F1), onHistory)
             }
         }
     }
@@ -946,7 +960,7 @@ private fun QuickActions(
             ActionButton(stringResource(R.string.home_action_suite), Icons.Default.HealthAndSafety, Color(0xFFE91E63), Color(0xFFFCE4EC), onClick = onHealthSuite)
             ActionButton(stringResource(R.string.home_action_assistant), Icons.Default.SmartToy, Color(0xFF7B1FA2), Color(0xFFF3E5F5), onClick = onAssistant)
             ActionButton(stringResource(R.string.home_action_halal), Icons.Default.VerifiedUser, Color(0xFF2E7D32), Color(0xFFE8F5E9), onClick = onHalalSpecialist)
-            ActionButton("BPOM", Icons.Default.VerifiedUser, Color(0xFF0D47A1), Color(0xFFE3F2FD), onClick = onBpom)
+            ActionButton("BPOM", Icons.Default.VerifiedUser, Color(0xFF004D40), Color(0xFFE0F2F1), onClick = onBpom)
         }
         Spacer(modifier = Modifier.height(12.dp))
         Row(
@@ -966,7 +980,7 @@ private fun ActionButton(
     label: String,
     icon: ImageVector,
     tint: Color = Navy,
-    bg: Color = Color(0xFFE3F2FD),
+    bg: Color = Color(0xFFE0F2F1),
     onClick: () -> Unit
 ) {
     Column(
@@ -1170,7 +1184,7 @@ private fun RecentScanCard(item: ScanHistoryItem, onClick: () -> Unit) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(item.createdAt ?: "-", color = TextLight, fontSize = 10.sp)
+                Text(item.createdAt.toRelativeTime(), color = TextLight, fontSize = 10.sp)
             }
             Box(
                 modifier = Modifier

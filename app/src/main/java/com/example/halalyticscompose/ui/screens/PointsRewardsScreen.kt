@@ -77,7 +77,7 @@ fun PointsRewardsScreen(
                             .fillMaxWidth()
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(Color(0xFF0D47A1), Color(0xFF4DB6AC))
+                                    listOf(Color(0xFF004D40), Color(0xFF26A69A))
                                 )
                             )
                             .padding(24.dp)
@@ -184,7 +184,7 @@ fun PointsRewardsScreen(
                         )
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFF4DB6AC).copy(alpha = 0.15f)
+                            color = Color(0xFF26A69A).copy(alpha = 0.15f)
                         ) {
                             Text(
                                 text = points,
@@ -227,7 +227,7 @@ fun PointsRewardsScreen(
                         Text(
                             text = "+${item.points}",
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF4DB6AC)
+                            color = Color(0xFF26A69A)
                         )
                     }
                 }
