@@ -808,13 +808,13 @@ interface ApiService {
     // ==========================================================
 
     // OFFLINE OCR (Feature 4)
-    @GET("ocr-sync/ingredients")
+    @GET("ocr/ingredients/sync")
     suspend fun syncIngredients(
         @Header("Authorization") bearer: String,
         @Query("updated_after") updatedAfter: String? = null
     ): Response<OcrSyncResponse>
 
-    @POST("ocr-sync/result")
+    @POST("ocr/scan-result")
     suspend fun saveOcrResult(
         @Header("Authorization") bearer: String,
         @Body request: OcrScanResultRequest
@@ -822,24 +822,30 @@ interface ApiService {
 
     // SMART NUTRITION (Feature 5)
     @Multipart
-    @POST("nutrition/log-meal")
+    @POST("nutrition/log")
     suspend fun logMeal(
         @Header("Authorization") bearer: String,
         @Part image: okhttp3.MultipartBody.Part,
         @Part("meal_type") mealType: okhttp3.RequestBody
     ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<DailyNutritionLog>>
 
-    @GET("nutrition/daily-log")
+    @GET("nutrition/daily")
     suspend fun getDailyNutritionLog(
         @Header("Authorization") bearer: String,
         @Query("date") date: String? = null
     ): Response<NutritionDashboardResponse>
 
+    @GET("nutrition/history")
+    suspend fun getNutritionHistory(
+        @Header("Authorization") bearer: String,
+        @Query("days") days: Int = 30
+    ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<List<NutritionHistoryItem>>>
+
     @POST("nutrition/goals")
     suspend fun setNutritionGoals(
         @Header("Authorization") bearer: String,
         @Body request: NutritionGoal
-    ): Response<GenericResponse>
+    ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<NutritionGoal>>
 
     @GET("nutrition/goals")
     suspend fun getNutritionGoals(
@@ -847,20 +853,20 @@ interface ApiService {
     ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<NutritionGoal>>
 
     // RECIPE AI (Feature 6)
-    @GET("recipes-ai")
+    @GET("recipes")
     suspend fun getRecipes(
         @Header("Authorization") bearer: String,
         @Query("category") category: String? = null,
         @Query("halal_only") halalOnly: Boolean = false
     ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<List<Recipe>>>
 
-    @GET("recipes-ai/{id}")
+    @GET("recipes/{id}")
     suspend fun getRecipeDetail(
         @Header("Authorization") bearer: String,
         @Path("id") id: Int
     ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<Recipe>>
 
-    @POST("recipes-ai/{id}/halal-switch")
+    @GET("recipes/{id}/substitution")
     suspend fun getHalalSubstitution(
         @Header("Authorization") bearer: String,
         @Path("id") id: Int
@@ -893,6 +899,17 @@ interface ApiService {
         @Query("lng") lng: Double,
         @Query("radius") radius: Double = 2.0
     ): Response<ArPoiResponse>
+
+    @GET("dashboard/daily-mission")
+    suspend fun getDailyMission(
+        @Header("Authorization") bearer: String
+    ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<DailyMissionData>>
+
+    @POST("dashboard/complete-mission")
+    suspend fun completeMission(
+        @Header("Authorization") bearer: String,
+        @Body body: Map<String, String>
+    ): Response<GenericResponse>
 
     // ==================== GAMIFICATION — Points & Leaderboard ====================
     @GET("user/points")

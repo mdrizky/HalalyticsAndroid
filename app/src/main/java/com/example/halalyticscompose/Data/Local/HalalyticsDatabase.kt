@@ -8,9 +8,11 @@ import androidx.room.TypeConverters
 import com.example.halalyticscompose.Data.Local.Dao.CachedScanResultDao
 import com.example.halalyticscompose.Data.Local.Dao.ConsumptionDao
 import com.example.halalyticscompose.Data.Local.Dao.HaramIngredientDao
+import com.example.halalyticscompose.Data.Local.Dao.UserHealthProfileDao
 import com.example.halalyticscompose.Data.Local.Entities.CachedScanResult
 import com.example.halalyticscompose.Data.Local.Entities.Consumption
 import com.example.halalyticscompose.Data.Local.Entities.HaramIngredientEntity
+import com.example.halalyticscompose.Data.Local.Entities.UserHealthProfileEntity
 import com.example.halalyticscompose.data.database.ProductHistoryDao
 import com.example.halalyticscompose.data.database.ProductHistoryEntity
 import net.sqlcipher.database.SQLiteDatabase
@@ -21,9 +23,10 @@ import net.sqlcipher.database.SupportFactory
         CachedScanResult::class, 
         Consumption::class, 
         ProductHistoryEntity::class,
-        HaramIngredientEntity::class
+        HaramIngredientEntity::class,
+        UserHealthProfileEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -33,6 +36,7 @@ abstract class HalalyticsDatabase : RoomDatabase() {
     abstract fun consumptionDao(): ConsumptionDao
     abstract fun productHistoryDao(): ProductHistoryDao
     abstract fun haramIngredientDao(): HaramIngredientDao
+    abstract fun userHealthProfileDao(): UserHealthProfileDao
     
     companion object {
         @Volatile

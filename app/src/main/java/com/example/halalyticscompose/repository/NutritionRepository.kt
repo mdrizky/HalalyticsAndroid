@@ -44,6 +44,19 @@ class NutritionRepository @Inject constructor(
         }
     }
 
+    suspend fun getHistory(token: String, days: Int = 30): Result<List<NutritionHistoryItem>> {
+        return try {
+            val response = api.getNutritionHistory("Bearer $token", days)
+            if (response.isSuccessful && response.body()?.success == true) {
+                Result.success(response.body()?.data ?: emptyList())
+            } else {
+                Result.failure(Exception("Fetch history failed"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun setGoals(token: String, goals: NutritionGoal): Result<Unit> {
         return try {
             val response = api.setNutritionGoals("Bearer $token", goals)

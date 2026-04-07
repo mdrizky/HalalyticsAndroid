@@ -5,8 +5,7 @@ import com.example.halalyticscompose.Data.Local.Dao.HaramIngredientDao
 import com.example.halalyticscompose.Data.Local.Entities.HaramIngredientEntity
 import com.example.halalyticscompose.Data.Model.OcrScanResultRequest
 import kotlinx.coroutines.flow.Flow
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,22 +19,21 @@ class OcrRepository @Inject constructor(
     suspend fun syncIngredients(token: String): Result<Unit> {
         return try {
             val lastUpdated = dao.getLastUpdated()
-            val dateStr = lastUpdated?.let { 
-                SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(it)) 
-            }
+            val updatedAfter = lastUpdated?.let { Instant.ofEpochMilli(it).toString() }
             
-            val response = api.syncIngredients("Bearer $token", dateStr)
+            val response = api.syncIngredients("Bearer $token", updatedAfter)
             if (response.isSuccessful && response.body()?.success == true) {
                 val ingredients = response.body()?.data?.map { 
                     HaramIngredientEntity(
                         id = it.id,
                         name = it.name,
-                        aliases = it.aliases?.joinToString(","),
+                        aliases = it.aliases.orEmpty(),
                         category = it.category,
                         severity = it.severity,
                         description = it.description,
                         isActive = it.isActive,
-                        updatedAt = System.currentTimeMillis()
+                        updatedAt = it.updatedAt?.let { timestamp -> runCatching { Instant.parse(timestamp).toEpochMilli() }.getOrNull() }
+                            ?: System.currentTimeMillis()
                     )
                 } ?: emptyList()
                 
@@ -52,7 +50,7 @@ class OcrRepository @Inject constructor(
     }
 
     suspend fun searchLocal(query: String): List<HaramIngredientEntity> {
-        return dao.searchIngredients(query)
+        return dao.searchIngredients("%$query%")
     }
 
     suspend fun saveResultToServer(token: String, request: OcrScanResultRequest): Result<Unit> {

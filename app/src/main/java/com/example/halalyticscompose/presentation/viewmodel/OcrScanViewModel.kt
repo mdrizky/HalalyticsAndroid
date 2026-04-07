@@ -2,91 +2,164 @@ package com.example.halalyticscompose.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.Local.Entities.HaramIngredientEntity
+import com.example.halalyticscompose.Data.Local.Dao.UserHealthProfileDao
+import com.example.halalyticscompose.Data.Local.Entities.UserHealthProfileEntity
 import com.example.halalyticscompose.Data.Model.OcrScanResultRequest
+import com.example.halalyticscompose.data.ocr.DetectedIngredient
+import com.example.halalyticscompose.data.ocr.IngredientMatcher
 import com.example.halalyticscompose.repository.OcrRepository
 import com.example.halalyticscompose.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class OcrScanUiState(
-    val isLoading: Boolean = false,
-    val detectedIngredients: List<HaramIngredientEntity> = emptyList(),
+    val isScanning: Boolean = true,
+    val isSyncing: Boolean = false,
     val rawText: String = "",
+    val detectedIngredients: List<DetectedIngredient> = emptyList(),
+    val maxSeverity: Int = 0,
+    val showAlert: Boolean = false,
     val error: String? = null,
-    val isSyncing: Boolean = false
 )
 
 @HiltViewModel
 class OcrScanViewModel @Inject constructor(
     private val repository: OcrRepository,
-    private val sessionManager: SessionManager
+    private val matcher: IngredientMatcher,
+    private val userHealthProfileDao: UserHealthProfileDao,
+    private val sessionManager: SessionManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OcrScanUiState())
     val uiState: StateFlow<OcrScanUiState> = _uiState.asStateFlow()
 
-    private val allHaramIngredients = repository.activeIngredients
+    private var debounceJob: Job? = null
+    private var lastSubmittedFingerprint: String? = null
+    private var lastSubmittedAt: Long = 0L
 
     init {
-        syncIngredients()
+        viewModelScope.launch {
+            seedProfileIfNeeded()
+            syncIngredients()
+        }
     }
 
     fun syncIngredients() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isSyncing = true) }
-            val token = sessionManager.getAuthToken() ?: return@launch
+            _uiState.update { it.copy(isSyncing = true, error = null) }
+            val token = sessionManager.getAuthToken()
+            if (token.isNullOrBlank()) {
+                _uiState.update { it.copy(isSyncing = false, error = "Sesi login tidak ditemukan.") }
+                return@launch
+            }
+
             repository.syncIngredients(token)
-            _uiState.update { it.copy(isSyncing = false) }
+                .onFailure { error ->
+                    _uiState.update { it.copy(isSyncing = false, error = error.message ?: "Gagal sinkron bahan.") }
+                }
+                .onSuccess {
+                    _uiState.update { it.copy(isSyncing = false) }
+                }
         }
     }
 
     fun processText(rawText: String) {
-        viewModelScope.launch {
-            val detected = mutableListOf<HaramIngredientEntity>()
-            val lines = rawText.lines()
-            
-            // Fetch all active ingredients from local DB
-            val ingredients = allHaramIngredients.first()
-            
-            for (ingredient in ingredients) {
-                val patterns = mutableListOf(ingredient.name)
-                ingredient.aliases?.split(",")?.forEach { patterns.add(it.trim()) }
-                
-                for (pattern in patterns) {
-                    if (rawText.contains(pattern, ignoreCase = true)) {
-                        detected.add(ingredient)
-                        break
-                    }
-                }
+        debounceJob?.cancel()
+        debounceJob = viewModelScope.launch {
+            delay(500)
+
+            val cleanedText = rawText.trim()
+            if (cleanedText.isBlank()) {
+                return@launch
             }
-            
-            _uiState.update { 
-                it.copy(
-                    detectedIngredients = detected.distinctBy { lang -> lang.id },
-                    rawText = rawText
-                )
-            }
-            
-            if (detected.isNotEmpty()) {
-                saveResult(rawText, detected)
-            }
+
+            val userId = sessionManager.getUserId()
+            val profile = if (userId > 0) userHealthProfileDao.getProfile(userId) else null
+            val detected = matcher.match(cleanedText, profile)
+            val maxSeverity = detected.maxOfOrNull { it.matchedIngredient.severity } ?: 0
+
+            _uiState.value = OcrScanUiState(
+                isScanning = true,
+                isSyncing = _uiState.value.isSyncing,
+                rawText = cleanedText,
+                detectedIngredients = detected,
+                maxSeverity = maxSeverity,
+                showAlert = maxSeverity >= 2,
+                error = _uiState.value.error,
+            )
+
+            saveResultIfNeeded(cleanedText, detected, maxSeverity)
         }
     }
 
-    private fun saveResult(rawText: String, detected: List<HaramIngredientEntity>) {
-        viewModelScope.launch {
-            val token = sessionManager.getAuthToken() ?: return@launch
-            val maxSeverity = detected.maxOfOrNull { it.severity } ?: 0
-            val request = OcrScanResultRequest(
-                productName = null, // Can be updated by user later
-                rawText = rawText,
-                detectedHaram = detected.map { it.name },
-                severity = maxSeverity
+    fun dismissAlert() {
+        _uiState.update { it.copy(showAlert = false) }
+    }
+
+    private suspend fun seedProfileIfNeeded() {
+        val userId = sessionManager.getUserId()
+        if (userId <= 0 || userHealthProfileDao.getProfile(userId) != null) {
+            return
+        }
+
+        val allergies = sessionManager.getAllergy()
+            ?.split(",", ";")
+            ?.map { it.trim() }
+            ?.filter { it.isNotBlank() }
+            .orEmpty()
+
+        val dietConditions = buildList {
+            sessionManager.getDietPreference()?.takeIf { it.isNotBlank() }?.let(::add)
+            sessionManager.getMedicalHistory()?.takeIf { it.isNotBlank() }?.let(::add)
+        }
+
+        userHealthProfileDao.upsert(
+            UserHealthProfileEntity(
+                userId = userId,
+                allergies = allergies,
+                dietConditions = dietConditions,
+                avoidIngredients = emptyList(),
+                updatedAt = System.currentTimeMillis(),
             )
-            repository.saveResultToServer(token, request)
+        )
+    }
+
+    private fun saveResultIfNeeded(
+        rawText: String,
+        detected: List<DetectedIngredient>,
+        maxSeverity: Int,
+    ) {
+        val token = sessionManager.getAuthToken() ?: return
+        val fingerprint = rawText.lowercase().replace(Regex("\\s+"), " ").take(240)
+        val now = System.currentTimeMillis()
+
+        if (fingerprint.length < 24) {
+            return
+        }
+        if (fingerprint == lastSubmittedFingerprint && now - lastSubmittedAt < 15_000) {
+            return
+        }
+
+        lastSubmittedFingerprint = fingerprint
+        lastSubmittedAt = now
+
+        viewModelScope.launch {
+            repository.saveResultToServer(
+                token = token,
+                request = OcrScanResultRequest(
+                    productName = null,
+                    rawText = rawText,
+                    detectedHaram = detected.map { it.matchedIngredient.name },
+                    severity = maxSeverity.takeIf { it > 0 },
+                ),
+            )
         }
     }
 }

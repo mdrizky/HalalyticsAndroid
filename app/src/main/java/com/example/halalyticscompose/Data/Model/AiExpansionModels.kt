@@ -12,7 +12,8 @@ data class HaramIngredient(
     val category: String,
     val severity: Int,
     val description: String?,
-    @SerializedName("is_active") val isActive: Boolean
+    @SerializedName("is_active") val isActive: Boolean,
+    @SerializedName("updated_at") val updatedAt: String? = null,
 )
 
 data class OcrSyncResponse(
@@ -40,7 +41,8 @@ data class DailyNutritionLog(
     @SerializedName("total_protein") val totalProtein: Double,
     @SerializedName("total_fat") val totalFat: Double,
     @SerializedName("image_path") val imagePath: String?,
-    @SerializedName("logged_at") val loggedAt: String
+    @SerializedName("logged_at") val loggedAt: String,
+    @SerializedName("analysis_note") val analysisNote: String? = null,
 )
 
 data class FoodItem(
@@ -55,7 +57,7 @@ data class FoodItem(
 )
 
 data class NutritionGoal(
-    val id: Int,
+    val id: Int = 0,
     @SerializedName("daily_calories") val dailyCalories: Int,
     @SerializedName("daily_carbs") val dailyCarbs: Double,
     @SerializedName("daily_protein") val dailyProtein: Double,
@@ -76,6 +78,15 @@ data class NutritionDashboardData(
     @SerializedName("total_protein") val totalProtein: Double,
     @SerializedName("total_fat") val totalFat: Double,
     val goal: NutritionGoal?
+)
+
+data class NutritionHistoryItem(
+    val date: String,
+    @SerializedName("total_calories") val totalCalories: Int,
+    @SerializedName("total_carbs") val totalCarbs: Double,
+    @SerializedName("total_protein") val totalProtein: Double,
+    @SerializedName("total_fat") val totalFat: Double,
+    @SerializedName("meal_count") val mealCount: Int = 0,
 )
 
 // ============================================================
@@ -134,7 +145,24 @@ data class ArPOI(
     val latitude: Double,
     val longitude: Double,
     val distance: Double?,
-    val phone: String?
+    val phone: String?,
+    val rating: Float? = null,
+)
+
+data class Mission(
+    val id: String,
+    val title: String,
+    val description: String,
+    @SerializedName("is_completed") val isCompleted: Boolean,
+    @SerializedName("points_reward") val pointsReward: Int,
+    @SerializedName("icon_type") val iconType: String,
+)
+
+data class DailyMissionData(
+    val missions: List<Mission>,
+    @SerializedName("points_earned_today") val pointsEarnedToday: Int,
+    @SerializedName("completed_count") val completedCount: Int,
+    @SerializedName("total_count") val totalCount: Int,
 )
 
 data class ArPoiResponse(

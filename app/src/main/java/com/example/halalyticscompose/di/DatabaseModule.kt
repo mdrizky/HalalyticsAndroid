@@ -63,6 +63,11 @@ object DatabaseModule {
     }
 
     @Provides
+    fun provideUserHealthProfileDao(database: HalalyticsDatabase): com.example.halalyticscompose.Data.Local.Dao.UserHealthProfileDao {
+        return database.userHealthProfileDao()
+    }
+
+    @Provides
     fun provideCachedScanResultDao(database: HalalyticsDatabase): com.example.halalyticscompose.Data.Local.Dao.CachedScanResultDao {
         return database.cachedScanResultDao()
     }
