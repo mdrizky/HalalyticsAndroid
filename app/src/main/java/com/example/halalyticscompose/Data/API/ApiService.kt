@@ -843,7 +843,43 @@ interface ApiService {
         @Field("weekly_report") weeklyReport: Boolean? = null,
         @Field("favorite_updates") favoriteUpdates: Boolean? = null,
         @Field("new_products") newProducts: Boolean? = null,
-        @Field("watchlist_alerts") watchlistAlerts: Boolean? = null,
         @Field("security_alerts") securityAlerts: Boolean? = null
     ): GenericResponse
+
+    // ==================== HALODOC EXPANSION ====================
+    // Medical Profile
+    @GET("medical-profile")
+    suspend fun getMedicalProfile(@Header("Authorization") bearer: String): Response<GenericResponse>
+
+    @POST("medical-profile")
+    suspend fun updateMedicalProfile(
+        @Header("Authorization") bearer: String,
+        @Body request: Map<String, @JvmSuppressWildcards Any?>
+    ): Response<GenericResponse>
+
+    // Mental Health
+    @GET("mental-health/topics")
+    suspend fun getMentalHealthTopics(@Header("Authorization") bearer: String): Response<GenericResponse>
+
+    @GET("mental-health/articles")
+    suspend fun getMentalHealthArticles(@Header("Authorization") bearer: String): Response<GenericResponse>
+    
+    @GET("mental-health/experts")
+    suspend fun getMentalHealthExperts(@Header("Authorization") bearer: String): Response<GenericResponse>
+
+    @POST("mental-health/expert-request")
+    suspend fun requestExpert(
+        @Header("Authorization") bearer: String,
+        @Body request: Map<String, @JvmSuppressWildcards Any>
+    ): Response<GenericResponse>
+
+    // Help Center
+    @GET("help/categories")
+    suspend fun getHelpCategories(@Header("Authorization") bearer: String): Response<GenericResponse>
+
+    @POST("help/request")
+    suspend fun submitHelpRequest(
+        @Header("Authorization") bearer: String,
+        @Body request: Map<String, @JvmSuppressWildcards String>
+    ): Response<GenericResponse>
 }

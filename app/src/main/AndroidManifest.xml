@@ -9,6 +9,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
     <uses-feature
         android:name="android.hardware.camera.any"
@@ -63,6 +65,7 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="MEDICINE_TAKEN" />
+                <action android:name="MEDICINE_REMINDER_ALARM" />
             </intent-filter>
         </receiver>
 

@@ -151,7 +151,6 @@ fun HomeScreen(
     val articles by articleViewModel.articles.collectAsState()
     val aiDailyInsight by viewModel.aiDailyInsight.collectAsState()
     val healthScoreData by viewModel.healthScoreData.collectAsState()
-    var showAllFeaturesSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.refreshData()
@@ -201,7 +200,8 @@ fun HomeScreen(
                         onMedicine = { navController.navigate("drug_interaction") },
                         onCosmetic = { navController.navigate("skincare_scanner") },
                         onLabScan = { navController.navigate("lab_analysis") },
-                        onBpom = { navController.navigate("bpom_scanner") }
+                        onBpom = { navController.navigate("bpom_scanner") },
+                        onAllFeatures = { navController.navigate("all_features") }
                     )
                 }
                 // Spacer to account for the floating card overlap
@@ -285,16 +285,7 @@ fun HomeScreen(
             item { Spacer(modifier = Modifier.height(80.dp)) }
         }
 
-        // ─── ALL FEATURES BOTTOM SHEET ──────────────────────
-        if (showAllFeaturesSheet) {
-            AllFeaturesSheet(
-                onDismiss = { showAllFeaturesSheet = false },
-                onNavigate = { route ->
-                    showAllFeaturesSheet = false
-                    navController.navigate(route)
-                }
-            )
-        }
+        // bottom sheet removed in favor of all_features full screen
     }
 }
 
@@ -407,7 +398,8 @@ private fun FloatingQuickActionCard(
     onMedicine: () -> Unit = {},
     onCosmetic: () -> Unit = {},
     onLabScan: () -> Unit = {},
-    onBpom: () -> Unit = {}
+    onBpom: () -> Unit = {},
+    onAllFeatures: () -> Unit = {}
 ) {
     Card(
         modifier = modifier
@@ -420,28 +412,28 @@ private fun FloatingQuickActionCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp, horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .padding(vertical = 18.dp, horizontal = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Row 1: Scan AI, Cek Obat, Kosmetik, Lab Scan
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                QuickActionIcon(Icons.Default.QrCode2, "Scan AI", Color(0xFF004D40), Color(0xFFE0F2F1), onScan)
-                QuickActionIcon(Icons.Default.Medication, "Cek Obat", Color(0xFFC62828), Color(0xFFFFEBEE), onMedicine)
-                QuickActionIcon(Icons.Default.AutoAwesome, "Kosmetik", Color(0xFF6A1B9A), Color(0xFFF3E5F5), onCosmetic)
-                QuickActionIcon(Icons.Default.Biotech, "Lab Scan", Color(0xFF2E7D32), Color(0xFFE8F5E9), onLabScan)
+                QuickActionIcon(Icons.Default.QrCode2, "Scan AI", Color(0xFF00695C), Color(0xFFE0F2F1), onScan)
+                QuickActionIcon(Icons.Default.Medication, "Cek Obat", Color(0xFFD32F2F), Color(0xFFFFEBEE), onMedicine)
+                QuickActionIcon(Icons.Default.AutoAwesome, "Kosmetik", Color(0xFF7B1FA2), Color(0xFFF3E5F5), onCosmetic)
+                QuickActionIcon(Icons.Default.Biotech, "Lab Scan", Color(0xFF388E3C), Color(0xFFE8F5E9), onLabScan)
             }
-            // Row 2: Halal Check, BPOM, AI Assistant, Riwayat
+            // Row 2: Halal Check, BPOM, AI Assistant, Lainnya (All Features)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                QuickActionIcon(Icons.Default.VerifiedUser, "Halal", Color(0xFFD4AF37), Color(0xFFFFF8E1), onPoints)
-                QuickActionIcon(Icons.Default.HealthAndSafety, "BPOM", Color(0xFF00695C), Color(0xFFE0F2F1), onBpom)
-                QuickActionIcon(Icons.Default.SmartToy, "AI Chat", Color(0xFF004D40), Color(0xFFE0F2F1), onInsight)
-                QuickActionIcon(Icons.Default.History, "Riwayat", Color(0xFF004D40), Color(0xFFE0F2F1), onHistory)
+                QuickActionIcon(Icons.Default.VerifiedUser, "Halal", Color(0xFFF57F17), Color(0xFFFFF8E1), onPoints)
+                QuickActionIcon(Icons.Default.HealthAndSafety, "BPOM", Color(0xFF0277BD), Color(0xFFE1F5FE), onBpom)
+                QuickActionIcon(Icons.Default.SmartToy, "AI Chat", Color(0xFF00695C), Color(0xFFE0F2F1), onInsight)
+                QuickActionIcon(Icons.Default.GridView, "Lainnya", Color(0xFF546E7A), Color(0xFFECEFF1), onAllFeatures)
             }
         }
     }
@@ -452,23 +444,23 @@ private fun QuickActionIcon(icon: ImageVector, label: String, tint: Color, bg: C
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .width(68.dp)
+            .width(72.dp)
             .clickable { onClick() }
     ) {
         Box(
             modifier = Modifier
-                .size(50.dp)
-                .clip(RoundedCornerShape(14.dp))
+                .size(52.dp)
+                .clip(RoundedCornerShape(16.dp))
                 .background(bg),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, null, tint = tint, modifier = Modifier.size(24.dp))
+            Icon(icon, null, tint = tint, modifier = Modifier.size(26.dp))
         }
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             label,
             fontSize = 11.sp,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.SemiBold,
             color = TextDark,
             textAlign = TextAlign.Center,
             maxLines = 1
@@ -1229,79 +1221,6 @@ private fun SectionTitle(title: String, action: String?, onAction: (() -> Unit)?
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// ALL FEATURES BOTTOM SHEET
-// ═══════════════════════════════════════════════════════════════════
-
-private data class FeatureAction(
-    val title: String,
-    val icon: ImageVector,
-    val route: String
-)
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AllFeaturesSheet(
-    onDismiss: () -> Unit,
-    onNavigate: (String) -> Unit
-) {
-    val features = remember {
-        listOf(
-            FeatureAction("Scan Barcode", Icons.Default.QrCode2, "scan"),
-            FeatureAction("Medical Records", Icons.Default.MedicalServices, "medical_records"),
-            FeatureAction("Medical Resume", Icons.Default.Description, "medical_resume"),
-            FeatureAction("Health Diary", Icons.Default.Edit, "health_diary"),
-            FeatureAction("Health Pass", Icons.Default.QrCode2, "health_pass"),
-            FeatureAction("Emergency P3K", Icons.Default.LocalHospital, "emergency_p3k"),
-            FeatureAction("Pantauan Tubuh", Icons.Default.MonitorHeart, "health_monitor"),
-            FeatureAction("Health Journey", Icons.Default.CalendarMonth, "health_journey"),
-            FeatureAction("Nutrition Scan", Icons.Default.CameraAlt, "nutrition_scanner"),
-            FeatureAction("Report Issue", Icons.Default.Description, "report_issue/0/General"),
-            FeatureAction("Intl Medicine", Icons.Default.MedicalServices, "international_medicine")
-        )
-    }
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = CardWhite,
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 10.dp)
-        ) {
-            Text(
-                text = "Semua Fitur",
-                color = TextDark,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            features.chunked(4).forEach { rowItems ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    rowItems.forEach { item ->
-                        ActionButton(
-                            label = item.title,
-                            icon = item.icon,
-                            onClick = { onNavigate(item.route) }
-                        )
-                    }
-                    repeat(4 - rowItems.size) {
-                        Spacer(modifier = Modifier.width(72.dp))
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-    }
-}
 
 // ═══════════════════════════════════════════════════════════════════
 // NAVIGATION HELPER

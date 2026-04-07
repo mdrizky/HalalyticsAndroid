@@ -28,11 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.halalyticscompose.ui.viewmodel.MedicineViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.halalyticscompose.Data.Network.ApiConfig
-import com.example.halalyticscompose.utils.SessionManager
 import androidx.compose.ui.platform.LocalContext
-import com.example.halalyticscompose.ui.viewmodel.MedicineViewModelFactory
+import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 
 data class MedicineSource(
@@ -47,12 +44,7 @@ data class MedicineSource(
 @Composable
 fun InternationalMedicineScreen(navController: NavController) {
     val context = LocalContext.current
-    val viewModel: MedicineViewModel = viewModel(
-        factory = MedicineViewModelFactory(
-            apiService = ApiConfig.apiService,
-            sessionManager = SessionManager.getInstance(context)
-        )
-    )
+    val viewModel: MedicineViewModel = hiltViewModel()
 
     var searchQuery by remember { mutableStateOf("") }
     val medicines by viewModel.medicines.collectAsState()

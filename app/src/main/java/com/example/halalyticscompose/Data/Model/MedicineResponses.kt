@@ -22,21 +22,34 @@ data class SymptomsAnalysisDataWrapper(
 
 data class SymptomsAnalysis(
     @SerializedName("condition") val condition: String = "Unknown Condition",
+    @SerializedName("why_it_happened") val why_it_happened: String? = null,
     @SerializedName("gejala_terkait") val gejala_terkait: List<String> = emptyList(),
-    @SerializedName(value = "recommended_ingredients", alternate = ["active_ingredients"]) 
-    val recommended_ingredients: List<String> = emptyList(),
-    @SerializedName("severity") val severity: String = "mild",
-    @SerializedName("recommendation") val recommendation: String = "Konsultasikan dengan dokter",
-    @SerializedName("emergency_warning") val emergency_warning: String? = null,
     @SerializedName("possible_causes") val possible_causes: List<String> = emptyList(),
+    @SerializedName("severity") val severity: String = "mild",
+    @SerializedName("emergency_warning") val emergency_warning: String? = null,
     @SerializedName("triage_action") val triage_action: String? = null,
     @SerializedName("doctor_recommendation") val doctor_recommendation: String? = null,
     @SerializedName("should_seek_doctor") val should_seek_doctor: Boolean = false,
-    @SerializedName("halal_check") val halal_check: HalalCheck? = null,
-    @SerializedName("usage_instructions") val usage_instructions: String? = null,
+    
+    // Core Medical Advice
+    @SerializedName("recommendation") val recommendation: String = "Konsultasikan dengan dokter",
+    @SerializedName("future_prevention") val future_prevention: String? = null,
     @SerializedName("lifestyle_advice") val lifestyle_advice: String? = null,
+    
+    // Ingredients & Medicines
+    @SerializedName(value = "recommended_ingredients", alternate = ["active_ingredients"]) 
+    val recommended_ingredients: List<String> = emptyList(),
+    @SerializedName("medicine_categories") val medicine_categories: List<String> = emptyList(),
+    @SerializedName("recommended_medicines_list") val recommended_medicines_list: List<String> = emptyList(),
+    @SerializedName("alternative_medicines") val alternative_medicines: List<String> = emptyList(),
+    
+    // Usage Details
+    @SerializedName("usage_instructions") val usage_instructions: String? = null,
     @SerializedName("dosage_guidelines") val dosage_guidelines: String? = null,
-    @SerializedName("recommended_medicines_list") val recommended_medicines_list: List<String> = emptyList()
+    @SerializedName("when_to_take_and_frequency") val when_to_take_and_frequency: String? = null,
+    @SerializedName("side_effects") val side_effects: List<String> = emptyList(),
+    
+    @SerializedName("halal_check") val halal_check: HalalCheck? = null
 ) {
     // Backward compatibility
     val active_ingredients: List<String> get() = recommended_ingredients

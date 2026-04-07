@@ -489,6 +489,11 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     
+                    // All Features App Menu
+                    composable("all_features") {
+                        AllFeaturesScreen(navController = navController)
+                    }
+                    
                     // Manual Input Screen
                     composable("manual_input") {
                         MainLayout(navController = navController) { paddingValues ->
@@ -655,9 +660,11 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("medicine_reminders") {
                         MainLayout(navController = navController) { paddingValues ->
-                            MedicineRemindersScreen(
-                                navController = navController
-                            )
+                            MedicalRouteGuard(enabled = biometricLockEnabled) {
+                                MedicineRemindersScreen(
+                                    navController = navController
+                                )
+                            }
                         }
                     }
                     
@@ -1090,7 +1097,9 @@ class MainActivity : ComponentActivity() {
                     // ═══ HEALTH EXPANSION ROUTES ═══
 
                     composable("medical_info") {
-                        MedicalInfoScreen(navController = navController)
+                        MedicalRouteGuard(enabled = biometricLockEnabled) {
+                            MedicalInfoScreen(navController = navController)
+                        }
                     }
 
                     composable("bmi_calculator") {
@@ -1102,11 +1111,15 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("add_medicine_reminder") {
-                        AddMedicineReminderScreen(navController = navController)
+                        MedicalRouteGuard(enabled = biometricLockEnabled) {
+                            AddMedicineReminderScreen(navController = navController)
+                        }
                     }
 
                     composable("mental_health_hub") {
-                        MentalHealthHubScreen(navController = navController)
+                        MedicalRouteGuard(enabled = biometricLockEnabled) {
+                            MentalHealthHubScreen(navController = navController)
+                        }
                     }
 
                     composable(
@@ -1114,7 +1127,9 @@ class MainActivity : ComponentActivity() {
                         arguments = listOf(navArgument("quizType") { type = NavType.StringType })
                     ) { backStackEntry ->
                         val quizType = backStackEntry.arguments?.getString("quizType") ?: "gad7"
-                        MentalHealthQuizScreen(navController = navController, quizType = quizType)
+                        MedicalRouteGuard(enabled = biometricLockEnabled) {
+                            MentalHealthQuizScreen(navController = navController, quizType = quizType)
+                        }
                     }
 
                     composable("help_center") {

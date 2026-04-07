@@ -14,6 +14,7 @@ import com.example.halalyticscompose.Data.Model.UserRemindersResponse
 import com.example.halalyticscompose.Data.Model.NextDoseResponse
 import com.example.halalyticscompose.Data.Model.GenericResponse
 import com.example.halalyticscompose.Data.Model.SafeScheduleData
+import com.example.halalyticscompose.repository.MedicalRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,7 +28,8 @@ import org.json.JSONObject
 @HiltViewModel
 class MedicineViewModel @Inject constructor(
     private val apiService: ApiService,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val medicalRepository: MedicalRepository
 ) : ViewModel() {
     private fun sanitizeErrorMessage(raw: String?): String? {
         val message = raw?.trim()?.takeIf { it.isNotBlank() } ?: return null
@@ -90,7 +92,7 @@ class MedicineViewModel @Inject constructor(
     private val _isConflictLoading = MutableStateFlow(false)
     val isConflictLoading: StateFlow<Boolean> = _isConflictLoading.asStateFlow()
 
-    // AI Symptom Analysis
+    // AI Symptom Analysis — tries backend first, falls back to direct AI
     fun analyzeSymptoms(symptoms: String, familyId: Int? = null) {
         viewModelScope.launch {
             try {
@@ -107,37 +109,42 @@ class MedicineViewModel @Inject constructor(
 
                 val token = sessionManager.getBearerToken() ?: sessionManager.getAuthToken()?.let { "Bearer $it" } ?: ""
                 val userId = sessionManager.getUserId()
-                
-                if (userId == 0) {
-                    _errorMessage.value = "Sesi berakhir, silakan login kembali"
-                    return@launch
-                }
-                if (token.isBlank()) {
-                    _errorMessage.value = "Token autentikasi tidak ditemukan. Silakan login ulang."
-                    return@launch
+
+                // ── Try backend API first ──
+                var backendSucceeded = false
+                if (token.isNotBlank() && userId != 0) {
+                    try {
+                        val response = apiService.analyzeSymptoms(token, cleanedSymptoms, userId.toString(), familyId)
+                        val body = response.body()
+                        val analysis = body?.symptoms_analysis
+                        if (response.isSuccessful && body?.success == true && analysis != null) {
+                            Log.d("MedicineVM", "Backend analysis success: ${analysis.condition}")
+                            _symptomsAnalysis.value = analysis
+                            _recommendedMedicines.value = body.recommended_medicines ?: emptyList()
+                            backendSucceeded = true
+                        } else {
+                            Log.w("MedicineVM", "Backend returned non-success: ${response.code()}")
+                        }
+                    } catch (e: Exception) {
+                        Log.w("MedicineVM", "Backend API failed, will try direct AI: ${e.message}")
+                    }
                 }
 
-                val response = apiService.analyzeSymptoms(token, cleanedSymptoms, userId.toString(), familyId)
-                val body = response.body()
-                val symptomsAnalysis = body?.symptoms_analysis
-                if (response.isSuccessful && body?.success == true && symptomsAnalysis != null) {
-                    Log.d("MedicineVM", "Symptom analysis success: ${symptomsAnalysis.condition}")
-                    _symptomsAnalysis.value = symptomsAnalysis
-                    _recommendedMedicines.value = body.recommended_medicines ?: emptyList()
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    val handledError = ApiErrorHandler.fromResponse<com.example.halalyticscompose.Data.Model.SymptomsAnalysisResponse>(
-                        code = response.code(),
-                        rawBody = errorBody
-                    )
-                    val apiMsg = parseApiErrorMessage(errorBody)
-                    val msg = apiMsg ?: body?.message ?: handledError.message
-                    Log.e("MedicineVM", "Symptom analysis failure: $msg")
-                    _errorMessage.value = msg
+                // ── Fallback to direct AI call (Gemini/Anthropic) ──
+                if (!backendSucceeded) {
+                    Log.d("MedicineVM", "Falling back to direct AI analysis...")
+                    try {
+                        val directResult = medicalRepository.analyzeSymptomsDirect(cleanedSymptoms)
+                        _symptomsAnalysis.value = directResult
+                        Log.d("MedicineVM", "Direct AI analysis success: ${directResult.condition}")
+                    } catch (aiError: Exception) {
+                        Log.e("MedicineVM", "Direct AI also failed: ${aiError.message}", aiError)
+                        _errorMessage.value = "Gagal menganalisis gejala. Periksa koneksi internet Anda dan coba lagi."
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("MedicineVM", "Symptom analysis error: ${e.message}", e)
-                _errorMessage.value = ApiErrorHandler.fromThrowable<com.example.halalyticscompose.Data.Model.SymptomsAnalysisResponse>(e).message
+                _errorMessage.value = "Terjadi kesalahan. Silakan coba lagi."
             } finally {
                 _isLoading.value = false
             }
@@ -450,12 +457,13 @@ class MedicineViewModel @Inject constructor(
 // ✅ Manual Factory for non-Hilt usage
 class MedicineViewModelFactory(
     private val apiService: ApiService,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val medicalRepository: MedicalRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MedicineViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return MedicineViewModel(apiService, sessionManager) as T
+            return MedicineViewModel(apiService, sessionManager, medicalRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

@@ -19,25 +19,66 @@ class MedicineReminderWorker(
     workerParams: WorkerParameters
 ) : CoroutineWorker(appContext, workerParams) {
 
+        // Keep only doWork
     override suspend fun doWork(): Result {
         return try {
-            // Get session manager and API service from application context
             val sessionManager = SessionManager(applicationContext)
-            // Fix: Use ApiConfig.apiService property instead of create()
             val apiService = com.example.halalyticscompose.Data.Network.ApiConfig.apiService
             
             val userId = sessionManager.getUserId() ?: return Result.failure()
             val token = sessionManager.getBearerToken() ?: return Result.failure()
             
-            // Get next doses from API with proper authorization
-            val response = apiService.getNextDose(token, userId.toString())
+            // Get user reminders
+            val response = apiService.getUserMedicineReminders(token, userId.toString())
             
             if (response.isSuccessful) {
-                val nextDoses = response.body()?.next_doses ?: emptyList()
+                val reminders = response.body()?.data ?: emptyList()
                 
-                // Schedule notifications for upcoming doses
-                for (dose in nextDoses) {
-                    scheduleNotification(dose)
+                // Clear old alarms before recreating
+                for (reminder in reminders) {
+                    MedicineAlarmHelper.cancelAlarm(applicationContext, reminder.id)
+                }
+
+                val now = java.util.Calendar.getInstance()
+                
+                // Schedule notifications using Exact Alarm dynamically
+                for (reminder in reminders) {
+                    if (!reminder.isActive) continue
+                    
+                    val times = reminder.scheduleTimes ?: reminder.timeSlots ?: emptyList()
+                    if (times.isEmpty()) continue
+
+                    times.forEachIndexed { index, timeStr ->
+                        try {
+                            val parts = timeStr.split(":")
+                            if (parts.size == 2) {
+                                val alarmCalendar = java.util.Calendar.getInstance().apply {
+                                    set(java.util.Calendar.HOUR_OF_DAY, parts[0].toInt())
+                                    set(java.util.Calendar.MINUTE, parts[1].toInt())
+                                    set(java.util.Calendar.SECOND, 0)
+                                    set(java.util.Calendar.MILLISECOND, 0)
+                                }
+                                
+                                // If time already passed today, schedule for tomorrow
+                                if (alarmCalendar.before(now)) {
+                                    alarmCalendar.add(java.util.Calendar.DAY_OF_YEAR, 1)
+                                }
+                                
+                                // Make a unique ID per time slot
+                                val uniqueAlarmId = (reminder.id * 100) + index
+                                val mName = reminder.drug?.name?.takeIf { it.isNotBlank() } ?: reminder.medicineName.takeIf { it.isNotBlank() } ?: "Obat Anda"
+                                
+                                MedicineAlarmHelper.scheduleExactAlarm(
+                                    applicationContext,
+                                    uniqueAlarmId,
+                                    mName,
+                                    alarmCalendar.timeInMillis
+                                )
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
                 }
                 
                 Result.success()
@@ -48,73 +89,5 @@ class MedicineReminderWorker(
             e.printStackTrace()
             Result.failure()
         }
-    }
-
-    private fun scheduleNotification(dose: com.example.halalyticscompose.Data.Model.NextDose) {
-        val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        
-        // Create notification channel (for Android 8.0+)
-        val channelId = "medicine_reminders"
-        val channelName = "Medicine Reminders"
-        val channel = NotificationChannel(
-            channelId,
-            channelName,
-            NotificationManager.IMPORTANCE_HIGH
-        ).apply {
-            description = "Notifications for medicine reminders"
-            enableVibration(true)
-            enableLights(true)
-        }
-        notificationManager.createNotificationChannel(channel)
-        
-        // Create intent for notification tap
-        val intent = Intent(applicationContext, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("reminder_id", dose.reminder_id)
-            putExtra("medicine_name", dose.medicine_name)
-        }
-        
-        val pendingIntent = PendingIntent.getActivity(
-            applicationContext,
-            dose.reminder_id,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        
-        // Create notification
-        val notification = NotificationCompat.Builder(applicationContext, channelId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("Medicine Reminder")
-            .setContentText("Time to take ${dose.medicine_name}")
-            .setStyle(
-                NotificationCompat.BigTextStyle()
-                    .bigText("It's time to take your medicine: ${dose.medicine_name}${dose.dose_info?.let { "\nDosage: $it" } ?: ""}")
-            )
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
-            .addAction(
-                android.R.drawable.ic_menu_save,
-                "Taken",
-                createTakenIntent(dose.reminder_id)
-            )
-            .build()
-        
-        // Show notification
-        notificationManager.notify(dose.reminder_id, notification)
-    }
-
-    private fun createTakenIntent(reminderId: Int): PendingIntent {
-        val intent = Intent(applicationContext, MedicineTakenReceiver::class.java).apply {
-            action = "MEDICINE_TAKEN"
-            putExtra("reminder_id", reminderId)
-        }
-        
-        return PendingIntent.getBroadcast(
-            applicationContext,
-            reminderId,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
     }
 }

@@ -110,15 +110,14 @@ fun HealthAssistantScreen(
     val symptomsAnalysis by viewModel.symptomsAnalysis.collectAsState()
     LaunchedEffect(symptomsAnalysis) {
         symptomsAnalysis?.let { analysis ->
-            val speechText = buildString {
-                append("Hasil analisis. Kondisi: ${analysis.condition}. ")
-                append("Tingkat keparahan: ${analysis.severity}. ")
-                if (analysis.possible_causes.isNotEmpty()) {
-                    append("Kemungkinan penyebab: ${analysis.possible_causes.joinToString(", ")}. ")
-                }
-                analysis.usage_instructions?.let { append("Saran: $it") }
-            }
-            ttsHelper.speak(speechText)
+            ttsHelper.speakDiagnosisReport(
+                condition = analysis.condition,
+                severity = analysis.severity,
+                causes = analysis.possible_causes,
+                recommendation = analysis.lifestyle_advice ?: analysis.recommendation,
+                medicines = analysis.recommended_medicines_list,
+                shouldSeeDoctor = analysis.should_seek_doctor
+            )
         }
     }
 
@@ -347,10 +346,16 @@ fun HealthAssistantScreen(
                                         ttsHelper.stop()
                                         isSpeaking = false
                                     } else {
-                                        // Re-read the last analysis
+                                        // Re-read the last analysis (full report)
                                         symptomsAnalysis?.let { analysis ->
-                                            val speechText = "Kondisi: ${analysis.condition}. Tingkat: ${analysis.severity}."
-                                            ttsHelper.speak(speechText)
+                                            ttsHelper.speakDiagnosisReport(
+                                                condition = analysis.condition,
+                                                severity = analysis.severity,
+                                                causes = analysis.possible_causes,
+                                                recommendation = analysis.lifestyle_advice ?: analysis.recommendation,
+                                                medicines = analysis.recommended_medicines_list,
+                                                shouldSeeDoctor = analysis.should_seek_doctor
+                                            )
                                         }
                                     }
                                 },
@@ -477,75 +482,184 @@ fun HealthAssistantScreen(
                             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(0.05f))
                             Spacer(modifier = Modifier.height(24.dp))
 
-                            if (analysis.possible_causes.isNotEmpty()) {
-                                SectionTitle("Kemungkinan Penyebab", Icons.Outlined.Lightbulb, MaterialTheme.colorScheme.primary)
-                                analysis.possible_causes.forEach { cause ->
-                                    Text("• $cause", color = MaterialTheme.colorScheme.onSurface.copy(0.75f), fontSize = 13.sp, lineHeight = 20.sp)
+                            // 1. Akar Masalah (Why it happened)
+                            if (!analysis.why_it_happened.isNullOrBlank()) {
+                                SectionTitle("Mengapa ini terjadi?", Icons.Outlined.Science, MaterialTheme.colorScheme.primary)
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(MaterialTheme.colorScheme.primary.copy(0.05f))
+                                        .padding(12.dp)
+                                ) {
+                                    Text(
+                                        text = analysis.why_it_happened!!,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(0.85f),
+                                        fontSize = 13.sp,
+                                        lineHeight = 20.sp
+                                    )
                                 }
                                 Spacer(modifier = Modifier.height(20.dp))
                             }
 
-                            if (analysis.gejala_terkait.isNotEmpty()) {
-                                SectionTitle("Gejala Terkait", Icons.Outlined.MonitorHeart, MaterialTheme.colorScheme.secondary)
-                                analysis.gejala_terkait.forEach { symptom ->
-                                    Text("• $symptom", color = MaterialTheme.colorScheme.onSurface.copy(0.75f), fontSize = 13.sp, lineHeight = 20.sp)
+                            // 2. Gejala Terkait
+                            if (analysis.gejala_terkait.isNotEmpty() || analysis.possible_causes.isNotEmpty()) {
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    if (analysis.gejala_terkait.isNotEmpty()) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            SectionTitle("Gejala Terkait", Icons.Outlined.MonitorHeart, MaterialTheme.colorScheme.secondary)
+                                            analysis.gejala_terkait.forEach { symptom ->
+                                                Text("• $symptom", color = MaterialTheme.colorScheme.onSurface.copy(0.75f), fontSize = 13.sp, lineHeight = 20.sp)
+                                            }
+                                        }
+                                    }
+                                    if (analysis.possible_causes.isNotEmpty()) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            SectionTitle("Penyebab Potensial", Icons.Outlined.Lightbulb, MaterialTheme.colorScheme.primary)
+                                            analysis.possible_causes.forEach { cause ->
+                                                Text("• $cause", color = MaterialTheme.colorScheme.onSurface.copy(0.75f), fontSize = 13.sp, lineHeight = 20.sp)
+                                            }
+                                        }
+                                    }
                                 }
-                                Spacer(modifier = Modifier.height(20.dp))
+                                Spacer(modifier = Modifier.height(24.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(0.05f))
+                                Spacer(modifier = Modifier.height(24.dp))
                             }
 
-                            SectionTitle("Halal & Safety Verification", Icons.Default.VerifiedUser, MaterialTheme.colorScheme.primary)
-                            Text(analysis.halal_check?.notes ?: "Processing halal check...", color = MaterialTheme.colorScheme.onSurface.copy(0.7f), fontSize = 14.sp, lineHeight = 22.sp)
-                            
-                            Spacer(modifier = Modifier.height(20.dp))
-                            
-                            SectionTitle("Usage & Dosage Info", Icons.Outlined.Info, MaterialTheme.colorScheme.secondary)
-                            Text(analysis.usage_instructions ?: "No usage guidance available.", color = MaterialTheme.colorScheme.onSurface.copy(0.7f), fontSize = 14.sp, lineHeight = 22.sp)
-                            
-                            if (!analysis.dosage_guidelines.isNullOrBlank()) {
+                            // 3. Saran Gaya Hidup & Pencegahan
+                            if (!analysis.lifestyle_advice.isNullOrBlank() || !analysis.future_prevention.isNullOrBlank()) {
+                                SectionTitle("Saran Penanganan & Pencegahan", Icons.Outlined.Spa, MaterialTheme.colorScheme.secondary)
+                                if (!analysis.lifestyle_advice.isNullOrBlank()) {
+                                    Text("Penanganan Awal:", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp)
+                                    Text(analysis.lifestyle_advice!!, color = MaterialTheme.colorScheme.onSurface.copy(0.75f), fontSize = 13.sp, lineHeight = 20.sp)
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+                                if (!analysis.future_prevention.isNullOrBlank()) {
+                                    Text("Pencegahan Masa Depan:", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp)
+                                    Text(analysis.future_prevention!!, color = MaterialTheme.colorScheme.onSurface.copy(0.75f), fontSize = 13.sp, lineHeight = 20.sp)
+                                }
+                                Spacer(modifier = Modifier.height(24.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(0.05f))
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+
+                            // 4. Rekomendasi Terapi (Obat Paten & Generik)
+                            if (analysis.recommended_medicines_list.isNotEmpty() || analysis.alternative_medicines.isNotEmpty()) {
+                                SectionTitle("Rekomendasi Terapi", Icons.Outlined.Medication, MaterialTheme.colorScheme.primary)
+                                
+                                if (analysis.medicine_categories.isNotEmpty()) {
+                                    Row(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
+                                        analysis.medicine_categories.forEach { category ->
+                                            Box(
+                                                modifier = Modifier
+                                                    .padding(end = 8.dp)
+                                                    .clip(RoundedCornerShape(8.dp))
+                                                    .background(MaterialTheme.colorScheme.primary)
+                                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                            ) {
+                                                Text(category, color = MaterialTheme.colorScheme.onPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    if (analysis.recommended_medicines_list.isNotEmpty()) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text("Obat Apotek (Paten/Generik):", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, modifier = Modifier.padding(bottom = 4.dp))
+                                            analysis.recommended_medicines_list.forEach { med ->
+                                                Text("• $med", color = MaterialTheme.colorScheme.onSurface.copy(0.8f), fontSize = 13.sp)
+                                            }
+                                        }
+                                    }
+                                    if (analysis.alternative_medicines.isNotEmpty()) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text("Alternatif / Herbal:", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, modifier = Modifier.padding(bottom = 4.dp))
+                                            analysis.alternative_medicines.forEach { alt ->
+                                                Text("• $alt", color = MaterialTheme.colorScheme.onSurface.copy(0.8f), fontSize = 13.sp)
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                // Halal Verification Sub-box
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.onSurface.copy(0.03f))
+                                        .background(if (analysis.halal_check?.status?.lowercase() == "halal") MaterialTheme.colorScheme.secondary.copy(0.1f) else MushboohYellow.copy(0.1f))
+                                        .border(1.dp, if (analysis.halal_check?.status?.lowercase() == "halal") MaterialTheme.colorScheme.secondary.copy(0.3f) else MushboohYellow.copy(0.3f), RoundedCornerShape(12.dp))
                                         .padding(12.dp)
                                 ) {
-                                    Text(analysis.dosage_guidelines!!, color = MaterialTheme.colorScheme.onSurface.copy(0.9f), fontSize = 13.sp, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Default.VerifiedUser, null, tint = if (analysis.halal_check?.status?.lowercase() == "halal") MaterialTheme.colorScheme.secondary else MushboohYellow, modifier = Modifier.size(20.dp))
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Column {
+                                            Text("Verifikasi Halal: ${analysis.halal_check?.status?.uppercase() ?: "UNKNOWN"}", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+                                            Text(analysis.halal_check?.notes ?: "Processing...", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface.copy(0.7f))
+                                        }
+                                    }
                                 }
+                                Spacer(modifier = Modifier.height(24.dp))
                             }
 
-                            if (analysis.recommended_ingredients.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                SectionTitle("Bahan Aktif Disarankan", Icons.Outlined.Medication, MaterialTheme.colorScheme.primary)
-                                analysis.recommended_ingredients.forEach { ingredient ->
-                                    Text("• $ingredient", color = MaterialTheme.colorScheme.onSurface.copy(0.75f), fontSize = 13.sp, lineHeight = 20.sp)
+                            // 5. Kartu Dosis & Efek Samping
+                            if (!analysis.dosage_guidelines.isNullOrBlank() || !analysis.when_to_take_and_frequency.isNullOrBlank() || analysis.side_effects.isNotEmpty()) {
+                                SectionTitle("Aturan Pakai & Perhatian Khusus", Icons.Outlined.Info, MaterialTheme.colorScheme.primary)
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(MaterialTheme.colorScheme.onSurface.copy(0.03f))
+                                        .padding(16.dp)
+                                ) {
+                                    Column {
+                                        if (!analysis.dosage_guidelines.isNullOrBlank()) {
+                                            Row(modifier = Modifier.padding(bottom = 8.dp)) {
+                                                Icon(Icons.Outlined.Scale, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text("Dosis: ${analysis.dosage_guidelines}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface.copy(0.9f))
+                                            }
+                                        }
+                                        if (!analysis.when_to_take_and_frequency.isNullOrBlank()) {
+                                            Row(modifier = Modifier.padding(bottom = 8.dp)) {
+                                                Icon(Icons.Default.AccessTime, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text("Waktu: ${analysis.when_to_take_and_frequency}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface.copy(0.9f), fontWeight = FontWeight.Medium)
+                                            }
+                                        }
+                                        if (!analysis.usage_instructions.isNullOrBlank()) {
+                                            Row(modifier = Modifier.padding(bottom = 8.dp)) {
+                                                Icon(Icons.Outlined.IntegrationInstructions, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text("Instruksi: ${analysis.usage_instructions}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface.copy(0.9f))
+                                            }
+                                        }
+                                        if (analysis.side_effects.isNotEmpty()) {
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Row(verticalAlignment = Alignment.Top) {
+                                                Icon(Icons.Outlined.WarningAmber, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Column {
+                                                    Text("Efek Samping Potensial:", fontSize = 13.sp, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Medium)
+                                                    analysis.side_effects.forEach { effect ->
+                                                        Text("• $effect", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(0.7f))
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
+                                Spacer(modifier = Modifier.height(24.dp))
                             }
-
-                            if (!analysis.triage_action.isNullOrBlank()) {
-                                Spacer(modifier = Modifier.height(20.dp))
-                                SectionTitle("Tindakan Saat Ini", Icons.Outlined.Flag, MaterialTheme.colorScheme.primary)
-                                Text(
-                                    text = analysis.triage_action ?: "",
-                                    color = MaterialTheme.colorScheme.onSurface.copy(0.8f),
-                                    fontSize = 13.sp,
-                                    lineHeight = 20.sp
-                                )
-                            }
-
-                            if (!analysis.lifestyle_advice.isNullOrBlank()) {
-                                Spacer(modifier = Modifier.height(20.dp))
-                                SectionTitle("Saran Gaya Hidup", Icons.Outlined.Spa, MaterialTheme.colorScheme.secondary)
-                                Text(
-                                    text = analysis.lifestyle_advice ?: "",
-                                    color = MaterialTheme.colorScheme.onSurface.copy(0.8f),
-                                    fontSize = 13.sp,
-                                    lineHeight = 20.sp
-                                )
-                            }
-
-                            if (!analysis.doctor_recommendation.isNullOrBlank()) {
-                                Spacer(modifier = Modifier.height(20.dp))
+                            
+                            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(0.05f))
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            // 6. Penutup / Rekomendasi Dokter
+                            if (!analysis.triage_action.isNullOrBlank() || analysis.should_seek_doctor) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -558,12 +672,12 @@ fun HealthAssistantScreen(
                                 ) {
                                     Column {
                                         Text(
-                                            if (analysis.should_seek_doctor) "Saran Dokter" else "Pantauan Kondisi",
+                                            if (analysis.should_seek_doctor) "Saran Dokter Segera" else "Pantauan Kondisi",
                                             fontWeight = FontWeight.Bold,
                                             color = if (analysis.should_seek_doctor) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                                         )
                                         Text(
-                                            analysis.doctor_recommendation ?: "",
+                                            analysis.doctor_recommendation ?: analysis.triage_action ?: analysis.recommendation,
                                             color = MaterialTheme.colorScheme.onSurface.copy(0.8f),
                                             fontSize = 13.sp,
                                             modifier = Modifier.padding(top = 4.dp)
@@ -583,14 +697,14 @@ fun HealthAssistantScreen(
                                                 OutlinedButton(onClick = { navController.navigate("medicine_reminders") }) {
                                                     Icon(Icons.Default.Alarm, null)
                                                     Spacer(modifier = Modifier.width(6.dp))
-                                                    Text("Atur Pengingat")
+                                                    Text("Atur Pengingat Obat")
                                                 }
                                             }
                                         }
                                     }
                                 }
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
-
                             Spacer(modifier = Modifier.height(20.dp))
                             Text(
                                 text = "Disclaimer: Analisis AI ini hanya edukasi awal, bukan diagnosis dokter.",

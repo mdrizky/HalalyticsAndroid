@@ -288,6 +288,50 @@ fun ProfileScreen(
                 )
             }
 
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.Alarm,
+                    title = "Pengingat Obat",
+                    subtitle = "Jadwal dan pengingat minum obat",
+                    iconBg = Color(0xFFE3F2FD),
+                    iconTint = Color(0xFF1565C0),
+                    onClick = { navController.navigate("medicine_reminders") }
+                )
+            }
+
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.MedicalInformation,
+                    title = "Informasi Medis",
+                    subtitle = "Berat, tinggi, alergi, dan riwayat",
+                    iconBg = Color(0xFFE8F5E9),
+                    iconTint = Color(0xFF2E7D32),
+                    onClick = { navController.navigate("medical_info") }
+                )
+            }
+
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.Psychology,
+                    title = "Kesehatan Mental",
+                    subtitle = "Kuis GAD-7/PHQ-9 dan konseling",
+                    iconBg = Color(0xFFF3E5F5),
+                    iconTint = Color(0xFF6A1B9A),
+                    onClick = { navController.navigate("mental_health_hub") }
+                )
+            }
+
+            item {
+                ProfileMenuItem(
+                    icon = Icons.Default.HelpCenter,
+                    title = "Pusat Bantuan",
+                    subtitle = "FAQ dan hubungi customer support",
+                    iconBg = Color(0xFFFFF3E0),
+                    iconTint = Color(0xFFF57C00),
+                    onClick = { navController.navigate("help_center") }
+                )
+            }
+
             // ── SECTION: AKUN ──
             item {
                 ProfileSectionHeader(
