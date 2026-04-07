@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -67,12 +68,13 @@ import com.example.halalyticscompose.feature.expansion.model.MarketplaceMerchant
 import com.example.halalyticscompose.feature.expansion.model.MarketplaceProduct
 import com.example.halalyticscompose.feature.expansion.viewmodel.MarketplaceViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.LocationServices
 import java.text.NumberFormat
 import java.util.Locale
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MarketplaceScreen(
     navController: NavController,
@@ -89,8 +91,8 @@ fun MarketplaceScreen(
     var selectedFilter by remember { mutableStateOf<String?>(null) }
     var lastKnownLocation by remember { mutableStateOf(Pair(-6.200000, 106.816666)) }
 
-    LaunchedEffect(locationPermission.status.isGranted) {
-        if (locationPermission.status.isGranted) {
+    LaunchedEffect(locationPermission.status) {
+        if (locationPermission.status is PermissionStatus.Granted) {
             val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 val lat = location?.latitude ?: lastKnownLocation.first

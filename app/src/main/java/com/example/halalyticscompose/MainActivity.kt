@@ -493,6 +493,64 @@ class MainActivity : ComponentActivity() {
                     composable("all_features") {
                         AllFeaturesScreen(navController = navController)
                     }
+
+                    composable("halocode") {
+                        MainLayout(navController = navController) {
+                            com.example.halalyticscompose.feature.expansion.ui.HalocodeScreen(
+                                navController = navController
+                            )
+                        }
+                    }
+
+                    composable(
+                        route = "halocode_chat/{consultationId}",
+                        arguments = listOf(navArgument("consultationId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val consultationId = backStackEntry.arguments?.getInt("consultationId") ?: 0
+                        MainLayout(navController = navController) {
+                            com.example.halalyticscompose.feature.expansion.ui.HalocodeChatScreen(
+                                consultationId = consultationId,
+                                navController = navController
+                            )
+                        }
+                    }
+
+                    composable("expert_dashboard") {
+                        MainLayout(navController = navController) {
+                            com.example.halalyticscompose.feature.expansion.ui.ExpertDashboardScreen(
+                                navController = navController
+                            )
+                        }
+                    }
+
+                    composable("marketplace") {
+                        MainLayout(navController = navController) {
+                            com.example.halalyticscompose.feature.expansion.ui.MarketplaceScreen(
+                                navController = navController
+                            )
+                        }
+                    }
+
+                    composable("community") {
+                        MainLayout(navController = navController) {
+                            com.example.halalyticscompose.feature.expansion.ui.CommunityScreen(
+                                navController = navController
+                            )
+                        }
+                    }
+
+                    composable(
+                        route = "community_post/{postId}",
+                        arguments = listOf(navArgument("postId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val postId = backStackEntry.arguments?.getInt("postId") ?: 0
+                        MainLayout(navController = navController) {
+                            com.example.halalyticscompose.feature.expansion.ui.CommunityPostDetailScreen(
+                                postId = postId,
+                                navController = navController
+                            )
+                        }
+                    }
                     
                     // Manual Input Screen
                     composable("manual_input") {
@@ -1048,6 +1106,39 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         }
+
+                    // ==========================================================
+                    // 🤖 AI EXPANSION FEATURES (4-7)
+                    // ==========================================================
+
+                    composable("ocr_scan") {
+                        OcrScanScreen(
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable("nutrition_dashboard") {
+                        NutritionScreen(
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable("ar_finder") {
+                        ArFinderScreen(
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(
+                        route = "recipe_detail/{id}",
+                        arguments = listOf(navArgument("id") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val id = backStackEntry.arguments?.getInt("id") ?: 0
+                        RecipeDetailScreen(
+                            recipeId = id,
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
 
                     // ═══════════════════════════════════════
                     // 🆕 EXPANSION SCREENS

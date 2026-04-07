@@ -44,11 +44,15 @@ android {
         val apiBaseUrl = (localProperties.getProperty("API_BASE_URL") ?: "http://10.0.2.2:8000/api/").replace("\"", "\\\"")
         val apiCertPin = (localProperties.getProperty("API_CERT_PIN") ?: "").replace("\"", "\\\"")
         val anthropicApiKey = (localProperties.getProperty("ANTHROPIC_API_KEY") ?: "").replace("\"", "\\\"")
+        val reverbBaseUrl = (localProperties.getProperty("REVERB_BASE_URL") ?: "ws://10.0.2.2:8080").replace("\"", "\\\"")
+        val reverbAppKey = (localProperties.getProperty("REVERB_APP_KEY") ?: "").replace("\"", "\\\"")
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
         buildConfigField("String", "NEWSDATA_API_KEY", "\"$newsDataApiKey\"")
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
         buildConfigField("String", "API_CERT_PIN", "\"$apiCertPin\"")
         buildConfigField("String", "ANTHROPIC_API_KEY", "\"$anthropicApiKey\"")
+        buildConfigField("String", "REVERB_BASE_URL", "\"$reverbBaseUrl\"")
+        buildConfigField("String", "REVERB_APP_KEY", "\"$reverbAppKey\"")
     }
 
     buildTypes {
@@ -130,6 +134,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.squareup.retrofit2:retrofit:2.10.0")
     implementation("com.squareup.retrofit2:converter-gson:2.10.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.14")
 
     // Google Sign-In
@@ -195,6 +200,8 @@ dependencies {
     // 🔹 WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.biometric:biometric:1.1.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.37.2")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 
     // 🔹 Compose Material Icons Extended
     implementation("androidx.compose.material:material-icons-extended")

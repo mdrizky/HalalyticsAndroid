@@ -6,6 +6,9 @@ import com.example.halalyticscompose.Data.API.ApiService
 import com.example.halalyticscompose.data.api.NotificationApiService
 import com.example.halalyticscompose.data.api.OCRProductApiService
 import com.example.halalyticscompose.data.api.ProductApiService
+import com.example.halalyticscompose.feature.expansion.network.ExpansionApiService
+import com.example.halalyticscompose.feature.expansion.socket.ChatWebSocketManager
+import com.example.halalyticscompose.utils.SessionManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -135,5 +138,20 @@ object NetworkModule {
     @Singleton
     fun provideNotificationApiService(retrofit: Retrofit): NotificationApiService {
         return retrofit.create(NotificationApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideExpansionApiService(retrofit: Retrofit): ExpansionApiService {
+        return retrofit.create(ExpansionApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideChatWebSocketManager(
+        okHttpClient: OkHttpClient,
+        sessionManager: SessionManager,
+    ): ChatWebSocketManager {
+        return ChatWebSocketManager(okHttpClient, sessionManager)
     }
 }

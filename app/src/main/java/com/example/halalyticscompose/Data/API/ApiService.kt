@@ -803,6 +803,97 @@ interface ApiService {
         @Body request: com.example.halalyticscompose.Data.Model.EmergencyRequest
     ): Response<com.example.halalyticscompose.Data.Model.EmergencyResponse>
 
+    // ==========================================================
+    // 🤖 AI EXPANSION FEATURES (4-7)
+    // ==========================================================
+
+    // OFFLINE OCR (Feature 4)
+    @GET("ocr-sync/ingredients")
+    suspend fun syncIngredients(
+        @Header("Authorization") bearer: String,
+        @Query("updated_after") updatedAfter: String? = null
+    ): Response<OcrSyncResponse>
+
+    @POST("ocr-sync/result")
+    suspend fun saveOcrResult(
+        @Header("Authorization") bearer: String,
+        @Body request: OcrScanResultRequest
+    ): Response<GenericResponse>
+
+    // SMART NUTRITION (Feature 5)
+    @Multipart
+    @POST("nutrition/log-meal")
+    suspend fun logMeal(
+        @Header("Authorization") bearer: String,
+        @Part image: okhttp3.MultipartBody.Part,
+        @Part("meal_type") mealType: okhttp3.RequestBody
+    ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<DailyNutritionLog>>
+
+    @GET("nutrition/daily-log")
+    suspend fun getDailyNutritionLog(
+        @Header("Authorization") bearer: String,
+        @Query("date") date: String? = null
+    ): Response<NutritionDashboardResponse>
+
+    @POST("nutrition/goals")
+    suspend fun setNutritionGoals(
+        @Header("Authorization") bearer: String,
+        @Body request: NutritionGoal
+    ): Response<GenericResponse>
+
+    @GET("nutrition/goals")
+    suspend fun getNutritionGoals(
+        @Header("Authorization") bearer: String
+    ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<NutritionGoal>>
+
+    // RECIPE AI (Feature 6)
+    @GET("recipes-ai")
+    suspend fun getRecipes(
+        @Header("Authorization") bearer: String,
+        @Query("category") category: String? = null,
+        @Query("halal_only") halalOnly: Boolean = false
+    ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<List<Recipe>>>
+
+    @GET("recipes-ai/{id}")
+    suspend fun getRecipeDetail(
+        @Header("Authorization") bearer: String,
+        @Path("id") id: Int
+    ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<Recipe>>
+
+    @POST("recipes-ai/{id}/halal-switch")
+    suspend fun getHalalSubstitution(
+        @Header("Authorization") bearer: String,
+        @Path("id") id: Int
+    ): Response<RecipeSubstitutionResponse>
+
+    // HALOCODE (Expansion)
+    @GET("halocode/experts")
+    suspend fun getExperts(
+        @Header("Authorization") bearer: String,
+        @Query("specialization") specialization: String? = null,
+        @Query("online_only") onlineOnly: Boolean = false
+    ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<List<Expert>>>
+
+    @POST("halocode/consultations")
+    suspend fun startConsultation(
+        @Header("Authorization") bearer: String,
+        @Body request: Map<String, Int> // {"expert_id": ...}
+    ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<com.example.halalyticscompose.Data.Model.Consultation>>
+
+    @GET("halocode/my-consultations")
+    suspend fun getMyConsultations(
+        @Header("Authorization") bearer: String
+    ): Response<com.example.halalyticscompose.Data.Model.ApiResponse<List<com.example.halalyticscompose.Data.Model.Consultation>>>
+
+    // AR FINDER (Feature 7)
+    @GET("ar/nearby")
+    suspend fun getNearbyForAr(
+        @Header("Authorization") bearer: String,
+        @Query("lat") lat: Double,
+        @Query("lng") lng: Double,
+        @Query("radius") radius: Double = 2.0
+    ): Response<ArPoiResponse>
+
     // ==================== GAMIFICATION — Points & Leaderboard ====================
     @GET("user/points")
     suspend fun getMyPoints(

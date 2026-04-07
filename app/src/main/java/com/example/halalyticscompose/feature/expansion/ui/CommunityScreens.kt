@@ -40,6 +40,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -78,6 +79,7 @@ import com.example.halalyticscompose.feature.expansion.model.CommunityLeaderboar
 import com.example.halalyticscompose.feature.expansion.model.CommunityPost
 import com.example.halalyticscompose.feature.expansion.viewmodel.CommunityViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunityScreen(
     navController: NavController,
@@ -183,6 +185,7 @@ fun CommunityScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunityPostDetailScreen(
     postId: Int,
@@ -412,6 +415,7 @@ private fun CommentCard(comment: CommunityComment) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CreatePostBottomSheet(
     onDismiss: () -> Unit,
@@ -487,6 +491,7 @@ private fun CreatePostBottomSheet(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LeaderboardBottomSheet(
     entries: List<CommunityLeaderboardEntry>,

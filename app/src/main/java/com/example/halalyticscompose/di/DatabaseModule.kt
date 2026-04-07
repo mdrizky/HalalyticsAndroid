@@ -56,6 +56,16 @@ object DatabaseModule {
     fun provideConsumptionDao(database: HalalyticsDatabase): com.example.halalyticscompose.Data.Local.Dao.ConsumptionDao {
         return database.consumptionDao()
     }
+
+    @Provides
+    fun provideHaramIngredientDao(database: HalalyticsDatabase): com.example.halalyticscompose.Data.Local.Dao.HaramIngredientDao {
+        return database.haramIngredientDao()
+    }
+
+    @Provides
+    fun provideCachedScanResultDao(database: HalalyticsDatabase): com.example.halalyticscompose.Data.Local.Dao.CachedScanResultDao {
+        return database.cachedScanResultDao()
+    }
     
     /**
      * Generates a deterministic encryption passphrase for SQLCipher.

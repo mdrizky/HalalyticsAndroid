@@ -61,6 +61,9 @@ fun AllFeaturesScreen(navController: NavController) {
     )
 
     val supportFeatures = listOf(
+        FeatureActionItem("Halocode", Icons.Default.Chat, "halocode", Color(0xFF00695C), Color(0xFFE0F2F1)),
+        FeatureActionItem("Marketplace", Icons.Default.Storefront, "marketplace", Color(0xFF2E7D32), Color(0xFFE8F5E9)),
+        FeatureActionItem("Komunitas", Icons.Default.Groups, "community", Color(0xFF1976D2), Color(0xFFE3F2FD)),
         FeatureActionItem("Health Pass", Icons.Default.VerifiedUser, "health_pass", Color(0xFF455A64), Color(0xFFECEFF1)),
         FeatureActionItem("Emergency", Icons.Default.LocalHospital, "emergency_p3k", Color(0xFFD32F2F), Color(0xFFFFEBEE)),
         FeatureActionItem("Report Issue", Icons.Default.Warning, "report_issue/0/General", Color(0xFFF57C00), Color(0xFFFFF3E0)),

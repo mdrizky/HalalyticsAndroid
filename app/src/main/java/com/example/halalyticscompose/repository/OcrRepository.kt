@@ -1,0 +1,67 @@
+package com.example.halalyticscompose.repository
+
+import com.example.halalyticscompose.Data.API.ApiService
+import com.example.halalyticscompose.Data.Local.Dao.HaramIngredientDao
+import com.example.halalyticscompose.Data.Local.Entities.HaramIngredientEntity
+import com.example.halalyticscompose.Data.Model.OcrScanResultRequest
+import kotlinx.coroutines.flow.Flow
+import java.text.SimpleDateFormat
+import java.util.*
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class OcrRepository @Inject constructor(
+    private val api: ApiService,
+    private val dao: HaramIngredientDao
+) {
+    val activeIngredients: Flow<List<HaramIngredientEntity>> = dao.getAllActive()
+
+    suspend fun syncIngredients(token: String): Result<Unit> {
+        return try {
+            val lastUpdated = dao.getLastUpdated()
+            val dateStr = lastUpdated?.let { 
+                SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(it)) 
+            }
+            
+            val response = api.syncIngredients("Bearer $token", dateStr)
+            if (response.isSuccessful && response.body()?.success == true) {
+                val ingredients = response.body()?.data?.map { 
+                    HaramIngredientEntity(
+                        id = it.id,
+                        name = it.name,
+                        aliases = it.aliases?.joinToString(","),
+                        category = it.category,
+                        severity = it.severity,
+                        description = it.description,
+                        isActive = it.isActive,
+                        updatedAt = System.currentTimeMillis()
+                    )
+                } ?: emptyList()
+                
+                if (ingredients.isNotEmpty()) {
+                    dao.insertAll(ingredients)
+                }
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Sync failed: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun searchLocal(query: String): List<HaramIngredientEntity> {
+        return dao.searchIngredients(query)
+    }
+
+    suspend fun saveResultToServer(token: String, request: OcrScanResultRequest): Result<Unit> {
+        return try {
+            val response = api.saveOcrResult("Bearer $token", request)
+            if (response.isSuccessful) Result.success(Unit)
+            else Result.failure(Exception("Save failed"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+}

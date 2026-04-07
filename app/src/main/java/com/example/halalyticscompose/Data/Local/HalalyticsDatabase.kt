@@ -7,16 +7,23 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.halalyticscompose.Data.Local.Dao.CachedScanResultDao
 import com.example.halalyticscompose.Data.Local.Dao.ConsumptionDao
+import com.example.halalyticscompose.Data.Local.Dao.HaramIngredientDao
 import com.example.halalyticscompose.Data.Local.Entities.CachedScanResult
 import com.example.halalyticscompose.Data.Local.Entities.Consumption
+import com.example.halalyticscompose.Data.Local.Entities.HaramIngredientEntity
 import com.example.halalyticscompose.data.database.ProductHistoryDao
 import com.example.halalyticscompose.data.database.ProductHistoryEntity
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
 
 @Database(
-    entities = [CachedScanResult::class, Consumption::class, ProductHistoryEntity::class],
-    version = 3,
+    entities = [
+        CachedScanResult::class, 
+        Consumption::class, 
+        ProductHistoryEntity::class,
+        HaramIngredientEntity::class
+    ],
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -25,6 +32,7 @@ abstract class HalalyticsDatabase : RoomDatabase() {
     abstract fun cachedScanResultDao(): CachedScanResultDao
     abstract fun consumptionDao(): ConsumptionDao
     abstract fun productHistoryDao(): ProductHistoryDao
+    abstract fun haramIngredientDao(): HaramIngredientDao
     
     companion object {
         @Volatile
