@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.LazyColumn
@@ -151,6 +152,10 @@ fun HomeScreen(
     val articles by articleViewModel.articles.collectAsState()
     val aiDailyInsight by viewModel.aiDailyInsight.collectAsState()
     val healthScoreData by viewModel.healthScoreData.collectAsState()
+    val homeLoading by viewModel.isLoading.collectAsState()
+    val homeError by viewModel.errorMessage.collectAsState()
+    val articleLoading by articleViewModel.isLoading.collectAsState()
+    val articleError by articleViewModel.error.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.refreshData()
@@ -191,7 +196,7 @@ fun HomeScreen(
                     FloatingQuickActionCard(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
-                            .offset(y = 56.dp)
+                            .offset(y = 74.dp)
                             .padding(horizontal = 20.dp),
                         onScan = { navController.navigate("scan") },
                         onHistory = { navController.navigate("history") },
@@ -205,16 +210,41 @@ fun HomeScreen(
                     )
                 }
                 // Spacer to account for the floating card overlap
-                Spacer(modifier = Modifier.height(68.dp))
+                Spacer(modifier = Modifier.height(104.dp))
             }
 
             // ─── AUTO-SLIDING BANNER ─────────────────────────────
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                AutoSlidingBanner(
-                    banners = banners,
-                    onClick = { banner -> navigateByBannerAction(navController, banner) }
-                )
+                when {
+                    banners.isNotEmpty() -> {
+                        AutoSlidingBanner(
+                            banners = banners,
+                            onClick = { banner -> navigateByBannerAction(navController, banner) }
+                        )
+                    }
+                    homeLoading -> {
+                        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                            ShimmerBanner()
+                        }
+                    }
+                    else -> {
+                        HomeStatusCard(
+                            message = "Banner belum tersedia. Kamu tetap bisa lanjut pakai fitur utama Halalytics.",
+                            tone = StatusTone.Info
+                        )
+                    }
+                }
+            }
+
+            if (!homeError.isNullOrBlank() || (!articleError.isNullOrBlank() && articles.isEmpty())) {
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HomeStatusCard(
+                        message = homeError ?: articleError.orEmpty(),
+                        tone = StatusTone.Warning
+                    )
+                }
             }
 
             // ─── BENTO GRID — Clean White Cards ──────────────────
@@ -245,8 +275,15 @@ fun HomeScreen(
                 ) { navController.navigate("health_articles") }
             }
 
-            if (articles.isEmpty()) {
+            if (articleLoading && articles.isEmpty()) {
                 items(3) { ShimmerArticleItem() }
+            } else if (articles.isEmpty()) {
+                item {
+                    HomeStatusCard(
+                        message = articleError ?: "Artikel belum tersedia sekarang. Coba lagi sebentar lagi.",
+                        tone = StatusTone.Info
+                    )
+                }
             } else {
                 items(articles.take(4)) { article ->
                     ArticleCard(
@@ -303,12 +340,13 @@ private fun NavyHeader(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .statusBarsPadding()
             .background(
                 Brush.linearGradient(
                     listOf(Navy, NavyLight)
                 )
             )
-            .padding(bottom = 48.dp) // Extra space for floating card
+            .padding(bottom = 68.dp)
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp)
@@ -403,8 +441,8 @@ private fun FloatingQuickActionCard(
 ) {
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .zIndex(1f),
+                .fillMaxWidth()
+                .zIndex(1f),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = CardWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
@@ -412,8 +450,8 @@ private fun FloatingQuickActionCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 18.dp, horizontal = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(vertical = 16.dp, horizontal = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             // Row 1: Scan AI, Cek Obat, Kosmetik, Lab Scan
             Row(
@@ -449,22 +487,68 @@ private fun QuickActionIcon(icon: ImageVector, label: String, tint: Color, bg: C
     ) {
         Box(
             modifier = Modifier
-                .size(52.dp)
+                .size(50.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .background(bg),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, null, tint = tint, modifier = Modifier.size(26.dp))
+            Icon(icon, null, tint = tint, modifier = Modifier.size(24.dp))
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(7.dp))
         Text(
             label,
-            fontSize = 11.sp,
+            fontSize = 10.5.sp,
             fontWeight = FontWeight.SemiBold,
             color = TextDark,
             textAlign = TextAlign.Center,
             maxLines = 1
         )
+    }
+}
+
+private enum class StatusTone {
+    Info,
+    Warning,
+}
+
+@Composable
+private fun HomeStatusCard(
+    message: String,
+    tone: StatusTone
+) {
+    val background = when (tone) {
+        StatusTone.Info -> MintPale
+        StatusTone.Warning -> Color(0xFFFFF3E0)
+    }
+    val foreground = when (tone) {
+        StatusTone.Info -> Navy
+        StatusTone.Warning -> Color(0xFFE65100)
+    }
+    val icon = when (tone) {
+        StatusTone.Info -> Icons.Default.Info
+        StatusTone.Warning -> Icons.Default.Warning
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = background)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(icon, contentDescription = null, tint = foreground, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = message,
+                color = foreground,
+                fontSize = 12.sp,
+                lineHeight = 18.sp
+            )
+        }
     }
 }
 

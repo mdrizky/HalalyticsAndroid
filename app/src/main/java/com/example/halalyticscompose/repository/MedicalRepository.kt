@@ -35,7 +35,7 @@ class MedicalRepository @Inject constructor() {
 
         // Gemini endpoint
         private const val GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 
         // Anthropic endpoint
         private const val ANTHROPIC_URL =
@@ -106,8 +106,8 @@ class MedicalRepository @Inject constructor() {
                 })
             })
             put("generationConfig", JSONObject().apply {
-                put("temperature", 0.3)
-                put("maxOutputTokens", 2048)
+                put("temperature", 0.2)
+                put("maxOutputTokens", 4096)
                 put("responseMimeType", "application/json")
             })
         }
@@ -199,42 +199,89 @@ class MedicalRepository @Inject constructor() {
 
             val json = JSONObject(cleanJson)
 
+            val parsedSeverity = mapSeverity(
+                json.optString("severity").ifBlank { json.optString("severity_level", "LOW") }
+            )
+            val medicineDetails = parseRecommendedMedicineDetails(json)
+
             SymptomsAnalysis(
-                condition = json.optString("diagnosis", "Perlu Evaluasi"),
-                severity = mapSeverity(json.optString("severity", "LOW")),
-                why_it_happened = json.optString("description", ""),
-                possible_causes = jsonArrayToList(json.optJSONArray("potentialCauses")),
-                gejala_terkait = emptyList(), // Not in our prompt schema, extracted from description
-                emergency_warning = if (json.optString("severity") == "EMERGENCY")
-                    "Segera ke IGD!" else null,
-                should_seek_doctor = json.optBoolean("shouldSeeDoctor", false),
-                recommendation = json.optString("monitoring", "Pantau kondisi Anda"),
-                doctor_recommendation = if (json.optBoolean("shouldSeeDoctor"))
-                    "Segera konsultasikan ke dokter profesional" else null,
-                triage_action = json.optString("monitoring", ""),
-                lifestyle_advice = buildLifestyleAdvice(json),
+                ringkasan_keluhan = json.optString("ringkasan_keluhan").ifBlank {
+                    json.optString("summary").ifBlank {
+                        json.optString("description", "")
+                    }
+                },
+                condition = json.optString("condition").ifBlank {
+                    json.optString("diagnosis", "Perlu Evaluasi")
+                },
+                severity_label = json.optString("tingkat_keparahan_label").ifBlank {
+                    severityLabelFrom(parsedSeverity)
+                },
+                severity = parsedSeverity,
+                why_it_happened = buildWhyItHappened(json),
+                gejala_terkait = jsonArrayToList(json.optJSONArray("gejala_terkait")),
+                possible_causes = parsePossibleCauseStrings(json),
+                possible_causes_detailed = parsePossibleCauseDetails(json),
+                alasan_keparahan = json.optString("alasan_keparahan").ifBlank {
+                    json.optString("monitoring", "")
+                },
+                emergency_warning = json.optString("emergency_warning").ifBlank {
+                    if (parsedSeverity == "emergency") "Segera ke IGD atau hubungi tenaga medis." else null
+                },
+                triage_action = json.optString("triage_action").ifBlank {
+                    json.optString("monitoring", "")
+                },
+                doctor_recommendation = json.optString("doctor_recommendation").ifBlank {
+                    if (json.optBoolean("shouldSeeDoctor") || parsedSeverity == "emergency") {
+                        "Segera konsultasikan ke dokter profesional."
+                    } else null
+                },
+                should_seek_doctor = json.optBoolean("should_seek_doctor", json.optBoolean("shouldSeeDoctor", parsedSeverity == "emergency")),
+                recommendation = json.optString("recommendation").ifBlank {
+                    json.optString("monitoring", "Pantau kondisi Anda")
+                },
                 future_prevention = null,
-                recommended_medicines_list = buildMedicineNameList(json),
-                alternative_medicines = emptyList(),
+                lifestyle_advice = json.optString("lifestyle_advice").ifBlank {
+                    buildLifestyleAdvice(json)
+                },
+                disease_explanations = parseDiseaseExplanations(json),
+                trigger_factors = jsonArrayToList(json.optJSONArray("trigger_factors")),
+                recommended_ingredients = jsonArrayToList(json.optJSONArray("recommended_ingredients")),
                 medicine_categories = emptyList(),
-                usage_instructions = buildUsageInstructions(json),
-                dosage_guidelines = buildDosageGuidelines(json),
+                recommended_medicines_list = medicineDetails.map { detail ->
+                    listOf(detail.name, detail.dosage, detail.when_to_take)
+                        .filterNot { it.isNullOrBlank() }
+                        .joinToString(" - ")
+                }.ifEmpty { buildMedicineNameList(json) },
+                recommended_medicine_details = medicineDetails,
+                alternative_medicines = emptyList(),
+                usage_instructions = json.optString("usage_instructions").ifBlank {
+                    buildUsageInstructions(json)
+                },
+                dosage_guidelines = json.optString("dosage_guidelines").ifBlank {
+                    buildDosageGuidelines(json)
+                },
                 when_to_take_and_frequency = buildFrequencyInfo(json),
-                side_effects = emptyList(),
-                halal_check = HalalCheck(
-                    status = if (json.optBoolean("isHalal", true)) "halal" else "perlu verifikasi",
-                    notes = "Obat yang direkomendasikan telah diverifikasi status halalnya"
-                )
+                side_effects = parseGlobalSideEffects(json, medicineDetails),
+                drug_mechanism = json.optString("drug_mechanism").ifBlank { null },
+                first_aid_steps = jsonArrayToList(json.optJSONArray("first_aid_steps")),
+                prevention = jsonArrayToList(json.optJSONArray("prevention")),
+                follow_up_questions = jsonArrayToList(json.optJSONArray("follow_up_questions")),
+                confidence_level = json.optString("confidence_level").ifBlank { "Sedang" },
+                tldr = json.optString("tldr").ifBlank { null },
+                halal_check = parseHalalCheck(json, medicineDetails)
             )
         } catch (e: Exception) {
             Log.e(TAG, "JSON parse error: ${e.message}", e)
             // Return a helpful fallback instead of crashing
             SymptomsAnalysis(
+                ringkasan_keluhan = "Keluhan berhasil diterima tetapi format analisis AI sedang tidak stabil.",
                 condition = "Analisis Tersedia Sebagian",
                 severity = "mild",
+                severity_label = "Ringan",
                 why_it_happened = "AI berhasil merespons tetapi format data tidak sesuai. Silakan coba lagi.",
                 possible_causes = listOf("Gangguan format respons AI"),
                 recommendation = "Coba ulangi analisis atau konsultasikan ke dokter",
+                tldr = "Analisis sementara tersedia sebagian. Jika gejala memburuk, segera konsultasi ke dokter.",
                 should_seek_doctor = false
             )
         }
@@ -248,6 +295,13 @@ class MedicalRepository @Inject constructor() {
         "HIGH" -> "severe"
         "EMERGENCY" -> "emergency"
         else -> raw.lowercase()
+    }
+
+    private fun severityLabelFrom(severity: String): String = when (severity.lowercase()) {
+        "mild" -> "Ringan"
+        "moderate" -> "Sedang"
+        "emergency", "severe", "high" -> "Perlu perhatian medis"
+        else -> "Sedang"
     }
 
     private fun jsonArrayToList(array: org.json.JSONArray?): List<String> {
@@ -271,31 +325,156 @@ class MedicalRepository @Inject constructor() {
         }
     }
 
+    private fun parseRecommendedMedicineDetails(json: JSONObject): List<com.example.halalyticscompose.Data.Model.RecommendedMedicineDetail> {
+        val source = json.optJSONArray("recommended_medicines_list")
+            ?: json.optJSONArray("medicines")
+            ?: return emptyList()
+
+        return (0 until source.length()).mapNotNull { index ->
+            val item = source.optJSONObject(index) ?: return@mapNotNull null
+            com.example.halalyticscompose.Data.Model.RecommendedMedicineDetail(
+                name = item.optString("name").ifBlank { "Obat tidak disebutkan" },
+                function = item.optString("function").ifBlank {
+                    item.optString("notes").ifBlank { null }
+                },
+                dosage = item.optString("dosage").ifBlank {
+                    item.optString("dose").ifBlank { null }
+                },
+                how_to_take = item.optString("how_to_take").ifBlank { null },
+                duration = item.optString("duration").ifBlank { null },
+                when_to_take = item.optString("when_to_take").ifBlank {
+                    item.optString("frequency").ifBlank { null }
+                },
+                halal_status = item.optString("halal_status").ifBlank {
+                    if (item.has("isHalal")) {
+                        if (item.optBoolean("isHalal", true)) "Halal" else "Perlu cek label"
+                    } else null
+                },
+                safety_note = item.optString("safety_note").ifBlank {
+                    item.optString("notes").ifBlank { null }
+                },
+                side_effects = jsonArrayToList(item.optJSONArray("side_effects"))
+            )
+        }
+    }
+
+    private fun parsePossibleCauseStrings(json: JSONObject): List<String> {
+        val detailed = json.optJSONArray("possible_causes")
+        if (detailed != null && detailed.length() > 0 && detailed.opt(0) is JSONObject) {
+            return (0 until detailed.length()).mapNotNull { index ->
+                detailed.optJSONObject(index)?.let { item ->
+                    val name = item.optString("name").ifBlank { null } ?: return@let null
+                    val percentage = item.optInt("percentage", -1)
+                    if (percentage >= 0) "$name - $percentage%" else name
+                }
+            }
+        }
+
+        return jsonArrayToList(json.optJSONArray("potentialCauses"))
+            .ifEmpty { jsonArrayToList(json.optJSONArray("possible_causes")) }
+    }
+
+    private fun parsePossibleCauseDetails(json: JSONObject): List<com.example.halalyticscompose.Data.Model.PossibleCauseDetail> {
+        val array = json.optJSONArray("possible_causes") ?: return emptyList()
+        if (array.length() == 0 || array.opt(0) !is JSONObject) return emptyList()
+
+        return (0 until array.length()).mapNotNull { index ->
+            val item = array.optJSONObject(index) ?: return@mapNotNull null
+            com.example.halalyticscompose.Data.Model.PossibleCauseDetail(
+                name = item.optString("name"),
+                percentage = item.optInt("percentage").takeIf { it > 0 },
+                reason = item.optString("reason").ifBlank { null }
+            )
+        }
+    }
+
+    private fun parseDiseaseExplanations(json: JSONObject): List<com.example.halalyticscompose.Data.Model.DiseaseExplanation> {
+        val array = json.optJSONArray("disease_explanations") ?: return emptyList()
+        return (0 until array.length()).mapNotNull { index ->
+            val item = array.optJSONObject(index) ?: return@mapNotNull null
+            com.example.halalyticscompose.Data.Model.DiseaseExplanation(
+                name = item.optString("name"),
+                description = item.optString("description").ifBlank { null },
+                relation_to_case = item.optString("relation_to_case").ifBlank { null }
+            )
+        }
+    }
+
+    private fun buildWhyItHappened(json: JSONObject): String? {
+        val direct = json.optString("why_it_happened").ifBlank { null }
+        if (!direct.isNullOrBlank()) return direct
+
+        val summary = json.optString("ringkasan_keluhan").ifBlank { null }
+        val reason = json.optString("alasan_keparahan").ifBlank { null }
+        val diseaseExplanation = parseDiseaseExplanations(json).firstOrNull()?.description
+
+        return listOfNotNull(summary, reason, diseaseExplanation)
+            .joinToString(" ")
+            .ifBlank { json.optString("description").ifBlank { null } }
+    }
+
+    private fun parseHalalCheck(
+        json: JSONObject,
+        medicineDetails: List<com.example.halalyticscompose.Data.Model.RecommendedMedicineDetail>
+    ): HalalCheck {
+        val halalObject = json.optJSONObject("halal_check")
+        if (halalObject != null) {
+            return HalalCheck(
+                status = halalObject.optString("status", "unknown"),
+                notes = halalObject.optString("notes", "Belum dianalisis")
+            )
+        }
+
+        val detailStatus = medicineDetails.firstOrNull { !it.halal_status.isNullOrBlank() }?.halal_status
+        return HalalCheck(
+            status = detailStatus ?: if (json.optBoolean("isHalal", true)) "halal" else "perlu verifikasi",
+            notes = "Status halal berasal dari rekomendasi AI. Tetap cek label dan sertifikasi resmi bila tersedia."
+        )
+    }
+
+    private fun parseGlobalSideEffects(
+        json: JSONObject,
+        medicineDetails: List<com.example.halalyticscompose.Data.Model.RecommendedMedicineDetail>
+    ): List<String> {
+        val direct = jsonArrayToList(json.optJSONArray("side_effects"))
+        if (direct.isNotEmpty()) return direct
+
+        return medicineDetails.flatMap { it.side_effects }.distinct()
+    }
+
     private fun buildUsageInstructions(json: JSONObject): String? {
-        val medicines = json.optJSONArray("medicines") ?: return null
+        val medicines = json.optJSONArray("recommended_medicines_list")
+            ?: json.optJSONArray("medicines")
+            ?: return null
         if (medicines.length() == 0) return null
         return (0 until medicines.length()).map { i ->
             val med = medicines.getJSONObject(i)
-            val notes = med.optString("notes", "")
-            "${med.optString("name")}: ${notes.ifBlank { "Ikuti aturan pakai" }}"
+            val notes = med.optString("how_to_take").ifBlank {
+                med.optString("notes").ifBlank { "Ikuti aturan pakai" }
+            }
+            "${med.optString("name")}: $notes"
         }.joinToString("\n")
     }
 
     private fun buildDosageGuidelines(json: JSONObject): String? {
-        val medicines = json.optJSONArray("medicines") ?: return null
+        val medicines = json.optJSONArray("recommended_medicines_list")
+            ?: json.optJSONArray("medicines")
+            ?: return null
         if (medicines.length() == 0) return null
         return (0 until medicines.length()).map { i ->
             val med = medicines.getJSONObject(i)
-            "${med.optString("name")}: ${med.optString("dose", "sesuai anjuran")}"
+            "${med.optString("name")}: ${med.optString("dosage").ifBlank { med.optString("dose", "sesuai anjuran") }}"
         }.joinToString(", ")
     }
 
     private fun buildFrequencyInfo(json: JSONObject): String? {
-        val medicines = json.optJSONArray("medicines") ?: return null
+        val medicines = json.optJSONArray("recommended_medicines_list")
+            ?: json.optJSONArray("medicines")
+            ?: return null
         if (medicines.length() == 0) return null
         return (0 until medicines.length()).map { i ->
             val med = medicines.getJSONObject(i)
-            "${med.optString("name")}: ${med.optString("frequency", "sesuai anjuran")}"
+            "${med.optString("name")}: ${med.optString("when_to_take").ifBlank { med.optString("frequency", "sesuai anjuran") }}"
         }.joinToString(", ")
     }
 }

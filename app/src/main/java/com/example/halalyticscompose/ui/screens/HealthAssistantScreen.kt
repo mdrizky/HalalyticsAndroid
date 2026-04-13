@@ -475,7 +475,50 @@ fun HealthAssistantScreen(
                                     .border(1.dp, severityColor.copy(0.2f), RoundedCornerShape(8.dp))
                                     .padding(horizontal = 10.dp, vertical = 4.dp)
                             ) {
-                                Text(analysis.severity.uppercase(), color = severityColor, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Black)
+                                Text(
+                                    analysis.severity_label ?: analysis.severity.uppercase(),
+                                    color = severityColor,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Black
+                                )
+                            }
+
+                            if (!analysis.confidence_level.isNullOrBlank()) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(
+                                    "Confidence Level: ${analysis.confidence_level}",
+                                    color = MaterialTheme.colorScheme.onSurface.copy(0.65f),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+
+                            if (!analysis.ringkasan_keluhan.isNullOrBlank()) {
+                                Spacer(modifier = Modifier.height(14.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(MaterialTheme.colorScheme.secondary.copy(0.08f))
+                                        .border(1.dp, MaterialTheme.colorScheme.secondary.copy(0.16f), RoundedCornerShape(14.dp))
+                                        .padding(14.dp)
+                                ) {
+                                    Column {
+                                        Text(
+                                            "Ringkasan Keluhan",
+                                            color = MaterialTheme.colorScheme.secondary,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 12.sp
+                                        )
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Text(
+                                            analysis.ringkasan_keluhan!!,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(0.85f),
+                                            fontSize = 13.sp,
+                                            lineHeight = 20.sp
+                                        )
+                                    }
+                                }
                             }
                             
                             Spacer(modifier = Modifier.height(24.dp))
@@ -527,6 +570,93 @@ fun HealthAssistantScreen(
                                 Spacer(modifier = Modifier.height(24.dp))
                             }
 
+                            if (analysis.possible_causes_detailed.isNotEmpty()) {
+                                SectionTitle("Analisis Kemungkinan Penyebab", Icons.Outlined.Science, MaterialTheme.colorScheme.primary)
+                                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    analysis.possible_causes_detailed.forEach { cause ->
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(14.dp))
+                                                .background(MaterialTheme.colorScheme.primary.copy(0.04f))
+                                                .border(1.dp, MaterialTheme.colorScheme.primary.copy(0.10f), RoundedCornerShape(14.dp))
+                                                .padding(14.dp)
+                                        ) {
+                                            Column {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        cause.name,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.onSurface
+                                                    )
+                                                    cause.percentage?.let {
+                                                        Text(
+                                                            "$it%",
+                                                            color = MaterialTheme.colorScheme.primary,
+                                                            fontWeight = FontWeight.Black
+                                                        )
+                                                    }
+                                                }
+                                                if (!cause.reason.isNullOrBlank()) {
+                                                    Spacer(modifier = Modifier.height(6.dp))
+                                                    Text(
+                                                        cause.reason!!,
+                                                        color = MaterialTheme.colorScheme.onSurface.copy(0.75f),
+                                                        fontSize = 13.sp,
+                                                        lineHeight = 19.sp
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(24.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(0.05f))
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+
+                            if (analysis.disease_explanations.isNotEmpty()) {
+                                SectionTitle("Penjelasan Penyakit Utama", Icons.Outlined.Description, MaterialTheme.colorScheme.primary)
+                                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    analysis.disease_explanations.forEach { disease ->
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(14.dp))
+                                                .background(MaterialTheme.colorScheme.onSurface.copy(0.03f))
+                                                .padding(14.dp)
+                                        ) {
+                                            Column {
+                                                Text(disease.name, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                                if (!disease.description.isNullOrBlank()) {
+                                                    Spacer(modifier = Modifier.height(6.dp))
+                                                    Text(disease.description!!, color = MaterialTheme.colorScheme.onSurface.copy(0.8f), fontSize = 13.sp, lineHeight = 19.sp)
+                                                }
+                                                if (!disease.relation_to_case.isNullOrBlank()) {
+                                                    Spacer(modifier = Modifier.height(6.dp))
+                                                    Text("Hubungan dengan keluhanmu: ${disease.relation_to_case}", color = MaterialTheme.colorScheme.onSurface.copy(0.7f), fontSize = 12.sp, lineHeight = 18.sp)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(24.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(0.05f))
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+
+                            if (analysis.trigger_factors.isNotEmpty()) {
+                                SectionTitle("Faktor Pemicu Personal", Icons.Outlined.WarningAmber, MaterialTheme.colorScheme.error)
+                                BulletListCard(items = analysis.trigger_factors)
+                                Spacer(modifier = Modifier.height(24.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(0.05f))
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+
                             // 3. Saran Gaya Hidup & Pencegahan
                             if (!analysis.lifestyle_advice.isNullOrBlank() || !analysis.future_prevention.isNullOrBlank()) {
                                 SectionTitle("Saran Penanganan & Pencegahan", Icons.Outlined.Spa, MaterialTheme.colorScheme.secondary)
@@ -565,11 +695,11 @@ fun HealthAssistantScreen(
                                 }
 
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                    if (analysis.recommended_medicines_list.isNotEmpty()) {
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text("Obat Apotek (Paten/Generik):", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, modifier = Modifier.padding(bottom = 4.dp))
-                                            analysis.recommended_medicines_list.forEach { med ->
-                                                Text("• $med", color = MaterialTheme.colorScheme.onSurface.copy(0.8f), fontSize = 13.sp)
+                                if (analysis.recommended_medicines_list.isNotEmpty()) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text("Obat Apotek (Paten/Generik):", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, modifier = Modifier.padding(bottom = 4.dp))
+                                        analysis.recommended_medicines_list.forEach { med ->
+                                            Text("• $med", color = MaterialTheme.colorScheme.onSurface.copy(0.8f), fontSize = 13.sp)
                                             }
                                         }
                                     }
@@ -578,6 +708,47 @@ fun HealthAssistantScreen(
                                             Text("Alternatif / Herbal:", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, modifier = Modifier.padding(bottom = 4.dp))
                                             analysis.alternative_medicines.forEach { alt ->
                                                 Text("• $alt", color = MaterialTheme.colorScheme.onSurface.copy(0.8f), fontSize = 13.sp)
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (analysis.recommended_medicine_details.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                        analysis.recommended_medicine_details.forEach { med ->
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clip(RoundedCornerShape(14.dp))
+                                                    .background(MaterialTheme.colorScheme.primary.copy(0.04f))
+                                                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(0.10f), RoundedCornerShape(14.dp))
+                                                    .padding(14.dp)
+                                            ) {
+                                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                    Text(med.name, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                                    if (!med.function.isNullOrBlank()) {
+                                                        Text("Fungsi: ${med.function}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(0.8f))
+                                                    }
+                                                    if (!med.dosage.isNullOrBlank()) {
+                                                        Text("Dosis: ${med.dosage}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(0.8f))
+                                                    }
+                                                    if (!med.when_to_take.isNullOrBlank()) {
+                                                        Text("Waktu minum: ${med.when_to_take}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(0.8f))
+                                                    }
+                                                    if (!med.how_to_take.isNullOrBlank()) {
+                                                        Text("Cara pakai: ${med.how_to_take}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(0.8f))
+                                                    }
+                                                    if (!med.duration.isNullOrBlank()) {
+                                                        Text("Durasi: ${med.duration}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(0.8f))
+                                                    }
+                                                    if (!med.halal_status.isNullOrBlank()) {
+                                                        Text("Status halal: ${med.halal_status}", fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold)
+                                                    }
+                                                    if (!med.safety_note.isNullOrBlank()) {
+                                                        Text("Catatan keamanan: ${med.safety_note}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(0.75f))
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -650,6 +821,48 @@ fun HealthAssistantScreen(
                                                 }
                                             }
                                         }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+
+                            if (!analysis.drug_mechanism.isNullOrBlank()) {
+                                SectionTitle("Mekanisme Obat", Icons.Outlined.Science, MaterialTheme.colorScheme.primary)
+                                Text(analysis.drug_mechanism!!, color = MaterialTheme.colorScheme.onSurface.copy(0.8f), fontSize = 13.sp, lineHeight = 20.sp)
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+
+                            if (analysis.first_aid_steps.isNotEmpty()) {
+                                SectionTitle("Tindakan Langsung", Icons.Default.LocalHospital, MaterialTheme.colorScheme.error)
+                                BulletListCard(items = analysis.first_aid_steps)
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+
+                            if (analysis.prevention.isNotEmpty()) {
+                                SectionTitle("Pencegahan ke Depan", Icons.Outlined.Spa, MaterialTheme.colorScheme.secondary)
+                                BulletListCard(items = analysis.prevention)
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+
+                            if (analysis.follow_up_questions.isNotEmpty()) {
+                                SectionTitle("Pertanyaan Lanjutan", Icons.Outlined.HelpOutline, MaterialTheme.colorScheme.primary)
+                                BulletListCard(items = analysis.follow_up_questions)
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+
+                            if (!analysis.tldr.isNullOrBlank()) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(MaterialTheme.colorScheme.primary.copy(0.08f))
+                                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(0.16f), RoundedCornerShape(14.dp))
+                                        .padding(14.dp)
+                                ) {
+                                    Column {
+                                        Text("Ringkasan Cepat (TL;DR)", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Text(analysis.tldr!!, color = MaterialTheme.colorScheme.onSurface.copy(0.82f), fontSize = 13.sp, lineHeight = 19.sp)
                                     }
                                 }
                                 Spacer(modifier = Modifier.height(24.dp))
@@ -759,6 +972,33 @@ fun SectionTitle(title: String, icon: androidx.compose.ui.graphics.vector.ImageV
         Icon(icon, null, tint = color, modifier = Modifier.size(18.dp))
         Spacer(modifier = Modifier.width(8.dp))
         Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun BulletListCard(items: List<String>) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.onSurface.copy(0.03f))
+            .padding(14.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            items.forEach { item ->
+                Row(verticalAlignment = Alignment.Top) {
+                    Text("•", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Black)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        item,
+                        modifier = Modifier.weight(1f),
+                        color = MaterialTheme.colorScheme.onSurface.copy(0.8f),
+                        fontSize = 13.sp,
+                        lineHeight = 19.sp
+                    )
+                }
+            }
+        }
     }
 }
 

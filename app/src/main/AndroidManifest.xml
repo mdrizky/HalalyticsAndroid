@@ -17,6 +17,9 @@
     <uses-feature
         android:name="android.hardware.camera.any"
         android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.ar"
+        android:required="false" />
 
     <application
         android:name=".HalalyticsApplication"
@@ -59,6 +62,10 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <meta-data
+            android:name="com.google.ar.core"
+            android:value="optional" />
 
         <!-- Medicine Reminder Receiver -->
         <receiver

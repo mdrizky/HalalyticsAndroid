@@ -60,6 +60,14 @@ fun AllFeaturesScreen(navController: NavController) {
         FeatureActionItem("Health Diary", Icons.Default.Edit, "health_diary", Color(0xFF0097A7), Color(0xFFE0F7FA))
     )
 
+    val aiExpansionFeatures = listOf(
+        FeatureActionItem("OCR Produk", Icons.Default.QrCodeScanner, "ocr_scan", Color(0xFFE53935), Color(0xFFFFEBEE)),
+        FeatureActionItem("Nutrisi AI", Icons.Default.MonitorHeart, "nutrition_dashboard", Color(0xFF00897B), Color(0xFFE0F2F1)),
+        FeatureActionItem("Recipe AI", Icons.Default.MenuBook, "recipes", Color(0xFF6A1B9A), Color(0xFFF3E5F5)),
+        FeatureActionItem("AR Finder", Icons.Default.ViewInAr, "ar_finder", Color(0xFFF57C00), Color(0xFFFFF3E0)),
+        FeatureActionItem("Misi Harian", Icons.Default.TaskAlt, "daily_mission_dashboard", Color(0xFF1565C0), Color(0xFFE3F2FD))
+    )
+
     val supportFeatures = listOf(
         FeatureActionItem("Halocode", Icons.Default.Chat, "halocode", Color(0xFF00695C), Color(0xFFE0F2F1)),
         FeatureActionItem("Marketplace", Icons.Default.Storefront, "marketplace", Color(0xFF2E7D32), Color(0xFFE8F5E9)),
@@ -102,6 +110,9 @@ fun AllFeaturesScreen(navController: NavController) {
             }
             item {
                 FeatureSectionGrid("Pintar & AI", smartAiFeatures, navController)
+            }
+            item {
+                FeatureSectionGrid("AI Expansion", aiExpansionFeatures, navController)
             }
             item {
                 FeatureSectionGrid("Dukungan & Lainnya", supportFeatures, navController)

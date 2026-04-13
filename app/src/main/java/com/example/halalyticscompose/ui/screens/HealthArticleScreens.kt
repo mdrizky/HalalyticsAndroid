@@ -100,6 +100,9 @@ private val fallbackArticles = listOf(
     )
 )
 
+private const val DEFAULT_ARTICLE_IMAGE =
+    "https://images.unsplash.com/photo-1550505095-81378a674395?auto=format&fit=crop&w=800&q=80"
+
 private fun HealthArticleItem.toUiKey(): String = slug ?: id
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -237,7 +240,7 @@ private fun ArticleCard(
     ) {
         Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
-                model = imageUrl,
+                model = imageUrl ?: DEFAULT_ARTICLE_IMAGE,
                 contentDescription = title,
                 modifier = Modifier
                     .size(90.dp)
@@ -353,7 +356,7 @@ private fun ArticleDetailContent(
     ) {
         item {
             AsyncImage(
-                model = imageUrl,
+                model = imageUrl ?: DEFAULT_ARTICLE_IMAGE,
                 contentDescription = title,
                 modifier = Modifier
                     .fillMaxWidth()

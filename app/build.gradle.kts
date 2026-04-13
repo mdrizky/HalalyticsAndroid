@@ -202,6 +202,7 @@ dependencies {
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("com.google.accompanist:accompanist-permissions:0.37.2")
     implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.google.ar:core:1.41.0")
 
     // 🔹 Compose Material Icons Extended
     implementation("androidx.compose.material:material-icons-extended")

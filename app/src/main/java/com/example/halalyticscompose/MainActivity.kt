@@ -1123,9 +1123,28 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+                    composable("daily_mission_dashboard") {
+                        DailyMissionDashboardScreen(
+                            onNavigateBack = { navController.popBackStack() },
+                            onGoToScan = { navController.navigate("ocr_scan") },
+                            onGoToNutrition = { navController.navigate("nutrition_dashboard") },
+                            onGoToAr = { navController.navigate("ar_finder") },
+                            onGoToMarketplace = { navController.navigate("marketplace") },
+                            onGoToCommunity = { navController.navigate("community") },
+                            onGoToHalocode = { navController.navigate("halocode") }
+                        )
+                    }
+
                     composable("ar_finder") {
                         ArFinderScreen(
                             onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable("recipes") {
+                        RecipeListScreen(
+                            onNavigateBack = { navController.popBackStack() },
+                            onRecipeClick = { recipeId -> navController.navigate("recipe_detail/$recipeId") }
                         )
                     }
 

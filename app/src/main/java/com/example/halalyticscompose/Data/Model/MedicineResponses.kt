@@ -21,11 +21,15 @@ data class SymptomsAnalysisDataWrapper(
 )
 
 data class SymptomsAnalysis(
+    @SerializedName("ringkasan_keluhan") val ringkasan_keluhan: String? = null,
     @SerializedName("condition") val condition: String = "Unknown Condition",
+    @SerializedName(value = "severity_label", alternate = ["tingkat_keparahan_label"]) val severity_label: String? = null,
     @SerializedName("why_it_happened") val why_it_happened: String? = null,
     @SerializedName("gejala_terkait") val gejala_terkait: List<String> = emptyList(),
     @SerializedName("possible_causes") val possible_causes: List<String> = emptyList(),
+    @SerializedName("possible_causes_detailed") val possible_causes_detailed: List<PossibleCauseDetail> = emptyList(),
     @SerializedName("severity") val severity: String = "mild",
+    @SerializedName("alasan_keparahan") val alasan_keparahan: String? = null,
     @SerializedName("emergency_warning") val emergency_warning: String? = null,
     @SerializedName("triage_action") val triage_action: String? = null,
     @SerializedName("doctor_recommendation") val doctor_recommendation: String? = null,
@@ -35,12 +39,15 @@ data class SymptomsAnalysis(
     @SerializedName("recommendation") val recommendation: String = "Konsultasikan dengan dokter",
     @SerializedName("future_prevention") val future_prevention: String? = null,
     @SerializedName("lifestyle_advice") val lifestyle_advice: String? = null,
+    @SerializedName("disease_explanations") val disease_explanations: List<DiseaseExplanation> = emptyList(),
+    @SerializedName("trigger_factors") val trigger_factors: List<String> = emptyList(),
     
     // Ingredients & Medicines
     @SerializedName(value = "recommended_ingredients", alternate = ["active_ingredients"]) 
     val recommended_ingredients: List<String> = emptyList(),
     @SerializedName("medicine_categories") val medicine_categories: List<String> = emptyList(),
     @SerializedName("recommended_medicines_list") val recommended_medicines_list: List<String> = emptyList(),
+    @SerializedName("recommended_medicine_details") val recommended_medicine_details: List<RecommendedMedicineDetail> = emptyList(),
     @SerializedName("alternative_medicines") val alternative_medicines: List<String> = emptyList(),
     
     // Usage Details
@@ -48,6 +55,12 @@ data class SymptomsAnalysis(
     @SerializedName("dosage_guidelines") val dosage_guidelines: String? = null,
     @SerializedName("when_to_take_and_frequency") val when_to_take_and_frequency: String? = null,
     @SerializedName("side_effects") val side_effects: List<String> = emptyList(),
+    @SerializedName("drug_mechanism") val drug_mechanism: String? = null,
+    @SerializedName("first_aid_steps") val first_aid_steps: List<String> = emptyList(),
+    @SerializedName("prevention") val prevention: List<String> = emptyList(),
+    @SerializedName("follow_up_questions") val follow_up_questions: List<String> = emptyList(),
+    @SerializedName("confidence_level") val confidence_level: String? = null,
+    @SerializedName("tldr") val tldr: String? = null,
     
     @SerializedName("halal_check") val halal_check: HalalCheck? = null
 ) {
@@ -58,6 +71,30 @@ data class SymptomsAnalysis(
 data class HalalCheck(
     @SerializedName("status") val status: String = "unknown",
     @SerializedName("notes") val notes: String = "Belum dianalisis"
+)
+
+data class PossibleCauseDetail(
+    @SerializedName("name") val name: String = "",
+    @SerializedName("percentage") val percentage: Int? = null,
+    @SerializedName("reason") val reason: String? = null
+)
+
+data class DiseaseExplanation(
+    @SerializedName("name") val name: String = "",
+    @SerializedName("description") val description: String? = null,
+    @SerializedName("relation_to_case") val relation_to_case: String? = null
+)
+
+data class RecommendedMedicineDetail(
+    @SerializedName("name") val name: String = "",
+    @SerializedName("function") val function: String? = null,
+    @SerializedName("dosage") val dosage: String? = null,
+    @SerializedName("how_to_take") val how_to_take: String? = null,
+    @SerializedName("duration") val duration: String? = null,
+    @SerializedName("when_to_take") val when_to_take: String? = null,
+    @SerializedName("halal_status") val halal_status: String? = null,
+    @SerializedName("safety_note") val safety_note: String? = null,
+    @SerializedName("side_effects") val side_effects: List<String> = emptyList()
 )
 
 // Medicine Responses

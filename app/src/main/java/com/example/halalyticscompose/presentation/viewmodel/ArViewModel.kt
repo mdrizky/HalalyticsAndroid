@@ -16,6 +16,7 @@ import javax.inject.Inject
 data class ArUiState(
     val isLoading: Boolean = false,
     val pois: List<ArPOI> = emptyList(),
+    val selectedPoi: ArPOI? = null,
     val error: String? = null
 )
 
@@ -34,11 +35,22 @@ class ArViewModel @Inject constructor(
             val token = sessionManager.getAuthToken() ?: return@launch
             repository.getNearbyPOIs(token, lat, lng)
                 .onSuccess { pois ->
-                    _uiState.update { it.copy(isLoading = false, pois = pois, error = null) }
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            pois = pois,
+                            selectedPoi = pois.firstOrNull(),
+                            error = null
+                        )
+                    }
                 }
                 .onFailure { e ->
-                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                    _uiState.update { it.copy(isLoading = false, pois = emptyList(), selectedPoi = null, error = e.message) }
                 }
         }
+    }
+
+    fun selectPoi(poi: ArPOI?) {
+        _uiState.update { it.copy(selectedPoi = poi) }
     }
 }
