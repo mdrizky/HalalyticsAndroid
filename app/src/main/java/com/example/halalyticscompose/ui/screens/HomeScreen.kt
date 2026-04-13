@@ -196,7 +196,7 @@ fun HomeScreen(
                     FloatingQuickActionCard(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
-                            .offset(y = 74.dp)
+                            .offset(y = 92.dp)
                             .padding(horizontal = 20.dp),
                         onScan = { navController.navigate("scan") },
                         onHistory = { navController.navigate("history") },
@@ -210,7 +210,7 @@ fun HomeScreen(
                     )
                 }
                 // Spacer to account for the floating card overlap
-                Spacer(modifier = Modifier.height(104.dp))
+                Spacer(modifier = Modifier.height(126.dp))
             }
 
             // ─── AUTO-SLIDING BANNER ─────────────────────────────
@@ -306,7 +306,16 @@ fun HomeScreen(
             }
 
             if (scanHistory.isEmpty()) {
-                items(4) { ShimmerProductItem() }
+                if (homeLoading) {
+                    items(4) { ShimmerProductItem() }
+                } else {
+                    item {
+                        HomeStatusCard(
+                            message = "Belum ada riwayat scan. Coba scan produk pertama kamu untuk mulai membangun insight harian.",
+                            tone = StatusTone.Info
+                        )
+                    }
+                }
             } else {
                 items(scanHistory.take(4)) { item ->
                     RecentScanCard(item = item) {
@@ -346,7 +355,7 @@ private fun NavyHeader(
                     listOf(Navy, NavyLight)
                 )
             )
-            .padding(bottom = 68.dp)
+            .padding(bottom = 84.dp)
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp)
@@ -525,7 +534,7 @@ private fun HomeStatusCard(
         StatusTone.Warning -> Color(0xFFE65100)
     }
     val icon = when (tone) {
-        StatusTone.Info -> Icons.Default.Info
+        StatusTone.Info -> Icons.Default.Description
         StatusTone.Warning -> Icons.Default.Warning
     }
 

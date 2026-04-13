@@ -289,6 +289,13 @@ fun ProductDetailContentPremium(
         // Product Identity
         item {
             Column(modifier = Modifier.padding(24.dp)) {
+                if ((product.halalInfo?.source ?: "").equals("fallback", ignoreCase = true) ||
+                    product.name.equals("Produk belum ditemukan", ignoreCase = true)
+                ) {
+                    ProductFallbackNoticeCard(barcode = product.barcode)
+                    Spacer(Modifier.height(16.dp))
+                }
+
                 Text(product.brand.uppercase(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface.copy(0.6f), fontWeight = FontWeight.Bold)
                 Text(product.name, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Black)
                 Spacer(Modifier.height(8.dp))
@@ -347,6 +354,47 @@ fun ProductDetailContentPremium(
         }
         
         item { Spacer(Modifier.height(40.dp)) }
+    }
+}
+
+@Composable
+private fun ProductFallbackNoticeCard(barcode: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.tertiaryContainer)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.28f),
+                shape = RoundedCornerShape(18.dp)
+            )
+            .padding(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+            Column {
+                Text(
+                    text = "Mode Placeholder Aktif",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Barcode $barcode belum tersedia di database utama. Halalytics tetap menampilkan data placeholder agar layar tidak kosong dan kamu tetap bisa lanjut lapor/scan ulang.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            }
+        }
     }
 }
 

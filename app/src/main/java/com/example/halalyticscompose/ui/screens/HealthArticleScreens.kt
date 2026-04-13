@@ -2,6 +2,7 @@ package com.example.halalyticscompose.ui.screens
 
 import android.net.Uri
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -172,25 +175,19 @@ fun HealthArticleListScreen(
 
             when {
                 isLoading && remoteArticles.isEmpty() -> {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        CircularProgressIndicator()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Memuat artikel...")
-                    }
+                    ArticleStatusCard(
+                        message = "Memuat artikel kesehatan terbaru...",
+                        isLoading = true
+                    )
                 }
                 remoteArticles.isEmpty() -> {
-                    if (!error.isNullOrBlank()) {
-                        Text(
-                            text = error ?: "",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        item {
+                            ArticleStatusCard(
+                                message = error ?: "Sumber utama artikel sedang tidak tersedia. Menampilkan artikel cadangan agar layar tetap terisi.",
+                                isError = !error.isNullOrBlank()
+                            )
+                        }
                         items(displayFallback) { article ->
                             ArticleCard(
                                 category = article.category,
@@ -330,14 +327,67 @@ fun HealthArticleDetailScreen(
                 )
             }
             else -> {
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(padding),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(error ?: "Artikel tidak ditemukan")
+                    ArticleStatusCard(
+                        message = error ?: "Artikel tidak ditemukan atau sedang tidak bisa dimuat.",
+                        isError = true
+                    )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ArticleStatusCard(
+    message: String,
+    isLoading: Boolean = false,
+    isError: Boolean = false
+) {
+    val containerColor = when {
+        isError -> MaterialTheme.colorScheme.errorContainer
+        else -> MaterialTheme.colorScheme.primaryContainer
+    }
+    val contentColor = when {
+        isError -> MaterialTheme.colorScheme.onErrorContainer
+        else -> MaterialTheme.colorScheme.onPrimaryContainer
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.5.dp
+                )
+            } else {
+                Icon(
+                    imageVector = if (isError) Icons.Default.ErrorOutline else Icons.Default.Description,
+                    contentDescription = null,
+                    tint = contentColor
+                )
+            }
+
+            Text(
+                text = message,
+                color = contentColor,
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }

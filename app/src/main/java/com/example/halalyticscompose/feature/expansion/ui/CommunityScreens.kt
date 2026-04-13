@@ -69,6 +69,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -90,6 +91,7 @@ fun CommunityScreen(
     val activeCategory by viewModel.activeCategory.collectAsState()
     val showComposer by viewModel.showComposer.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
     var showLeaderboard by remember { mutableStateOf(false) }
 
     val categories = listOf(
@@ -154,6 +156,14 @@ fun CommunityScreen(
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
+            } else if (posts.isEmpty()) {
+                CommunityEmptyStateCard(
+                    title = "Belum ada diskusi",
+                    message = error ?: "Belum ada postingan pada kategori ini. Yuk jadi yang pertama berbagi pengalaman atau pertanyaan.",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                )
             } else {
                 LazyColumn(
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 92.dp),
@@ -193,6 +203,8 @@ fun CommunityPostDetailScreen(
     viewModel: CommunityViewModel = hiltViewModel(),
 ) {
     val post by viewModel.selectedPost.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
     var commentText by remember { mutableStateOf("") }
 
     LaunchedEffect(postId) {
@@ -236,10 +248,19 @@ fun CommunityPostDetailScreen(
             }
         },
     ) { padding ->
-        if (post == null) {
+        if (isLoading && post == null) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
+        } else if (post == null) {
+            CommunityEmptyStateCard(
+                title = "Postingan belum tersedia",
+                message = error ?: "Detail postingan belum bisa dimuat saat ini. Coba buka ulang beberapa saat lagi.",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 16.dp),
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
@@ -273,6 +294,61 @@ fun CommunityPostDetailScreen(
                 items(post!!.comments, key = { it.id }) { comment ->
                     CommentCard(comment)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CommunityEmptyStateCard(
+    title: String,
+    message: String,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+            ),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        Icons.Default.ChatBubbleOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                    textAlign = TextAlign.Center,
+                )
             }
         }
     }
