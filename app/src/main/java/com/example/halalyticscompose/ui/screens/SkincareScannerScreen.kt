@@ -106,7 +106,7 @@ fun SkincareScannerScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            contentPadding = PaddingValues(bottom = 32.dp),
+            contentPadding = PaddingValues(bottom = 120.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Hero Header

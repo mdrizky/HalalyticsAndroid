@@ -59,6 +59,7 @@ import com.example.halalyticscompose.ui.viewmodel.BpomViewModel
 
 // Removed unused hardcoded colors
 @OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun BpomScannerScreen(
     navController: NavController,
     viewModel: BpomViewModel = hiltViewModel()
@@ -236,7 +237,7 @@ fun BpomScannerScreen(
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 "Mode ini khusus verifikasi database resmi. Jika data tidak ada di database, hasil tidak ditampilkan.",
-                                color = TextMuted,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                 fontSize = 12.sp
                             )
                             Spacer(modifier = Modifier.height(6.dp))

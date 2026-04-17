@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -919,6 +920,13 @@ private fun StreakCard(streak: Int, onClick: () -> Unit) {
 // ═══════════════════════════════════════════════════════════════════
 // QUICK ACTIONS — Unified Navy Icons on Light Background
 // ═══════════════════════════════════════════════════════════════════
+
+@Composable
+private fun QuickActions(
+    onHealthSuite: () -> Unit,
+    onAssistant: () -> Unit,
+    onHalalSpecialist: () -> Unit,
+    onDrugInteraction: () -> Unit,
 
     onAiReport: () -> Unit,
     onBpom: () -> Unit,

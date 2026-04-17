@@ -172,7 +172,8 @@ fun FavoritesScreen(
                 
                 else -> {
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 120.dp)
                     ) {
                         items(
                             items = filteredProducts,
