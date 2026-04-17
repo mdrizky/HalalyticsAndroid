@@ -97,21 +97,6 @@ data class VisualFeatures(
     @SerializedName("imprint") val imprint: String?
 )
 
-// Lab Analysis Models
-data class LabAnalysisData(
-    @SerializedName("detected_tests") val detectedTests: List<DetectedTest>,
-    @SerializedName("overall_assessment") val overallAssessment: String,
-    @SerializedName("lifestyle_recommendations") val lifestyleRecommendations: List<String>
-)
-
-data class DetectedTest(
-    @SerializedName("test_name") val testName: String,
-    @SerializedName("value") val value: Double,
-    @SerializedName("unit") val unit: String,
-    @SerializedName("status") val status: String,
-    @SerializedName("interpretation") val interpretation: String?
-)
-
 // Health Metrics Models
 data class HealthMetricData(
     @SerializedName("id") val id: Int,

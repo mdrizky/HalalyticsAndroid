@@ -63,16 +63,18 @@ import com.example.halalyticscompose.R
 
 @Composable
 fun ScanHubScreen(
-    navController: NavController
+    navController: NavController,
+    paddingValues: PaddingValues = PaddingValues(0.dp)
 ) {
     val colorScheme = MaterialTheme.colorScheme
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colorScheme.background)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(colorScheme.background)
+                .verticalScroll(rememberScrollState())
+                .padding(paddingValues)
+                .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         // ─── Header ─────────────────────────────────────────

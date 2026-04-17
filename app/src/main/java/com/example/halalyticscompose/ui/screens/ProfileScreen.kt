@@ -32,6 +32,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,9 +41,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -59,6 +63,9 @@ import java.util.Date
 import java.util.Locale
 import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.animation.core.*
 
 // ═══════════════════════════════════════════════════════════════════
 // COLOR CONSTANTS — Emerald Forest Premium
@@ -78,7 +85,8 @@ private val GoldAccent = Color(0xFFD4AF37)
 @OptIn(ExperimentalMaterial3Api::class)
 fun ProfileScreen(
     navController: NavController,
-    viewModel: MainViewModel = hiltViewModel()
+    viewModel: MainViewModel = hiltViewModel(),
+    paddingValues: PaddingValues = PaddingValues(0.dp)
 ) {
     val currentUser by viewModel.currentUser.collectAsState()
     val userData by viewModel.userData.collectAsState()
@@ -95,11 +103,14 @@ fun ProfileScreen(
     val color = MaterialTheme.colorScheme
     val context = LocalContext.current
 
-    Scaffold(containerColor = SageBg) { padding ->
+    Scaffold(
+        modifier = Modifier,
+        containerColor = SageBg
+    ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(paddingValues),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             // ── EMERALD GRADIENT HEADER + AVATAR + STATS ──
@@ -223,6 +234,15 @@ fun ProfileScreen(
                         }
                     }
                 }
+            }
+
+            // ── HEALTH SCORE ──
+            item {
+                HealthScoreCard(
+                    score = viewModel.dailyHealthScore.collectAsState().value,
+                    label = viewModel.healthScoreData.collectAsState().value?.level ?: "Baik",
+                    onClick = { navController.navigate("health_journey") }
+                )
             }
 
             // ── CLOUD SYNC STATUS ──
@@ -815,6 +835,107 @@ private fun ToggleCard(
                 Text(subtitle, color = TextMedium, fontSize = 12.sp)
             }
             Switch(checked = checked, onCheckedChange = onChecked)
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// HEALTH SCORE CARD
+// ═══════════════════════════════════════════════════════════════════
+
+@Composable
+private fun HealthScoreCard(
+    score: Int,
+    label: String? = null,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    val animatedProgress = remember { androidx.compose.animation.core.Animatable(0f) }
+
+    LaunchedEffect(score) {
+        animatedProgress.animateTo(
+            score / 100f,
+            animationSpec = androidx.compose.animation.core.tween(1200, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+        )
+    }
+
+    Card(
+        modifier = modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            // Circular progress
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(100.dp)
+                    .drawBehind {
+                        val strokeWidth = 12.dp.toPx()
+                        val arcSize = size.minDimension - strokeWidth
+                        val topLeft = Offset(
+                            (size.width - arcSize) / 2f,
+                            (size.height - arcSize) / 2f
+                        )
+                        // Background arc
+                        drawArc(
+                            color = SoftSage,
+                            startAngle = -90f,
+                            sweepAngle = 360f,
+                            useCenter = false,
+                            topLeft = topLeft,
+                            size = Size(arcSize, arcSize),
+                            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                        )
+                        // Progress arc
+                        drawArc(
+                            color = EmeraldDark,
+                            startAngle = -90f,
+                            sweepAngle = 360f * animatedProgress.value,
+                            useCenter = false,
+                            topLeft = topLeft,
+                            size = Size(arcSize, arcSize),
+                            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                        )
+                    }
+            ) {
+                Text(
+                    "$score",
+                    color = EmeraldDark,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "Skor Kesehatan",
+                    color = TextMedium,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    label ?: "Baik",
+                    color = EmeraldDark,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    "Berdasarkan aktivitas dan riwayat scan kamu hari ini.",
+                    color = TextLight,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp
+                )
+            }
         }
     }
 }

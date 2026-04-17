@@ -147,11 +147,6 @@ data class PillIdentifyResponse(
     @SerializedName("image_url") val imageUrl: String?
 )
 
-data class LabAnalysisResponse(
-    @SerializedName("success") val success: Boolean,
-    @SerializedName("data") val data: com.example.halalyticscompose.Data.Model.LabAnalysisData,
-    @SerializedName("image_url") val imageUrl: String?
-)
 
 data class HealthMetricResponse(
     @SerializedName("success") val success: Boolean,

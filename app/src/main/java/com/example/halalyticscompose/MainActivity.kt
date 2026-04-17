@@ -352,7 +352,8 @@ class MainActivity : ComponentActivity() {
                         MainLayout(navController = navController, showBottomNav = true) { paddingValues ->
                             HomeScreen(
                                 navController = navController,
-                                viewModel = mainViewModel
+                                viewModel = mainViewModel,
+                                paddingValues = paddingValues
                             )
                         }
                     }
@@ -361,7 +362,8 @@ class MainActivity : ComponentActivity() {
                     composable("search_hub") {
                         MainLayout(navController = navController, showBottomNav = true) { paddingValues ->
                             SearchHubScreen(
-                                navController = navController
+                                navController = navController,
+                                paddingValues = paddingValues
                             )
                         }
                     }
@@ -402,7 +404,8 @@ class MainActivity : ComponentActivity() {
                     composable("scan_hub") {
                         MainLayout(navController = navController, showBottomNav = true) { paddingValues ->
                             ScanHubScreen(
-                                navController = navController
+                                navController = navController,
+                                paddingValues = paddingValues
                             )
                         }
                     }
@@ -428,7 +431,11 @@ class MainActivity : ComponentActivity() {
                     // Profile Screen (BottomNav route)
                     composable("profile") {
                         MainLayout(navController = navController, showBottomNav = true) { paddingValues ->
-                            ProfileScreen(navController = navController, viewModel = mainViewModel)
+                            ProfileScreen(
+                                navController = navController,
+                                viewModel = mainViewModel,
+                                paddingValues = paddingValues
+                            )
                         }
                     }
 
@@ -565,7 +572,8 @@ class MainActivity : ComponentActivity() {
                     composable("history") {
                         MainLayout(navController = navController, showBottomNav = true) { paddingValues ->
                             ScanHistoryScreen(
-                                navController = navController
+                                navController = navController,
+                                paddingValues = paddingValues
                             )
                         }
                     }
@@ -574,7 +582,8 @@ class MainActivity : ComponentActivity() {
                     composable("scan_history") {
                         MainLayout(navController = navController, showBottomNav = true) { paddingValues ->
                             ScanHistoryScreen(
-                                navController = navController
+                                navController = navController,
+                                paddingValues = paddingValues
                             )
                         }
                     }
@@ -957,11 +966,6 @@ class MainActivity : ComponentActivity() {
                     }
 
 
-                    composable("lab_analysis") {
-                        MainLayout(navController = navController) { paddingValues ->
-                            LabAnalysisScreen(navController = navController)
-                        }
-                    }
 
                     composable("health_journey") {
                         MainLayout(navController = navController) { paddingValues ->

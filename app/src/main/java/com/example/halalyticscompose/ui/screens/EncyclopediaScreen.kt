@@ -152,7 +152,7 @@ fun EncyclopediaScreen(
                     val groupedItems = items.groupBy { it.alphabet.uppercase() }
                     
                     LazyColumn(
-                        contentPadding = PaddingValues(bottom = 32.dp),
+                        contentPadding = PaddingValues(bottom = 120.dp),
                         modifier = Modifier.fillMaxSize()
                     ) {
                         groupedItems.toSortedMap().forEach { (letter, itemList) ->

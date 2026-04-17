@@ -90,36 +90,8 @@ class HealthAiViewModel @Inject constructor(
         }
     }
 
-    // 3. Lab Analysis
-    private val _labAnalysisResult = MutableStateFlow<LabAnalysisData?>(null)
-    val labAnalysisResult: StateFlow<LabAnalysisData?> = _labAnalysisResult.asStateFlow()
 
-    fun analyzeLab(imageFile: File? = null, manualDataJson: String? = null, testDate: String, familyId: Int? = null) {
-        viewModelScope.launch {
-            try {
-                _isLoading.value = true
-                val imagePart = imageFile?.let {
-                    val requestFile = it.asRequestBody("image/*".toMediaTypeOrNull())
-                    MultipartBody.Part.createFormData("image", it.name, requestFile)
-                }
-                val manualDataPart = manualDataJson?.toRequestBody("application/json".toMediaTypeOrNull())
-                val testDatePart = testDate.toRequestBody("text/plain".toMediaTypeOrNull())
-
-                val token = getToken()
-                val familyIdPart = familyId?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
-                val response = apiService.analyzeLabResult(token ?: "", imagePart, manualDataPart, testDatePart, familyIdPart)
-                if (response.success) {
-                    _labAnalysisResult.value = response.data
-                }
-                _isLoading.value = false
-            } catch (e: Exception) {
-                _error.value = "Gagal menganalisis lab: ${e.message}"
-                _isLoading.value = false
-            }
-        }
-    }
-
-    // 4. Medication Reminders
+    // 3. Medication Reminders
     private val _reminders = MutableStateFlow<List<MedicationReminderItem>>(emptyList())
     val reminders: StateFlow<List<MedicationReminderItem>> = _reminders.asStateFlow()
 

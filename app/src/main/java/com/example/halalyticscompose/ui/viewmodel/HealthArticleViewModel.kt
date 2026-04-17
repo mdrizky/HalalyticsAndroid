@@ -155,7 +155,7 @@ class HealthArticleViewModel @Inject constructor(
                 val encodedQuery = query?.takeIf { it.isNotBlank() }?.let {
                     "&q=${URLEncoder.encode(it, "UTF-8")}"
                 } ?: ""
-                val url = "https://newsdata.io/api/1/news?apikey=$apiKey&country=id&language=id$encodedQuery"
+                val url = "https://newsdata.io/api/1/news?apikey=$apiKey&country=id&language=id&category=health$encodedQuery"
                 val request = Request.Builder()
                     .url(url)
                     .get()

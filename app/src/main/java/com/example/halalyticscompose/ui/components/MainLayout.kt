@@ -19,64 +19,23 @@ import androidx.navigation.NavController
  * Main layout wrapper that includes bottom navigation for main screens
  * with dynamic hide/show behavior
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainLayout(
     navController: NavController,
     showBottomNav: Boolean = false,
     content: @Composable (PaddingValues) -> Unit
 ) {
-    var isBottomNavVisible by remember { mutableStateOf(true) }
-
-    LaunchedEffect(showBottomNav) {
-        isBottomNavVisible = showBottomNav
-    }
-    
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Main content with dynamic bottom padding
-        val bottomPadding = if (showBottomNav && isBottomNavVisible) 80.dp else 0.dp
-        content(
-            PaddingValues(
-                bottom = bottomPadding
-            )
-        )
-        
-        // Bottom Navigation Bar with animation
-        if (showBottomNav) {
-            AnimatedVisibility(
-                visible = isBottomNavVisible,
-                enter = slideInVertically(
-                    initialOffsetY = { it },
-                    animationSpec = tween(300)
-                ),
-                exit = slideOutVertically(
-                    targetOffsetY = { it },
-                    animationSpec = tween(300)
-                ),
-                modifier = Modifier.align(Alignment.BottomCenter)
-            ) {
-                BottomNavBar(
-                    navController = navController,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .pointerInput(Unit) {
-                            detectDragGestures(
-                                onDragStart = { 
-                                    // Show bottom nav when user starts dragging up from bottom
-                                    isBottomNavVisible = true 
-                                },
-                                onDragEnd = { 
-                                    // Keep bottom nav visible after drag ends
-                                    isBottomNavVisible = true
-                                }
-                            ) { _, dragAmount ->
-                                // Show bottom nav when dragging up
-                                if (dragAmount.y < -50) {
-                                    isBottomNavVisible = true
-                                }
-                            }
-                        }
-                )
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            if (showBottomNav) {
+                BottomNavBar(navController = navController)
             }
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { paddingValues ->
+        // We pass the paddingValues to the content
+        content(paddingValues)
     }
 }

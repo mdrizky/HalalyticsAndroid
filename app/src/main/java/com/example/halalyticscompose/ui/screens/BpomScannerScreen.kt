@@ -57,15 +57,7 @@ import androidx.navigation.NavController
 import com.example.halalyticscompose.Data.Model.BpomProduct
 import com.example.halalyticscompose.ui.viewmodel.BpomViewModel
 
-private val NavyA = Color(0xFF1A237E)
-private val NavyB = Color(0xFF00695C)
-private val TextDark = Color(0xFF0A2540)
-private val TextMuted = Color(0xFF64748B)
-private val Safe = Color(0xFF00C896)
-private val Warn = Color(0xFFF5A623)
-private val Danger = Color(0xFFFF4757)
-
-@Composable
+// Removed unused hardcoded colors
 @OptIn(ExperimentalMaterial3Api::class)
 fun BpomScannerScreen(
     navController: NavController,
@@ -203,7 +195,7 @@ fun BpomScannerScreen(
 
             if (searchResults.isNotEmpty()) {
                 item {
-                    Text("Database Produk", color = TextDark, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("Database Produk", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
                 items(searchResults) { product ->
                     BpomProductListCard(product = product) {
@@ -225,8 +217,8 @@ fun BpomScannerScreen(
                             ) { Icon(Icons.Default.VerifiedUser, null, tint = MaterialTheme.colorScheme.onPrimary) }
                             Spacer(modifier = Modifier.size(10.dp))
                             Column {
-                                Text("Siap cek data BPOM", color = TextDark, fontWeight = FontWeight.Bold)
-                                Text("Masukkan nama produk atau nomor registrasi.", color = TextMuted, fontSize = 12.sp)
+                                Text("Siap cek data BPOM", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+                                Text("Masukkan nama produk atau nomor registrasi.", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 12.sp)
                             }
                         }
                     }
@@ -240,7 +232,7 @@ fun BpomScannerScreen(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
-                            Text("Data BPOM tidak ditemukan", color = TextDark, fontWeight = FontWeight.Bold)
+                            Text("Data BPOM tidak ditemukan", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 "Mode ini khusus verifikasi database resmi. Jika data tidak ada di database, hasil tidak ditampilkan.",
@@ -250,7 +242,7 @@ fun BpomScannerScreen(
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 "Gunakan nomor registrasi resmi BPOM (NA/MD/TR/SD) agar hasil valid.",
-                                color = TextMuted,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                 fontSize = 12.sp
                             )
                         }
@@ -264,18 +256,18 @@ fun BpomScannerScreen(
 @Composable
 private fun BpomProductDetailCard(product: BpomProduct) {
     val statusColor = when ((product.statusHalal ?: "").lowercase()) {
-        "halal" -> Safe
-        "haram" -> Danger
-        else -> Warn
+        "halal" -> Color(0xFF00C896) // Safe
+        "haram" -> Color(0xFFFF4757) // Danger
+        else -> Color(0xFFF5A623) // Warn
     }
 
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Hasil Verifikasi", color = NavyA, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
+                Text("Hasil Verifikasi", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
                 Spacer(modifier = Modifier.weight(1f))
                 Box(
                     modifier = Modifier
@@ -299,18 +291,18 @@ private fun BpomProductDetailCard(product: BpomProduct) {
 @Composable
 private fun DetailRow(label: String, value: String) {
     Row(verticalAlignment = Alignment.Top) {
-        Text(label, color = TextMuted, fontSize = 12.sp, modifier = Modifier.padding(top = 1.dp))
-        Text("  :  ", color = TextMuted, fontSize = 12.sp)
-        Text(value, color = TextDark, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+        Text(label, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 12.sp, modifier = Modifier.padding(top = 1.dp))
+        Text("  :  ", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 12.sp)
+        Text(value, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
     }
 }
 
 @Composable
 private fun BpomProductListCard(product: BpomProduct, onClick: () -> Unit) {
     val statusColor = when ((product.statusHalal ?: "").lowercase()) {
-        "halal" -> Safe
-        "haram" -> Danger
-        else -> Warn
+        "halal" -> Color(0xFF00C896) // Safe
+        "haram" -> Color(0xFFFF4757) // Danger
+        else -> Color(0xFFF5A623) // Warn
     }
 
     Card(
@@ -318,7 +310,7 @@ private fun BpomProductListCard(product: BpomProduct, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
@@ -328,19 +320,19 @@ private fun BpomProductListCard(product: BpomProduct, onClick: () -> Unit) {
                     .background(Color(0xFFE0F2F1)),
                 contentAlignment = Alignment.Center
             ) {
-                Text("BP", color = NavyA, fontWeight = FontWeight.ExtraBold)
+                Text("BP", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold)
             }
             Spacer(modifier = Modifier.size(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     product.namaProduk ?: "Produk",
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(product.nomorReg ?: "No. reg tidak tersedia", color = TextMuted, fontSize = 11.sp)
+                Text(product.nomorReg ?: "No. reg tidak tersedia", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 11.sp)
             }
             Box(
                 modifier = Modifier

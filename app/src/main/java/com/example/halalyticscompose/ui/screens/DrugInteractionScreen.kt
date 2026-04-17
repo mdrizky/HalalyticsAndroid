@@ -171,6 +171,7 @@ fun DrugInteractionScreen(
                     InteractionResultCard(result, interactionSource)
                 }
             }
+            Spacer(modifier = Modifier.height(120.dp))
         }
     }
 }

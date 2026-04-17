@@ -84,7 +84,8 @@ fun SearchHubScreen(
     navController: NavController,
     foodViewModel: ProductExternalViewModel = hiltViewModel(),
     medicineViewModel: MedicineViewModel = hiltViewModel(),
-    skincareViewModel: SkincareViewModel = hiltViewModel()
+    skincareViewModel: SkincareViewModel = hiltViewModel(),
+    paddingValues: PaddingValues = PaddingValues(0.dp)
 ) {
     val color = MaterialTheme.colorScheme
     val focusManager = LocalFocusManager.current
@@ -139,7 +140,7 @@ fun SearchHubScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
             OutlinedTextField(

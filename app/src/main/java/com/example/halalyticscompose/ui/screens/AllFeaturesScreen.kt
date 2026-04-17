@@ -47,7 +47,6 @@ fun AllFeaturesScreen(navController: NavController) {
     )
 
     val healthSuiteFeatures = listOf(
-        FeatureActionItem("Lab Scan", Icons.Default.Biotech, "lab_analysis", Color(0xFF388E3C), Color(0xFFE8F5E9)),
         FeatureActionItem("Medical Records", Icons.Default.MedicalServices, "medical_records", Color(0xFFE91E63), Color(0xFFFCE4EC)),
         FeatureActionItem("Medical Resume", Icons.Default.Description, "medical_resume", Color(0xFFF57C00), Color(0xFFFFF3E0)),
         FeatureActionItem("Pantauan Tubuh", Icons.Default.MonitorHeart, "health_monitor", Color(0xFFC2185B), Color(0xFFFCE4EC))

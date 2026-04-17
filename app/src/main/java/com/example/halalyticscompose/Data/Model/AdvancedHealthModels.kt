@@ -2,39 +2,6 @@ package com.example.halalyticscompose.Data.Model
 
 import com.google.gson.annotations.SerializedName
 
-// ----------------- Lab Result Models ----------------- //
-
-data class LabResultRequest(
-    @SerializedName("user_id") val userId: Int,
-    @SerializedName("lab_image_base64") val imageBase64: String,
-    @SerializedName("test_date") val testDate: String? = null,
-    @SerializedName("lab_type") val labType: String? = null
-)
-
-data class LabResultResponse(
-    val success: Boolean,
-    val data: LabResultData,
-    @SerializedName("health_status") val healthStatus: String
-)
-
-data class LabResultData(
-    val id: Int,
-    @SerializedName("image_url") val imageUrl: String?,
-    @SerializedName("test_date") val testDate: String,
-    @SerializedName("test_type") val testType: String,
-    @SerializedName("ai_analysis") val aiAnalysis: String,
-    val status: String,
-    val parameters: List<LabParameterData> = emptyList()
-)
-
-data class LabParameterData(
-    val id: Int,
-    @SerializedName("parameter_name") val parameterName: String,
-    @SerializedName("user_value") val userValue: Double,
-    @SerializedName("normal_range") val normalRange: String,
-    val status: String,
-    val explanation: String
-)
 
 // ----------------- Nutrition Scan Models ----------------- //
 

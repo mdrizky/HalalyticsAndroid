@@ -74,7 +74,7 @@ class BpomViewModel @Inject constructor(
                     bearer = "Bearer ${getToken()}",
                     query = query,
                     familyId = familyId,
-                    includeAi = null
+                    includeAi = false
                 )
                 if (response.success) {
                     _searchResults.value = response.data ?: emptyList()
@@ -103,7 +103,7 @@ class BpomViewModel @Inject constructor(
                     bearer = "Bearer ${getToken()}",
                     code = code,
                     familyId = familyId,
-                    includeAi = null
+                    includeAi = false
                 )
                 if (response.success && response.data != null) {
                     _selectedProduct.value = response.data

@@ -86,7 +86,8 @@ private val Danger = Color(0xFFFF4757)
 @OptIn(ExperimentalMaterial3Api::class)
 fun ScanHistoryScreen(
     navController: NavController,
-    viewModel: ScanHistoryViewModel = hiltViewModel()
+    viewModel: ScanHistoryViewModel = hiltViewModel(),
+    paddingValues: PaddingValues = PaddingValues(0.dp)
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val sessionManager = remember { SessionManager.getInstance(context) }
@@ -140,7 +141,7 @@ fun ScanHistoryScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(paddingValues),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {

@@ -615,21 +615,6 @@ interface ApiService {
         @Part("family_id") familyId: okhttp3.RequestBody? = null
     ): PillIdentifyResponse
 
-    // 3. Lab Analysis
-    @Multipart
-    @POST("ai/lab-analysis")
-    suspend fun analyzeLabResult(
-        @Header("Authorization") bearer: String,
-        @Part image: okhttp3.MultipartBody.Part? = null,
-        @Part("manual_data") manualData: okhttp3.RequestBody? = null, // JSON
-        @Part("test_date") testDate: okhttp3.RequestBody,
-        @Part("family_id") familyId: okhttp3.RequestBody? = null
-    ): LabAnalysisResponse
-
-    @GET("ai/lab-history")
-    suspend fun getLabHistory(
-        @Header("Authorization") bearer: String
-    ): LabAnalysisResponse // Modified for history in real impl but following pattern
 
     // 4. Medication Reminders (Enhanced)
     @POST("ai/reminders")
@@ -779,8 +764,6 @@ interface ApiService {
     // ADVANCED AI HEALTH SUITE EXPERIMENTAL
     // ==========================================
 
-    @POST("lab-results/upload")
-    suspend fun uploadLabResult(@Body request: com.example.halalyticscompose.Data.Model.LabResultRequest): Response<com.example.halalyticscompose.Data.Model.LabResultResponse>
 
     @POST("nutrition-scans")
     suspend fun scanNutrition(@Body request: com.example.halalyticscompose.Data.Model.NutritionScanRequest): Response<com.example.halalyticscompose.Data.Model.NutritionScanResponse>
