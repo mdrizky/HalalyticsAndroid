@@ -30,17 +30,7 @@ import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 import com.example.halalyticscompose.utils.BiometricAuthHelper
 import com.example.halalyticscompose.utils.CrashReporter
 
-// ═══════════════════════════════════════════════════════════════════
-// EMERALD FOREST COLORS
-// ═══════════════════════════════════════════════════════════════════
-private val EmeraldDark = Color(0xFF004D40)
-private val EmeraldMedium = Color(0xFF00695C)
-private val EmeraldLight = Color(0xFF26A69A)
-private val SoftSage = Color(0xFFE0F2F1)
-private val BgLight = Color(0xFFF4F9F8)
-private val CardBg = Color(0xFFFFFFFF)
-private val TextDark = Color(0xFF212121)
-private val TextMedium = Color(0xFF757575)
+// Settings Screen Implementation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,23 +53,23 @@ fun SettingsScreen(
 
     CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
         Scaffold(
-            containerColor = BgLight,
+            containerColor = MaterialTheme.colorScheme.background,
             topBar = {
                 TopAppBar(
                     title = {
                         Text(
                             stringResource(R.string.settings_title),
                             fontWeight = FontWeight.Bold,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 18.sp
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = { navController.navigateUp() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back), tint = Color.White)
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back), tint = MaterialTheme.colorScheme.onPrimary)
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = EmeraldDark)
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
                 )
             }
         ) { paddingValues ->
@@ -106,10 +96,10 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(SoftSage),
+                                    .background(MaterialTheme.colorScheme.surfaceVariant),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.DarkMode, contentDescription = null, tint = EmeraldDark, modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.DarkMode, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(stringResource(R.string.dark_mode), fontWeight = FontWeight.Medium)
@@ -150,10 +140,10 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(Color(0xFFFFF3E0)),
+                                    .background(MaterialTheme.colorScheme.secondaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.Notifications, contentDescription = null, tint = Color(0xFFF57C00), modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.Notifications, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(20.dp))
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(stringResource(R.string.notifications), fontWeight = FontWeight.Medium)
@@ -166,23 +156,23 @@ fun SettingsScreen(
                 }
 
                 // ── Security Section ──
-                SettingsSectionTitle("Security")
+                SettingsSectionTitle(stringResource(R.string.section_security))
                 SettingsCard {
                     Column(modifier = Modifier.padding(8.dp)) {
                         SettingsSwitchRow(
-                            title = "Privacy Mode (anti screenshot)",
+                            title = stringResource(R.string.settings_privacy_mode),
                             icon = Icons.Default.Shield,
-                            iconBg = Color(0xFFF3E5F5),
-                            iconTint = Color(0xFF6A1B9A),
+                            iconBg = MaterialTheme.colorScheme.tertiaryContainer,
+                            iconTint = MaterialTheme.colorScheme.onTertiaryContainer,
                             checked = privacyModeEnabled,
                             onCheckedChange = viewModel::setPrivacyModeEnabled
                         )
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp), thickness = 0.5.dp)
                         SettingsSwitchRow(
-                            title = "Biometric Lock (medical screens)",
+                            title = stringResource(R.string.settings_biometric_lock),
                             icon = Icons.Default.Fingerprint,
-                            iconBg = SoftSage,
-                            iconTint = EmeraldDark,
+                            iconBg = MaterialTheme.colorScheme.primaryContainer,
+                            iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
                             checked = biometricLockEnabled,
                             onCheckedChange = { enabled ->
                                 if (!enabled) {
@@ -191,20 +181,20 @@ fun SettingsScreen(
                                 } else {
                                     val activity = context as? FragmentActivity
                                     if (activity == null) {
-                                        biometricNotice = "Biometrik tidak tersedia di perangkat ini."
+                                        biometricNotice = context.getString(R.string.settings_biometric_unavailable)
                                         viewModel.setBiometricLockEnabled(false)
                                     } else if (!BiometricAuthHelper.canAuthenticate(activity)) {
-                                        biometricNotice = "Biometrik belum aktif. Aktifkan sidik jari/face unlock di pengaturan perangkat."
+                                        biometricNotice = context.getString(R.string.settings_biometric_not_active)
                                         viewModel.setBiometricLockEnabled(false)
                                     } else {
                                         BiometricAuthHelper.authenticate(
                                             activity = activity,
                                             executor = ContextCompat.getMainExecutor(activity),
-                                            title = "Aktifkan Biometric Lock",
-                                            subtitle = "Lindungi halaman medis sensitif",
-                                            description = "Konfirmasi identitas untuk mengaktifkan kunci biometrik",
+                                            title = context.getString(R.string.settings_biometric_title),
+                                            subtitle = context.getString(R.string.settings_biometric_subtitle),
+                                            description = context.getString(R.string.settings_biometric_desc),
                                             onSuccess = {
-                                                biometricNotice = "Biometric lock aktif."
+                                                biometricNotice = context.getString(R.string.settings_biometric_success)
                                                 viewModel.setBiometricLockEnabled(true)
                                             },
                                             onError = { err ->
@@ -221,15 +211,15 @@ fun SettingsScreen(
                                 text = it,
                                 modifier = Modifier.padding(horizontal = 12.dp),
                                 fontSize = 12.sp,
-                                color = TextMedium
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp), thickness = 0.5.dp)
                         SettingsSwitchRow(
-                            title = "Auto Logout",
+                            title = stringResource(R.string.settings_auto_logout),
                             icon = Icons.Default.Timer,
-                            iconBg = Color(0xFFFFEBEE),
-                            iconTint = Color(0xFFD32F2F),
+                            iconBg = MaterialTheme.colorScheme.errorContainer,
+                            iconTint = MaterialTheme.colorScheme.onErrorContainer,
                             checked = autoLogoutEnabled,
                             onCheckedChange = viewModel::setAutoLogoutEnabled
                         )
@@ -237,10 +227,10 @@ fun SettingsScreen(
                         if (autoLogoutEnabled) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Timeout (minutes)",
+                                text = stringResource(R.string.settings_timeout_minutes),
                                 modifier = Modifier.padding(horizontal = 12.dp),
                                 fontSize = 12.sp,
-                                color = TextMedium
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Row(
@@ -278,50 +268,50 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(SoftSage),
+                                    .background(MaterialTheme.colorScheme.surfaceVariant),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.RemoveRedEye, contentDescription = null, tint = EmeraldDark, modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.RemoveRedEye, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(stringResource(R.string.watchlist), fontWeight = FontWeight.Medium)
                         }
-                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = TextMedium)
+                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
 
                 // ── About Section ──
-                SettingsSectionTitle("About Halalytics")
+                SettingsSectionTitle(stringResource(R.string.section_about))
                 SettingsCard {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Halalytics v2.5.0 Premium", fontWeight = FontWeight.Bold, color = EmeraldDark)
+                        Text(stringResource(R.string.settings_app_version), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text("Advanced AI-Powered Halal & Health Analyzer for a better lifestyle.", fontSize = 14.sp, color = TextMedium)
+                        Text(stringResource(R.string.settings_app_desc), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("© 2026 DeepMind Agentics Team", fontSize = 12.sp, color = Color.Gray)
+                        Text(stringResource(R.string.settings_copyright), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                     }
                 }
 
                 // ── Crash Diagnostics ──
-                SettingsSectionTitle("Crash Diagnostics")
+                SettingsSectionTitle(stringResource(R.string.section_crash_diagnostics))
                 SettingsCard {
                     Column(modifier = Modifier.padding(16.dp)) {
                         if (crashInfo.isNullOrBlank()) {
                             Text(
-                                text = "No recorded crash.",
-                                color = TextMedium
+                                text = stringResource(R.string.settings_no_crash),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         } else {
                             Text(
-                                text = "Last crash captured on device:",
-                                color = TextMedium,
+                                text = stringResource(R.string.settings_last_crash),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = crashInfo!!.take(650),
                                 fontSize = 12.sp,
-                                color = TextDark,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 maxLines = 12
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -331,7 +321,7 @@ fun SettingsScreen(
                                     crashInfo = null
                                 }
                             ) {
-                                Text("Clear Crash Log")
+                                Text(stringResource(R.string.settings_clear_crash))
                             }
                         }
                     }
@@ -351,8 +341,8 @@ fun SettingsScreen(
 private fun SettingsSwitchRow(
     title: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    iconBg: Color = SoftSage,
-    iconTint: Color = EmeraldDark,
+    iconBg: Color = MaterialTheme.colorScheme.primaryContainer,
+    iconTint: Color = MaterialTheme.colorScheme.onPrimaryContainer,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
@@ -389,7 +379,7 @@ fun SettingsSectionTitle(title: String) {
         text = title.uppercase(),
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
-        color = EmeraldDark,
+        color = MaterialTheme.colorScheme.primary,
         letterSpacing = 0.5.sp,
         modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
     )
@@ -400,7 +390,7 @@ fun SettingsCard(content: @Composable () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         content()
@@ -432,7 +422,7 @@ fun LanguageOption(
         RadioButton(
             selected = code == currentCode,
             onClick = { onSelect() },
-            colors = RadioButtonDefaults.colors(selectedColor = EmeraldDark)
+            colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary)
         )
     }
 }

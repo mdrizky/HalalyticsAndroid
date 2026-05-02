@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.halalyticscompose.Data.Model.*
+import com.example.halalyticscompose.data.model.*
 import com.example.halalyticscompose.ui.theme.*
 import com.example.halalyticscompose.ui.viewmodel.FoodScanViewModel
 import com.example.halalyticscompose.utils.SessionManager
@@ -45,7 +45,7 @@ fun FoodAnalysisScreen(
     
     // Set auth token and load analysis
     LaunchedEffect(foodId) {
-        viewModel.setAuthToken(sessionManager.getAuthToken() ?: "")
+        // Token is managed internally by the ViewModel
         viewModel.analyzeFood(foodId, null)
     }
     

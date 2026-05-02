@@ -2,9 +2,9 @@ package com.example.halalyticscompose.domain.usecase
 
 import android.net.Uri
 import com.example.halalyticscompose.BuildConfig
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.Model.ProductImage
-import com.example.halalyticscompose.Data.Model.ProductImageResult
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.ProductImage
+import com.example.halalyticscompose.data.model.ProductImageResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -47,9 +47,7 @@ class GetProductImagesUseCase @Inject constructor(
 
         // Fallback: cari dari Unsplash
         try {
-            // WARNING: In a real production app, the Access Key should not be hardcoded in the client app.
-            // Using a dummy key for now if BuildConfig doesn't have it, but ideally it should be fetched from backend.
-            val accessKey = "YOUR_UNSPLASH_ACCESS_KEY" // TODO: Replace with secure retrieval or BuildConfig
+            val accessKey = BuildConfig.UNSPLASH_API_KEY
             val unsplashResponse = apiService.searchUnsplashPhotos(
                 query = buildQuery(productName),
                 clientId = "Client-ID $accessKey"

@@ -10,8 +10,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import android.util.Log
 
-class EncyclopediaViewModel : ViewModel() {
-    private val apiService = com.example.halalyticscompose.Data.Network.ApiConfig.apiService // We need to ensure IngredientApiService is accessible
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class EncyclopediaViewModel @Inject constructor(
+    private val ingredientApiService: IngredientApiService
+) : ViewModel() {
 
     private val _ingredients = MutableStateFlow<List<Ingredient>>(emptyList())
     val ingredients: StateFlow<List<Ingredient>> = _ingredients.asStateFlow()
@@ -23,13 +28,6 @@ class EncyclopediaViewModel : ViewModel() {
     val error: StateFlow<String?> = _error.asStateFlow()
 
     private var searchJob: kotlinx.coroutines.Job? = null
-
-    // For simplicity, we'll try to use the same ApiConfig since it has a baseUrl.
-    // However, EncyclopediaController is in the same Laravel backend.
-    // We might need to cast or provide specific service.
-    private val ingredientApiService: IngredientApiService by lazy {
-        com.example.halalyticscompose.Data.Network.ApiConfig.getIngredientApiService()
-    }
 
     init {
         fetchIngredients()

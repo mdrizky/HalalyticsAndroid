@@ -26,19 +26,10 @@ import androidx.navigation.NavController
 import com.example.halalyticscompose.ui.viewmodel.MedicineViewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
+import com.example.halalyticscompose.R
 
-// ═══════════════════════════════════════════════════════════════════
-// COLOR CONSTANTS — Emerald Forest Premium
-// ═══════════════════════════════════════════════════════════════════
-private val EmeraldDark = Color(0xFF004D40)
-private val EmeraldMedium = Color(0xFF00695C)
-private val EmeraldLight = Color(0xFF26A69A)
-private val SageBg = Color(0xFFF4F9F8)
-private val SoftSage = Color(0xFFE0F2F1)
-private val CardBg = Color(0xFFFFFFFF)
-private val TextDark = Color(0xFF212121)
-private val TextMedium = Color(0xFF757575)
-private val TextLight = Color(0xFF9E9E9E)
+// Color Constants moved to theme-aware components
 
 @Composable
 fun MedicineRemindersScreen(
@@ -52,7 +43,7 @@ fun MedicineRemindersScreen(
     val errorMessage by viewModel.errorMessage.collectAsState()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var reminderToDelete by remember { mutableStateOf<com.example.halalyticscompose.Data.Model.MedicationReminderItem?>(null) }
+    var reminderToDelete by remember { mutableStateOf<com.example.halalyticscompose.data.model.MedicationReminderItem?>(null) }
     var showSnoozeToast by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -65,14 +56,14 @@ fun MedicineRemindersScreen(
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = {
-                Text("Hapus Pengingat", fontWeight = FontWeight.Bold, color = TextDark)
+                Text(stringResource(R.string.med_reminder_delete_title), fontWeight = FontWeight.Bold)
             },
             text = {
                 val title = reminderToDelete?.medicineName
                     ?.takeIf { it.isNotBlank() }
                     ?: reminderToDelete?.drug?.name
-                    ?: "obat ini"
-                Text("Apakah Anda yakin ingin menghapus pengingat untuk $title?")
+                    ?: stringResource(R.string.feature_cek_obat)
+                Text(stringResource(R.string.med_reminder_delete_desc, title))
             },
             confirmButton = {
                 TextButton(
@@ -82,12 +73,12 @@ fun MedicineRemindersScreen(
                         reminderToDelete = null
                     }
                 ) {
-                    Text("Hapus", color = Color(0xFFD32F2F), fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Batal", color = EmeraldDark)
+                    Text(stringResource(R.string.common_cancel), color = MaterialTheme.colorScheme.primary)
                 }
             },
             shape = RoundedCornerShape(20.dp)
@@ -102,28 +93,30 @@ fun MedicineRemindersScreen(
         }
     }
 
-    Scaffold(containerColor = SageBg) { padding ->
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // ── EMERALD GRADIENT HEADER ──
             item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
                             Brush.linearGradient(
-                                listOf(EmeraldDark, EmeraldMedium, EmeraldLight)
+                                listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                                    MaterialTheme.colorScheme.secondary
+                                )
                             )
                         )
                         .padding(horizontal = 20.dp)
                         .padding(top = 16.dp, bottom = 28.dp)
                 ) {
                     Column {
-                        // Back + Title Row
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -139,12 +132,12 @@ fun MedicineRemindersScreen(
                             ) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ArrowBack, null,
-                                    tint = Color.White, modifier = Modifier.size(18.dp)
+                                    tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp)
                                 )
                             }
                             Text(
-                                "Pengingat Obat",
-                                color = Color.White,
+                                stringResource(R.string.med_reminder_title),
+                                color = MaterialTheme.colorScheme.onPrimary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp
                             )
@@ -152,25 +145,24 @@ fun MedicineRemindersScreen(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.15f))
+                                    .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.15f))
                                     .clickable { navController.navigate("add_medicine_reminder") },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Add, null,
-                                    tint = Color.White, modifier = Modifier.size(18.dp)
+                                    tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp)
                                 )
                             }
                         }
 
                         Spacer(modifier = Modifier.height(18.dp))
 
-                        // Stats Row
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(14.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color.White.copy(alpha = 0.18f)
+                                containerColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.18f)
                             ),
                             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                         ) {
@@ -182,19 +174,14 @@ fun MedicineRemindersScreen(
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
-                                        "💊",
-                                        fontSize = 22.sp
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
                                         "${reminders.size}",
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary,
                                         fontWeight = FontWeight.ExtraBold,
                                         fontSize = 18.sp
                                     )
                                     Text(
-                                        "Aktif",
-                                        color = Color.White.copy(alpha = 0.8f),
+                                        stringResource(R.string.med_reminder_active),
+                                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
                                         fontSize = 11.sp
                                     )
                                 }
@@ -202,7 +189,7 @@ fun MedicineRemindersScreen(
                                     modifier = Modifier
                                         .width(1.dp)
                                         .height(40.dp)
-                                        .background(Color.White.copy(alpha = 0.3f))
+                                        .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f))
                                 )
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
@@ -212,13 +199,13 @@ fun MedicineRemindersScreen(
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         "${nextDoses.size}",
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary,
                                         fontWeight = FontWeight.ExtraBold,
                                         fontSize = 18.sp
                                     )
                                     Text(
-                                        "Jadwal Berikutnya",
-                                        color = Color.White.copy(alpha = 0.8f),
+                                        stringResource(R.string.med_reminder_next_schedule),
+                                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
                                         fontSize = 11.sp
                                     )
                                 }
@@ -228,14 +215,13 @@ fun MedicineRemindersScreen(
                 }
             }
 
-            // ── NEXT DOSES SECTION ──
             if (nextDoses.isNotEmpty()) {
                 item {
                     Text(
-                        "Jadwal Berikutnya",
+                        stringResource(R.string.med_reminder_next_schedule),
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
-                        color = TextDark,
+                        color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
@@ -244,14 +230,13 @@ fun MedicineRemindersScreen(
                 }
             }
 
-            // ── ERROR MESSAGE ──
             errorMessage?.let { error ->
                 item {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
                         shape = RoundedCornerShape(14.dp)
                     ) {
                         Row(
@@ -262,19 +247,19 @@ fun MedicineRemindersScreen(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(Color(0xFFD32F2F).copy(alpha = 0.1f)),
+                                    .background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Error, null,
-                                    tint = Color(0xFFD32F2F),
+                                    tint = MaterialTheme.colorScheme.error,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = error,
-                                color = Color(0xFFD32F2F),
+                                color = MaterialTheme.colorScheme.error,
                                 fontSize = 13.sp
                             )
                         }
@@ -282,7 +267,6 @@ fun MedicineRemindersScreen(
                 }
             }
 
-            // ── LOADING STATE ──
             if (isLoading) {
                 item {
                     Box(
@@ -291,11 +275,10 @@ fun MedicineRemindersScreen(
                             .padding(vertical = 48.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = EmeraldDark)
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
-            // ── EMPTY STATE ──
             else if (reminders.isEmpty()) {
                 item {
                     Card(
@@ -303,7 +286,7 @@ fun MedicineRemindersScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = CardBg),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
@@ -314,23 +297,23 @@ fun MedicineRemindersScreen(
                                 modifier = Modifier
                                     .size(72.dp)
                                     .clip(CircleShape)
-                                    .background(SoftSage),
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text("💊", fontSize = 32.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                "Belum Ada Pengingat",
+                                stringResource(R.string.med_reminder_no_reminders),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = TextDark
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                "Buat pengingat obat pertama Anda untuk\ntidak lupa minum obat tepat waktu",
+                                stringResource(R.string.med_reminder_no_reminders_desc),
                                 fontSize = 13.sp,
-                                color = TextMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
                                 lineHeight = 18.sp
                             )
@@ -338,7 +321,7 @@ fun MedicineRemindersScreen(
                             Button(
                                 onClick = { navController.navigate("add_medicine_reminder") },
                                 shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = EmeraldDark),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                                 modifier = Modifier.height(46.dp)
                             ) {
                                 Icon(
@@ -347,7 +330,7 @@ fun MedicineRemindersScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    "Buat Pengingat Baru",
+                                    stringResource(R.string.med_reminder_create_new),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp
                                 )
@@ -356,7 +339,6 @@ fun MedicineRemindersScreen(
                     }
                 }
             }
-            // ── REMINDERS LIST ──
             else {
                 item {
                     Row(
@@ -367,20 +349,20 @@ fun MedicineRemindersScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "Pengingat Aktif (${reminders.size})",
+                            stringResource(R.string.med_reminder_active) + " (${reminders.size})",
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
-                            color = TextDark
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(20.dp))
-                                .background(SoftSage)
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                "Hari Ini",
-                                color = EmeraldDark,
+                                stringResource(R.string.med_reminder_today),
+                                color = MaterialTheme.colorScheme.primary,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -393,7 +375,7 @@ fun MedicineRemindersScreen(
                         reminder = reminder,
                         onMarkTaken = { viewModel.markAsTaken(reminder.id) },
                         onEdit = {
-                            navController.navigate("health_assistant")
+                            navController.navigate("add_medicine_reminder")
                         },
                         onDelete = {
                             reminderToDelete = reminder
@@ -406,14 +388,13 @@ fun MedicineRemindersScreen(
                 }
             }
 
-            // ── SNOOZE TOAST ──
             if (showSnoozeToast) {
                 item {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        colors = CardDefaults.cardColors(containerColor = SoftSage),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(
@@ -422,13 +403,13 @@ fun MedicineRemindersScreen(
                         ) {
                             Icon(
                                 Icons.Default.Snooze, null,
-                                tint = EmeraldDark,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
-                                "Pengingat ditunda 15 menit",
-                                color = EmeraldDark,
+                                stringResource(R.string.med_reminder_snooze_toast),
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 13.sp
                             )
@@ -442,18 +423,14 @@ fun MedicineRemindersScreen(
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// NEXT DOSE CARD — Emerald Forest
-// ═══════════════════════════════════════════════════════════════════
-
 @Composable
-fun NextDoseCard(dose: com.example.halalyticscompose.Data.Model.NextDose) {
+fun NextDoseCard(dose: com.example.halalyticscompose.data.model.NextDose) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
@@ -466,12 +443,12 @@ fun NextDoseCard(dose: com.example.halalyticscompose.Data.Model.NextDose) {
                 modifier = Modifier
                     .size(44.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(EmeraldDark.copy(alpha = 0.08f)),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.Alarm, null,
-                    tint = EmeraldDark,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -481,15 +458,15 @@ fun NextDoseCard(dose: com.example.halalyticscompose.Data.Model.NextDose) {
                     dose.medicine_name,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    "Selanjutnya: ${dose.next_dose_time}",
+                    stringResource(R.string.med_reminder_next_dose) + " ${dose.next_dose_time}",
                     fontSize = 12.sp,
-                    color = EmeraldMedium,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium
                 )
                 val info = dose.dose_info
@@ -497,7 +474,7 @@ fun NextDoseCard(dose: com.example.halalyticscompose.Data.Model.NextDose) {
                     Text(
                         info,
                         fontSize = 11.sp,
-                        color = TextLight,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -506,7 +483,7 @@ fun NextDoseCard(dose: com.example.halalyticscompose.Data.Model.NextDose) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(SoftSage)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
                     .padding(horizontal = 10.dp, vertical = 6.dp)
             ) {
                 Text(
@@ -518,13 +495,9 @@ fun NextDoseCard(dose: com.example.halalyticscompose.Data.Model.NextDose) {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// REMINDER CARD — Emerald Forest Premium
-// ═══════════════════════════════════════════════════════════════════
-
 @Composable
 fun ReminderCard(
-    reminder: com.example.halalyticscompose.Data.Model.MedicationReminderItem,
+    reminder: com.example.halalyticscompose.data.model.MedicationReminderItem,
     onMarkTaken: () -> Unit,
     onEdit: () -> Unit = {},
     onDelete: () -> Unit = {},
@@ -537,11 +510,10 @@ fun ReminderCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Header Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -555,7 +527,7 @@ fun ReminderCard(
                         modifier = Modifier
                             .size(44.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(SoftSage),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text("💊", fontSize = 20.sp)
@@ -570,16 +542,16 @@ fun ReminderCard(
                             displayName,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = TextDark,
+                            color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
                         val symptoms = reminder.symptoms
                         if (symptoms != null) {
                             Text(
-                                "Untuk: $symptoms",
+                                stringResource(R.string.med_reminder_for) + " $symptoms",
                                 fontSize = 12.sp,
-                                color = TextMedium
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -589,7 +561,7 @@ fun ReminderCard(
                     IconButton(onClick = { showOptionsMenu = true }) {
                         Icon(
                             Icons.Default.MoreVert, null,
-                            tint = TextLight
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     DropdownMenu(
@@ -597,9 +569,9 @@ fun ReminderCard(
                         onDismissRequest = { showOptionsMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Tandai Sudah Minum") },
+                            text = { Text(stringResource(R.string.med_reminder_mark_taken)) },
                             leadingIcon = {
-                                Icon(Icons.Default.Check, null, tint = EmeraldDark)
+                                Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary)
                             },
                             onClick = {
                                 onMarkTaken()
@@ -607,9 +579,9 @@ fun ReminderCard(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Edit") },
+                            text = { Text(stringResource(R.string.common_edit)) },
                             leadingIcon = {
-                                Icon(Icons.Default.Edit, null, tint = EmeraldMedium)
+                                Icon(Icons.Default.Edit, null, tint = MaterialTheme.colorScheme.secondary)
                             },
                             onClick = {
                                 onEdit()
@@ -617,11 +589,11 @@ fun ReminderCard(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Hapus", color = Color(0xFFD32F2F)) },
+                            text = { Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error) },
                             leadingIcon = {
                                 Icon(
                                     Icons.Default.Delete, null,
-                                    tint = Color(0xFFD32F2F)
+                                    tint = MaterialTheme.colorScheme.error
                                 )
                             },
                             onClick = {
@@ -635,51 +607,49 @@ fun ReminderCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Info chips
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = SoftSage
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                 ) {
                     Text(
-                        "${reminder.frequencyPerDay}x/hari",
+                        stringResource(R.string.med_reminder_times_per_day, reminder.frequencyPerDay),
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = EmeraldDark
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFFFFF8E1)
+                    color = MaterialTheme.colorScheme.tertiaryContainer
                 ) {
                     Text(
                         reminder.scheduleTimes?.joinToString(", ") ?: "-",
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFFF57C00)
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Date info
             Row {
                 Text(
-                    "Mulai: ${reminder.startDate}",
+                    stringResource(R.string.med_reminder_started) + " ${reminder.startDate}",
                     fontSize = 11.sp,
-                    color = TextLight
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
                 val endDate = reminder.endDate
                 if (endDate != null) {
                     Text(
-                        " · Sampai: $endDate",
+                        " · " + stringResource(R.string.med_reminder_until) + " $endDate",
                         fontSize = 11.sp,
-                        color = TextLight
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
             }
@@ -690,34 +660,32 @@ fun ReminderCard(
                 Text(
                     "📝 $notes",
                     fontSize = 11.sp,
-                    color = EmeraldMedium,
+                    color = MaterialTheme.colorScheme.secondary,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
 
-            // Taken Times
             if (!reminder.takenTimes.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "Riwayat Minum:",
+                    stringResource(R.string.med_reminder_history),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = EmeraldDark
+                    color = MaterialTheme.colorScheme.primary
                 )
                 val times = reminder.takenTimes.orEmpty().takeLast(3)
                 times.forEach { time ->
                     Text(
                         "  ✓ $time",
                         fontSize = 10.sp,
-                        color = TextLight
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Action Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -728,7 +696,7 @@ fun ReminderCard(
                         .weight(1f)
                         .height(42.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldDark)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Icon(
                         Icons.Default.Check, null,
@@ -736,7 +704,7 @@ fun ReminderCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        "Sudah Minum",
+                        stringResource(R.string.med_reminder_mark_taken),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -747,19 +715,19 @@ fun ReminderCard(
                         .weight(1f)
                         .height(42.dp),
                     shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, EmeraldDark.copy(alpha = 0.3f))
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
                 ) {
                     Icon(
                         Icons.Default.Snooze, null,
-                        tint = EmeraldDark,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        "Tunda",
+                        stringResource(R.string.med_reminder_snooze),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = EmeraldDark
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }

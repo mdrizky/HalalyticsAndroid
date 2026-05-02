@@ -1,8 +1,8 @@
 package com.example.halalyticscompose.repository
 
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.Model.Recipe
-import com.example.halalyticscompose.Data.Model.RecipeSubstitutionResponse
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.Recipe
+import com.example.halalyticscompose.data.model.RecipeSubstitutionResponse
 import javax.inject.Inject
 import javax.inject.Singleton
 

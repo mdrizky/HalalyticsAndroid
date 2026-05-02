@@ -2,8 +2,8 @@ package com.example.halalyticscompose.repository
 
 import android.util.Log
 import com.example.halalyticscompose.BuildConfig
-import com.example.halalyticscompose.Data.Model.SymptomsAnalysis
-import com.example.halalyticscompose.Data.Model.HalalCheck
+import com.example.halalyticscompose.data.model.SymptomsAnalysis
+import com.example.halalyticscompose.data.model.HalalCheck
 import com.example.halalyticscompose.utils.MegaPromptBuilder
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -54,16 +54,37 @@ class MedicalRepository @Inject constructor() {
      * Analyze symptoms using direct AI call.
      * Tries Gemini first (key already configured), then Anthropic if available.
      */
-    suspend fun analyzeSymptomsDirect(symptoms: String): SymptomsAnalysis {
+    suspend fun analyzeSymptomsDirect(
+        symptoms: String,
+        age: Int? = null,
+        weight: Float? = null,
+        height: Float? = null,
+        gender: String? = null,
+        allergies: String? = null,
+        medicalHistory: String? = null,
+        isGlutenFree: Boolean = false,
+        hasNutAllergy: Boolean = false
+    ): SymptomsAnalysis {
         return withContext(Dispatchers.IO) {
             val geminiKey = BuildConfig.GEMINI_API_KEY
             val anthropicKey = BuildConfig.ANTHROPIC_API_KEY
+
+            val profileContext = mapOf(
+                "age" to age,
+                "weight" to weight,
+                "height" to height,
+                "gender" to gender,
+                "allergies" to allergies,
+                "medicalHistory" to medicalHistory,
+                "isGlutenFree" to isGlutenFree,
+                "hasNutAllergy" to hasNutAllergy
+            )
 
             // Try Gemini first (key is already configured in the project)
             if (geminiKey.isNotBlank()) {
                 try {
                     Log.d(TAG, "Attempting Gemini analysis for: ${symptoms.take(50)}...")
-                    return@withContext analyzeWithGemini(symptoms, geminiKey)
+                    return@withContext analyzeWithGemini(symptoms, geminiKey, profileContext)
                 } catch (e: Exception) {
                     Log.e(TAG, "Gemini failed: ${e.message}", e)
                     // Fall through to Anthropic
@@ -74,7 +95,7 @@ class MedicalRepository @Inject constructor() {
             if (anthropicKey.isNotBlank()) {
                 try {
                     Log.d(TAG, "Attempting Anthropic analysis for: ${symptoms.take(50)}...")
-                    return@withContext analyzeWithAnthropic(symptoms, anthropicKey)
+                    return@withContext analyzeWithAnthropic(symptoms, anthropicKey, profileContext)
                 } catch (e: Exception) {
                     Log.e(TAG, "Anthropic failed: ${e.message}", e)
                     throw e
@@ -87,9 +108,23 @@ class MedicalRepository @Inject constructor() {
 
     // ─── Gemini Implementation ─────────────────────────────────────
 
-    private fun analyzeWithGemini(symptoms: String, apiKey: String): SymptomsAnalysis {
+    private fun analyzeWithGemini(
+        symptoms: String,
+        apiKey: String,
+        profile: Map<String, Any?>
+    ): SymptomsAnalysis {
         val systemPrompt = MegaPromptBuilder.buildSystemPrompt()
-        val userMessage = MegaPromptBuilder.buildUserMessage(symptoms)
+        val userMessage = MegaPromptBuilder.buildPersonalizedUserMessage(
+            symptoms = symptoms,
+            age = profile["age"] as? Int,
+            weight = profile["weight"] as? Float,
+            height = profile["height"] as? Float,
+            gender = profile["gender"] as? String,
+            allergies = profile["allergies"] as? String,
+            medicalHistory = profile["medicalHistory"] as? String,
+            isGlutenFree = profile["isGlutenFree"] as? Boolean ?: false,
+            hasNutAllergy = profile["hasNutAllergy"] as? Boolean ?: false
+        )
 
         val requestBody = JSONObject().apply {
             put("system_instruction", JSONObject().apply {
@@ -140,9 +175,23 @@ class MedicalRepository @Inject constructor() {
 
     // ─── Anthropic Implementation ──────────────────────────────────
 
-    private fun analyzeWithAnthropic(symptoms: String, apiKey: String): SymptomsAnalysis {
+    private fun analyzeWithAnthropic(
+        symptoms: String,
+        apiKey: String,
+        profile: Map<String, Any?>
+    ): SymptomsAnalysis {
         val systemPrompt = MegaPromptBuilder.buildSystemPrompt()
-        val userMessage = MegaPromptBuilder.buildUserMessage(symptoms)
+        val userMessage = MegaPromptBuilder.buildPersonalizedUserMessage(
+            symptoms = symptoms,
+            age = profile["age"] as? Int,
+            weight = profile["weight"] as? Float,
+            height = profile["height"] as? Float,
+            gender = profile["gender"] as? String,
+            allergies = profile["allergies"] as? String,
+            medicalHistory = profile["medicalHistory"] as? String,
+            isGlutenFree = profile["isGlutenFree"] as? Boolean ?: false,
+            hasNutAllergy = profile["hasNutAllergy"] as? Boolean ?: false
+        )
 
         val requestBody = JSONObject().apply {
             put("model", "claude-3-5-haiku-20241022")
@@ -253,7 +302,8 @@ class MedicalRepository @Inject constructor() {
                         .joinToString(" - ")
                 }.ifEmpty { buildMedicineNameList(json) },
                 recommended_medicine_details = medicineDetails,
-                alternative_medicines = emptyList(),
+                alternative_medicines = jsonArrayToList(json.optJSONArray("alternative_medicines"))
+                    .ifEmpty { jsonArrayToList(json.optJSONArray("jalur_alternatif")) },
                 usage_instructions = json.optString("usage_instructions").ifBlank {
                     buildUsageInstructions(json)
                 },
@@ -325,14 +375,14 @@ class MedicalRepository @Inject constructor() {
         }
     }
 
-    private fun parseRecommendedMedicineDetails(json: JSONObject): List<com.example.halalyticscompose.Data.Model.RecommendedMedicineDetail> {
+    private fun parseRecommendedMedicineDetails(json: JSONObject): List<com.example.halalyticscompose.data.model.RecommendedMedicineDetail> {
         val source = json.optJSONArray("recommended_medicines_list")
             ?: json.optJSONArray("medicines")
             ?: return emptyList()
 
         return (0 until source.length()).mapNotNull { index ->
             val item = source.optJSONObject(index) ?: return@mapNotNull null
-            com.example.halalyticscompose.Data.Model.RecommendedMedicineDetail(
+            com.example.halalyticscompose.data.model.RecommendedMedicineDetail(
                 name = item.optString("name").ifBlank { "Obat tidak disebutkan" },
                 function = item.optString("function").ifBlank {
                     item.optString("notes").ifBlank { null }
@@ -349,6 +399,9 @@ class MedicalRepository @Inject constructor() {
                     if (item.has("isHalal")) {
                         if (item.optBoolean("isHalal", true)) "Halal" else "Perlu cek label"
                     } else null
+                },
+                price_range = item.optString("price_range").ifBlank { 
+                    item.optString("estimasi_harga").ifBlank { null }
                 },
                 safety_note = item.optString("safety_note").ifBlank {
                     item.optString("notes").ifBlank { null }
@@ -374,13 +427,13 @@ class MedicalRepository @Inject constructor() {
             .ifEmpty { jsonArrayToList(json.optJSONArray("possible_causes")) }
     }
 
-    private fun parsePossibleCauseDetails(json: JSONObject): List<com.example.halalyticscompose.Data.Model.PossibleCauseDetail> {
+    private fun parsePossibleCauseDetails(json: JSONObject): List<com.example.halalyticscompose.data.model.PossibleCauseDetail> {
         val array = json.optJSONArray("possible_causes") ?: return emptyList()
         if (array.length() == 0 || array.opt(0) !is JSONObject) return emptyList()
 
         return (0 until array.length()).mapNotNull { index ->
             val item = array.optJSONObject(index) ?: return@mapNotNull null
-            com.example.halalyticscompose.Data.Model.PossibleCauseDetail(
+            com.example.halalyticscompose.data.model.PossibleCauseDetail(
                 name = item.optString("name"),
                 percentage = item.optInt("percentage").takeIf { it > 0 },
                 reason = item.optString("reason").ifBlank { null }
@@ -388,11 +441,11 @@ class MedicalRepository @Inject constructor() {
         }
     }
 
-    private fun parseDiseaseExplanations(json: JSONObject): List<com.example.halalyticscompose.Data.Model.DiseaseExplanation> {
+    private fun parseDiseaseExplanations(json: JSONObject): List<com.example.halalyticscompose.data.model.DiseaseExplanation> {
         val array = json.optJSONArray("disease_explanations") ?: return emptyList()
         return (0 until array.length()).mapNotNull { index ->
             val item = array.optJSONObject(index) ?: return@mapNotNull null
-            com.example.halalyticscompose.Data.Model.DiseaseExplanation(
+            com.example.halalyticscompose.data.model.DiseaseExplanation(
                 name = item.optString("name"),
                 description = item.optString("description").ifBlank { null },
                 relation_to_case = item.optString("relation_to_case").ifBlank { null }
@@ -415,7 +468,7 @@ class MedicalRepository @Inject constructor() {
 
     private fun parseHalalCheck(
         json: JSONObject,
-        medicineDetails: List<com.example.halalyticscompose.Data.Model.RecommendedMedicineDetail>
+        medicineDetails: List<com.example.halalyticscompose.data.model.RecommendedMedicineDetail>
     ): HalalCheck {
         val halalObject = json.optJSONObject("halal_check")
         if (halalObject != null) {
@@ -434,7 +487,7 @@ class MedicalRepository @Inject constructor() {
 
     private fun parseGlobalSideEffects(
         json: JSONObject,
-        medicineDetails: List<com.example.halalyticscompose.Data.Model.RecommendedMedicineDetail>
+        medicineDetails: List<com.example.halalyticscompose.data.model.RecommendedMedicineDetail>
     ): List<String> {
         val direct = jsonArrayToList(json.optJSONArray("side_effects"))
         if (direct.isNotEmpty()) return direct

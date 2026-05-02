@@ -3,8 +3,8 @@ package com.example.halalyticscompose.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.util.Log
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.Model.*
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.*
 import com.example.halalyticscompose.services.FirebaseRealtimeListener
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject

@@ -22,10 +22,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.halalyticscompose.Data.Model.NotificationItem
+import com.example.halalyticscompose.data.model.NotificationItem
 import com.example.halalyticscompose.ui.viewmodel.NotificationViewModel
 import com.example.halalyticscompose.utils.SessionManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.halalyticscompose.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,10 +61,10 @@ fun NotificationScreen(
             TopAppBar(
                 title = { 
                     Column {
-                        Text("Notifikasi", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.notification_title), fontWeight = FontWeight.Bold)
                         if (unreadCount > 0) {
                             Text(
-                                text = "$unreadCount belum dibaca",
+                                text = stringResource(R.string.notification_unread, unreadCount),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -71,15 +73,15 @@ fun NotificationScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
                 actions = {
                     if (unreadCount > 0) {
                         TextButton(
-                            onClick = { viewModel.markAllAsRead(token) }
+                            onClick = { viewModel.markAllAsRead() }
                         ) {
-                            Text("Tandai Baca Semua")
+                            Text(stringResource(R.string.notification_mark_all))
                         }
                     }
                 }
@@ -97,21 +99,21 @@ fun NotificationScreen(
                         .fillMaxWidth()
                         .padding(12.dp)
                         .align(Alignment.TopCenter),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3F2))
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
                 ) {
                     Row(
                         modifier = Modifier.padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = Color(0xFFB3261E))
+                        Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = message,
                             modifier = Modifier.weight(1f),
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFFB3261E)
+                            color = MaterialTheme.colorScheme.onErrorContainer
                         )
-                        TextButton(onClick = { viewModel.clearError() }) {
+                        TextButton(onClick = { /* dismiss error */ }) {
                             Text("Tutup")
                         }
                     }
@@ -140,7 +142,7 @@ fun NotificationScreen(
                                 notification = notification,
                                 onClick = {
                                     if (!notification.isRead) {
-                                        viewModel.markAsRead(token, notification.id)
+                                        viewModel.markAsRead(notification.id)
                                     }
                                     navController.navigate(resolveNotificationRoute(notification))
                                 }
@@ -278,7 +280,7 @@ fun NotificationCard(
                 Text(
                     text = notification.message,
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -295,13 +297,13 @@ fun EmptyNotificationsState(modifier: Modifier = Modifier) {
             imageVector = Icons.Default.NotificationsOff,
             contentDescription = null,
             modifier = Modifier.size(64.dp),
-            tint = Color.Gray
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Belum ada notifikasi",
+            text = stringResource(R.string.notification_empty),
             fontSize = 16.sp,
-            color = Color.Gray
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

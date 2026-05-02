@@ -18,8 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.halalyticscompose.Data.Model.ProductImage
-import com.example.halalyticscompose.Data.Model.ProductImageResult
+import com.example.halalyticscompose.data.model.ProductImage
+import com.example.halalyticscompose.data.model.ProductImageResult
 import com.example.halalyticscompose.R
 
 @Composable

@@ -22,7 +22,7 @@ fun String?.toRelativeTime(): String {
         var date: Date? = null
         for (format in formats) {
             try {
-                date = SimpleDateFormat(format, Locale("id", "ID")).apply {
+                date = SimpleDateFormat(format, Locale.Builder().setLanguage("id").setRegion("ID").build()).apply {
                     timeZone = TimeZone.getTimeZone("UTC")
                 }.parse(this)
                 if (date != null) break
@@ -47,7 +47,7 @@ fun String?.toRelativeTime(): String {
             diffDay == 1L -> "Kemarin"
             diffDay < 7 -> "$diffDay hari yang lalu"
             else -> {
-                SimpleDateFormat("d MMM yyyy", Locale("id", "ID")).format(date)
+                SimpleDateFormat("d MMM yyyy", Locale.Builder().setLanguage("id").setRegion("ID").build()).format(date)
             }
         }
     } catch (_: Exception) {
@@ -60,7 +60,7 @@ fun String?.toRelativeTime(): String {
  */
 fun formatHistoryDate(dateStr: String): String {
     return try {
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale("id", "ID"))
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.Builder().setLanguage("id").setRegion("ID").build())
         val date = sdf.parse(dateStr) ?: return dateStr
         val today = Calendar.getInstance()
         val yesterday = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }
@@ -71,7 +71,7 @@ fun formatHistoryDate(dateStr: String): String {
                     today.get(Calendar.YEAR) == targetCal.get(Calendar.YEAR) -> "Hari Ini"
             yesterday.get(Calendar.DAY_OF_YEAR) == targetCal.get(Calendar.DAY_OF_YEAR) &&
                     yesterday.get(Calendar.YEAR) == targetCal.get(Calendar.YEAR) -> "Kemarin"
-            else -> SimpleDateFormat("EEEE, d MMMM yyyy", Locale("id", "ID")).format(date)
+            else -> SimpleDateFormat("EEEE, d MMMM yyyy", Locale.Builder().setLanguage("id").setRegion("ID").build()).format(date)
         }
     } catch (_: Exception) {
         dateStr

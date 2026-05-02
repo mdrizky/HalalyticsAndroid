@@ -2,9 +2,9 @@ package com.example.halalyticscompose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.Model.AdminProduct
-import com.example.halalyticscompose.Data.Model.DashboardStats
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.AdminProduct
+import com.example.halalyticscompose.data.model.DashboardStats
 import com.example.halalyticscompose.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,14 +15,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AdminViewModel @Inject constructor(
-    private val sessionManager: SessionManager,
-    // We access ApiService directly or via Repository. For consistency with MainViewModel pattern:
-    // private val apiService: ApiService = com.example.halalyticscompose.Data.Network.ApiConfig.apiService
+    private val apiService: ApiService,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
-
-    // Helper for simple Hilt injection if ApiService isn't provided directly
-    // Ideally use DI, but falling back to singleton if that's the pattern used
-    private val apiService = com.example.halalyticscompose.Data.Network.ApiConfig.apiService
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -42,10 +37,10 @@ class AdminViewModel @Inject constructor(
     fun loadDashboardData() {
         viewModelScope.launch {
             _isLoading.value = true
-            val token = sessionManager.getBearerToken()
+            val token = sessionManager.getAuthToken()
             if (token != null) {
                 try {
-                    val response = apiService.getDashboardStats(token)
+                    val response = apiService.getDashboardStats("Bearer $token")
                     if (response.success) {
                         _dashboardStats.value = response.data
                     }
@@ -60,10 +55,10 @@ class AdminViewModel @Inject constructor(
     fun loadPendingProducts() {
         viewModelScope.launch {
             _isLoading.value = true
-            val token = sessionManager.getBearerToken()
+            val token = sessionManager.getAuthToken()
             if (token != null) {
                 try {
-                    val response = apiService.getPendingProducts(token)
+                    val response = apiService.getPendingProducts("Bearer $token")
                     if (response.success) {
                         _pendingProducts.value = response.data
                     }
@@ -78,15 +73,13 @@ class AdminViewModel @Inject constructor(
     fun approveProduct(productId: Int) {
         viewModelScope.launch {
             _isLoading.value = true
-            val token = sessionManager.getBearerToken()
+            val token = sessionManager.getAuthToken()
             if (token != null) {
                 try {
-                    val response = apiService.approveProduct(token, productId)
+                    val response = apiService.approveProduct("Bearer $token", productId)
                     if (response.success) {
                         _actionResult.value = "Product Approved!"
-                        // Remove from local list
                         _pendingProducts.value = _pendingProducts.value.filter { it.idProduct != productId }
-                        // Refresh stats
                         loadDashboardData()
                     }
                 } catch (e: Exception) {
@@ -100,10 +93,10 @@ class AdminViewModel @Inject constructor(
     fun rejectProduct(productId: Int, reason: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            val token = sessionManager.getBearerToken()
+            val token = sessionManager.getAuthToken()
             if (token != null) {
                 try {
-                    val response = apiService.rejectProduct(token, productId, mapOf("reason" to reason))
+                    val response = apiService.rejectProduct("Bearer $token", productId, mapOf("reason" to reason))
                     if (response.success) {
                         _actionResult.value = "Product Rejected"
                         _pendingProducts.value = _pendingProducts.value.filter { it.idProduct != productId }

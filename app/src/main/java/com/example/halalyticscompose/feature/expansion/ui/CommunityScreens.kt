@@ -55,6 +55,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -72,6 +73,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -108,9 +110,17 @@ fun CommunityScreen(
     }
 
     Scaffold(
+        containerColor = Color(0xFFFAFAFA),
         topBar = {
+            @OptIn(ExperimentalMaterial3Api::class)
             TopAppBar(
-                title = { Text("Community Hub") },
+                title = { 
+                    Text(
+                        "Community Hub", 
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
@@ -124,31 +134,44 @@ fun CommunityScreen(
                         Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color(0xFFFFB300))
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { viewModel.toggleComposer() },
+                containerColor = Color(0xFF00C853),
+                contentColor = Color.White,
                 icon = { Icon(Icons.Default.Add, contentDescription = null) },
                 text = { Text("Buat Post") },
+                shape = RoundedCornerShape(16.dp)
             )
         },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            Surface(
+                color = Color.White,
+                shadowElevation = 2.dp
             ) {
-                items(categories) { (type, label) ->
-                    FilterChip(
-                        selected = activeCategory == type,
-                        onClick = { viewModel.loadPosts(type) },
-                        label = { Text(label) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = Color.White,
-                        ),
-                    )
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(categories) { (type, label) ->
+                        FilterChip(
+                            selected = activeCategory == type,
+                            onClick = { viewModel.loadPosts(type) },
+                            label = { Text(label) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Color(0xFF00C853),
+                                selectedLabelColor = Color.White,
+                                containerColor = Color(0xFFF5F5F5),
+                                labelColor = Color.Gray
+                            ),
+                            border = null,
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                    }
                 }
             }
 
@@ -361,98 +384,166 @@ private fun CommunityPostCard(
     onOpen: () -> Unit,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onOpen),
-        shape = RoundedCornerShape(18.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onOpen),
+        shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = if (post.isPinned) 4.dp else 2.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             if (post.isPinned) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.PushPin, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                ) {
+                    Icon(
+                        Icons.Default.PushPin, 
+                        contentDescription = null, 
+                        tint = Color(0xFF00C853), 
+                        modifier = Modifier.size(14.dp)
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Disematkan", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        "Disematkan", 
+                        style = MaterialTheme.typography.labelSmall, 
+                        color = Color(0xFF00C853),
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(44.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer),
+                        .background(Color(0xFFF1F8E9)),
                     contentAlignment = Alignment.Center,
                 ) {
                     if (post.userPhoto.isNullOrBlank()) {
-                        Text(post.userName.take(1), fontWeight = FontWeight.Bold)
+                        Text(
+                            post.userName.take(1).uppercase(), 
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF00C853)
+                        )
                     } else {
-                        AsyncImage(model = post.userPhoto, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                        AsyncImage(
+                            model = post.userPhoto, 
+                            contentDescription = null, 
+                            modifier = Modifier.fillMaxSize(), 
+                            contentScale = ContentScale.Crop
+                        )
                     }
                 }
-                Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(post.userName, fontWeight = FontWeight.SemiBold)
-                    Text(post.createdAt, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        post.userName, 
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1A1A1A)
+                    )
+                    Text(
+                        post.createdAt, 
+                        style = MaterialTheme.typography.labelSmall, 
+                        color = Color.Gray
+                    )
                 }
                 Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(10.dp),
+                    color = Color(0xFFF1F8E9),
+                    shape = RoundedCornerShape(8.dp),
                 ) {
                     Text(
                         text = post.category.replaceFirstChar { it.uppercase() },
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        color = Color(0xFF00C853),
                         style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
 
             post.title?.takeIf { it.isNotBlank() }?.let {
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(it, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    it, 
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 18.sp,
+                    color = Color(0xFF1A1A1A)
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-            Text(post.content, maxLines = 4, overflow = TextOverflow.Ellipsis)
+            Text(
+                post.content, 
+                maxLines = 4, 
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF424242),
+                lineHeight = 20.sp
+            )
 
             post.imageUrl?.let {
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 AsyncImage(
                     model = it,
                     contentDescription = null,
-                    modifier = Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(14.dp)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(16.dp)),
                     contentScale = ContentScale.Crop,
                 )
             }
 
             if (post.hashtags.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(10.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    items(post.hashtags) { hashtag ->
-                        Text("#$hashtag", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    post.hashtags.forEach { hashtag ->
+                        Text(
+                            "#$hashtag", 
+                            style = MaterialTheme.typography.labelSmall, 
+                            color = Color(0xFF00C853),
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-            HorizontalDivider()
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider(color = Color(0xFFF5F5F5))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                TextButton(onClick = onLike) {
-                    Icon(
-                        imageVector = if (post.isLikedByMe) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = null,
-                        tint = if (post.isLikedByMe) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onLike) {
+                        Icon(
+                            imageVector = if (post.isLikedByMe) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = null,
+                            tint = if (post.isLikedByMe) Color.Red else Color.Gray,
+                        )
+                    }
+                    Text(
+                        "${post.likesCount}",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("${post.likesCount}")
-                }
-                TextButton(onClick = onOpen) {
-                    Icon(Icons.Default.ChatBubbleOutline, contentDescription = null)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("${post.commentsCount}")
+                    
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
+                    IconButton(onClick = onOpen) {
+                        Icon(
+                            Icons.Default.ChatBubbleOutline, 
+                            contentDescription = null,
+                            tint = Color.Gray
+                        )
+                    }
+                    Text(
+                        "${post.commentsCount}",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -530,8 +621,8 @@ private fun CreatePostBottomSheet(
                 shape = RoundedCornerShape(16.dp),
             )
             Spacer(modifier = Modifier.height(10.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(listOf("diskusi", "tips", "progress", "resep", "tanya")) { item ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("diskusi", "tips", "progress", "resep", "tanya").forEach { item ->
                     FilterChip(
                         selected = category == item,
                         onClick = { category = item },

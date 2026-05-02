@@ -21,6 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.halalyticscompose.ui.viewmodel.HelpCenterViewModel
 import androidx.navigation.NavController
 
 // ═══════════════════════════════════════════════════════════════════
@@ -50,10 +52,21 @@ data class FaqItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HelpCenterScreen(navController: NavController) {
+fun HelpCenterScreen(
+    navController: NavController,
+    viewModel: HelpCenterViewModel = hiltViewModel()
+) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     var expandedFaq by remember { mutableStateOf<String?>(null) }
+    
+    val dynamicCategories by viewModel.categories.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val successMessage by viewModel.successMessage.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadCategories()
+    }
 
     val categories = listOf(
         FaqCategory("Panduan Pengguna", "📖", Color(0xFF1565C0)),

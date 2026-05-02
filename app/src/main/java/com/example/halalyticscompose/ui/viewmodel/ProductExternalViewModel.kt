@@ -3,28 +3,36 @@ package com.example.halalyticscompose.ui.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.Model.ProductItem
-import com.example.halalyticscompose.Data.Network.ApiConfig
+import com.example.halalyticscompose.data.model.ProductItem
+import com.example.halalyticscompose.data.network.ApiConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.IOException
 import org.json.JSONObject
+import retrofit2.Response
 import com.example.halalyticscompose.domain.usecase.GetProductImagesUseCase
-import com.example.halalyticscompose.Data.Model.ProductImageResult
+import com.example.halalyticscompose.data.model.ProductImageResult
+
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 /**
  * ViewModel for handling External Product API (OpenFoodFacts via Laravel backend)
  */
-class ProductExternalViewModel : ViewModel() {
+@HiltViewModel
+class ProductExternalViewModel @Inject constructor(
+    private val externalApiService: com.example.halalyticscompose.data.network.ExternalApiService,
+    private val openFoodFactsApiService: com.example.halalyticscompose.data.api.OpenFoodFactsApiService,
+    private val getProductImagesUseCase: GetProductImagesUseCase
+) : ViewModel() {
     
     companion object {
         private const val TAG = "ProductExternalVM"
         private const val MAX_PAGES_TO_FETCH = 3
     }
 
-    private val getProductImagesUseCase = GetProductImagesUseCase(ApiConfig.apiService)
 
     private fun sanitizeErrorMessage(raw: String?): String? {
         val message = raw?.trim()?.takeIf { it.isNotBlank() } ?: return null
@@ -113,8 +121,7 @@ class ProductExternalViewModel : ViewModel() {
             Log.d(TAG, "🔍 Searching products: $query")
             
             try {
-                val response = ApiConfig.getExternalApiService()
-                    .searchProducts(query = query, pageSize = pageSize, page = page)
+                val response = externalApiService.searchProducts(query = query, pageSize = pageSize, page = page)
                 
                 Log.d(TAG, "📡 Response code: ${response.code()}")
                 
@@ -180,8 +187,7 @@ class ProductExternalViewModel : ViewModel() {
             Log.d(TAG, "🕌 Searching halal products: $query")
             
             try {
-                val response = ApiConfig.getExternalApiService()
-                    .searchHalalProducts(query = query, pageSize = pageSize, page = page)
+                val response = externalApiService.searchHalalProducts(query = query, pageSize = pageSize, page = page)
                 
                 if (response.isSuccessful) {
                     val body = response.body()
@@ -224,8 +230,7 @@ class ProductExternalViewModel : ViewModel() {
             Log.d(TAG, "🌱 Searching vegetarian products: $query")
             
             try {
-                val response = ApiConfig.getExternalApiService()
-                    .searchVegetarianProducts(query = query, pageSize = pageSize, page = page)
+                val response = externalApiService.searchVegetarianProducts(query = query, pageSize = pageSize, page = page)
                 
                 if (response.isSuccessful) {
                     val body = response.body()
@@ -268,8 +273,7 @@ class ProductExternalViewModel : ViewModel() {
             Log.d(TAG, "🥬 Searching vegan products: $query")
             
             try {
-                val response = ApiConfig.getExternalApiService()
-                    .searchVeganProducts(query = query, pageSize = pageSize, page = page)
+                val response = externalApiService.searchVeganProducts(query = query, pageSize = pageSize, page = page)
                 
                 if (response.isSuccessful) {
                     val body = response.body()
@@ -312,8 +316,7 @@ class ProductExternalViewModel : ViewModel() {
             Log.d(TAG, "🏷️ Searching by brand: $brand")
             
             try {
-                val response = ApiConfig.getExternalApiService()
-                    .getProductsByBrand(brand = brand, pageSize = pageSize, page = page)
+                val response = externalApiService.getProductsByBrand(brand = brand, pageSize = pageSize, page = page)
                 
                 if (response.isSuccessful) {
                     val body = response.body()
@@ -356,8 +359,7 @@ class ProductExternalViewModel : ViewModel() {
             Log.d(TAG, "📁 Searching by category: $category")
             
             try {
-                val response = ApiConfig.getExternalApiService()
-                    .getProductsByCategory(category = category, pageSize = pageSize, page = page)
+                val response = externalApiService.getProductsByCategory(category = category, pageSize = pageSize, page = page)
                 
                 if (response.isSuccessful) {
                     val body = response.body()
@@ -403,8 +405,7 @@ class ProductExternalViewModel : ViewModel() {
             Log.d(TAG, "📦 Fetching product detail: $barcode")
             
             try {
-                val response = ApiConfig.getExternalApiService()
-                    .getProductDetail(barcode)
+                val response = externalApiService.getProductDetail(barcode)
                 
                 Log.d(TAG, "📡 Detail response code: ${response.code()}")
                 
@@ -496,8 +497,7 @@ class ProductExternalViewModel : ViewModel() {
 
     private suspend fun fetchProductsDirectFallback(query: String, pageSize: Int, page: Int): List<ProductItem> {
         return try {
-            val response = ApiConfig.getOpenFoodFactsApiService()
-                .searchProducts(query = query, page = page, pageSize = pageSize)
+            val response = openFoodFactsApiService.searchProducts(query = query, page = page, pageSize = pageSize)
             if (response.isSuccessful) {
                 response.body()?.products ?: emptyList()
             } else {
@@ -516,8 +516,7 @@ class ProductExternalViewModel : ViewModel() {
     ): List<ProductItem> {
         val collected = mutableListOf<ProductItem>()
         for (currentPage in startPage until (startPage + MAX_PAGES_TO_FETCH)) {
-            val response = ApiConfig.getExternalApiService()
-                .searchProducts(query = query, pageSize = pageSize, page = currentPage)
+            val response = externalApiService.searchProducts(query = query, pageSize = pageSize, page = currentPage)
             if (!response.isSuccessful) break
 
             val body = response.body()
@@ -559,7 +558,7 @@ class ProductExternalViewModel : ViewModel() {
 
     private suspend fun loadProductDetailDirectFallback(barcode: String): Boolean {
         return try {
-            val response = ApiConfig.getOpenFoodFactsApiService().getProductDetail(barcode)
+            val response = openFoodFactsApiService.getProductDetail(barcode)
             if (response.isSuccessful) {
                 val product = response.body()?.product
                 if (product != null) {

@@ -15,8 +15,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import com.example.halalyticscompose.ui.components.SwipeableProductCard
 import com.example.halalyticscompose.ui.viewmodel.AdminNotificationViewModel
+import androidx.compose.ui.res.stringResource
+import com.example.halalyticscompose.R
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,13 +39,13 @@ fun AdminNotificationScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        text = "Notifikasi Admin",
+                        text = stringResource(R.string.admin_notif_title),
                         fontWeight = FontWeight.Bold
                     ) 
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.admin_notif_back))
                     }
                 },
                 actions = {
@@ -51,7 +53,7 @@ fun AdminNotificationScreen(
                         TextButton(
                             onClick = { viewModel.markAllAsRead() }
                         ) {
-                            Text("Tandai Semua Dibaca")
+                            Text(stringResource(R.string.admin_notif_mark_read))
                         }
                     }
                 }
@@ -82,14 +84,15 @@ fun AdminNotificationScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Tidak ada notifikasi",
+                            text = stringResource(R.string.admin_notif_empty),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Notifikasi akan muncul di sini ketika ada produk baru atau perubahan status",
+                            text = stringResource(R.string.admin_notif_empty_desc),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
                 }
@@ -119,7 +122,7 @@ fun AdminNotificationScreen(
                                     modifier = Modifier.weight(1f)
                                 )
                                 TextButton(onClick = { viewModel.clearError() }) {
-                                    Text("Tutup")
+                                    Text(stringResource(R.string.admin_notif_close))
                                 }
                             }
                         }
@@ -211,7 +214,7 @@ fun NotificationCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Check,
-                                contentDescription = "Tandai dibaca",
+                                contentDescription = stringResource(R.string.admin_notif_mark_read_single),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
@@ -223,7 +226,7 @@ fun NotificationCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "Hapus",
+                            contentDescription = stringResource(R.string.admin_notif_delete),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }

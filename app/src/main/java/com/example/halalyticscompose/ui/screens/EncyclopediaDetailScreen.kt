@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.halalyticscompose.Data.Model.HealthEncyclopedia
+import com.example.halalyticscompose.data.model.HealthEncyclopedia
 import com.example.halalyticscompose.ui.theme.*
 import com.example.halalyticscompose.utils.TextToSpeechHelper
 

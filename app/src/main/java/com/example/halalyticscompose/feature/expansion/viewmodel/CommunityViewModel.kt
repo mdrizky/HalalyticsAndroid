@@ -50,7 +50,11 @@ class CommunityViewModel @Inject constructor(
     val error: StateFlow<String?> = _error.asStateFlow()
 
     fun loadPosts(category: String? = null, sort: String = "latest") {
-        val bearer = sessionManager.getBearerToken() ?: return
+        val bearer = sessionManager.getBearerToken()
+        if (bearer == null) {
+            _error.value = "Silakan login terlebih dahulu untuk menggunakan fitur ini"
+            return
+        }
         _activeCategory.value = category
 
         viewModelScope.launch {
@@ -71,7 +75,11 @@ class CommunityViewModel @Inject constructor(
     }
 
     fun loadPostDetail(postId: Int) {
-        val bearer = sessionManager.getBearerToken() ?: return
+        val bearer = sessionManager.getBearerToken()
+        if (bearer == null) {
+            _error.value = "Silakan login terlebih dahulu untuk menggunakan fitur ini"
+            return
+        }
 
         viewModelScope.launch {
             _isLoading.value = true
@@ -91,7 +99,11 @@ class CommunityViewModel @Inject constructor(
     }
 
     fun likePost(postId: Int) {
-        val bearer = sessionManager.getBearerToken() ?: return
+        val bearer = sessionManager.getBearerToken()
+        if (bearer == null) {
+            _error.value = "Silakan login terlebih dahulu untuk menggunakan fitur ini"
+            return
+        }
 
         viewModelScope.launch {
             val current = _posts.value
@@ -116,7 +128,11 @@ class CommunityViewModel @Inject constructor(
     }
 
     fun addComment(postId: Int, content: String, parentId: Int? = null) {
-        val bearer = sessionManager.getBearerToken() ?: return
+        val bearer = sessionManager.getBearerToken()
+        if (bearer == null) {
+            _error.value = "Silakan login terlebih dahulu untuk menggunakan fitur ini"
+            return
+        }
 
         viewModelScope.launch {
             try {
@@ -145,7 +161,11 @@ class CommunityViewModel @Inject constructor(
     }
 
     fun loadLeaderboard() {
-        val bearer = sessionManager.getBearerToken() ?: return
+        val bearer = sessionManager.getBearerToken()
+        if (bearer == null) {
+            _error.value = "Silakan login terlebih dahulu untuk menggunakan fitur ini"
+            return
+        }
 
         viewModelScope.launch {
             try {
@@ -164,7 +184,11 @@ class CommunityViewModel @Inject constructor(
     }
 
     fun submitPost(content: String, category: String, imageUri: Uri?, context: Context, title: String? = null) {
-        val bearer = sessionManager.getBearerToken() ?: return
+        val bearer = sessionManager.getBearerToken()
+        if (bearer == null) {
+            _error.value = "Silakan login terlebih dahulu untuk menggunakan fitur ini"
+            return
+        }
 
         viewModelScope.launch {
             _isLoading.value = true

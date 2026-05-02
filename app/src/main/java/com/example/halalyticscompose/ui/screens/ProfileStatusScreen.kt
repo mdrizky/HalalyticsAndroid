@@ -22,13 +22,14 @@ import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 @Composable
 fun ProfileStatusScreen(
     navController: NavController,
-    viewModel: MainViewModel = hiltViewModel()
+    viewModel: MainViewModel = hiltViewModel(),
+    historyViewModel: com.example.halalyticscompose.ui.viewmodel.HistoryViewModel = hiltViewModel()
 ) {
     val userData by viewModel.userData.collectAsState()
     val currentUser by viewModel.currentUser.collectAsState()
-    val totalScans by viewModel.totalScans.collectAsState()
-    val halalProducts by viewModel.halalProducts.collectAsState()
-    val currentStreak by viewModel.currentStreak.collectAsState()
+    val totalScans by historyViewModel.totalScans.collectAsState()
+    val halalProducts by historyViewModel.halalProducts.collectAsState()
+    val currentStreak by historyViewModel.currentStreak.collectAsState()
     val bmi = userData?.bmi?.toFloat()
     val profileChecks = remember(userData, currentUser) {
         listOf(

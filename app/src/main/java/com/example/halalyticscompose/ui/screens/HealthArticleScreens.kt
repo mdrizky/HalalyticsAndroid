@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -43,6 +44,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -58,7 +60,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.halalyticscompose.Data.Model.HealthArticleItem
+import com.example.halalyticscompose.data.model.HealthArticleItem
 import com.example.halalyticscompose.ui.viewmodel.HealthArticleViewModel
 
 private data class HealthArticleLocal(
@@ -129,8 +131,11 @@ fun HealthArticleListScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
+    val recommended by viewModel.recommendedArticles.collectAsState()
+
     LaunchedEffect(Unit) {
         viewModel.loadArticles(includeExternal = true)
+        viewModel.loadRecommendedArticles()
     }
 
     val displayRemote = remember(remoteArticles, query) {
@@ -182,6 +187,34 @@ fun HealthArticleListScreen(
             )
 
             Spacer(modifier = Modifier.height(12.dp))
+
+            if (recommended.isNotEmpty() && query.isBlank()) {
+                Text(
+                    "Direkomendasikan Untukmu",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                androidx.compose.foundation.lazy.LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(recommended) { article ->
+                        RecommendedArticleCard(article) {
+                            viewModel.setSelectedArticle(article)
+                            navController.navigate("health_article_detail/${Uri.encode(article.toUiKey())}")
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    "Semua Artikel",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
 
             when {
                 isLoading && remoteArticles.isEmpty() -> {
@@ -317,6 +350,11 @@ fun HealthArticleDetailScreen(
     }
 
     val remoteArticle = selected?.takeIf { it.toUiKey() == decodedArticleId || it.id == decodedArticleId }
+    val recommendations by viewModel.recommendedArticles.collectAsState()
+
+    LaunchedEffect(decodedArticleId) {
+        viewModel.loadRecommendations()
+    }
 
     Scaffold(
         topBar = {
@@ -374,7 +412,13 @@ fun HealthArticleDetailScreen(
                         title = remoteArticle.title,
                         content = remoteArticle.content ?: (remoteArticle.excerpt ?: "-"),
                         imageUrl = remoteArticle.imageUrl,
-                        sourceUrl = remoteArticle.sourceUrl
+                        aiSummary = remoteArticle.aiSummary,
+                        sourceUrl = remoteArticle.sourceUrl,
+                        recommendations = recommendations,
+                        onRecommendationClick = { rec ->
+                             val slug = rec.slug ?: rec.id.toString()
+                             navController.navigate("health_article_detail/${Uri.encode(slug)}")
+                        }
                     )
                 }
             }
@@ -451,7 +495,10 @@ private fun ArticleDetailContent(
     title: String,
     content: String,
     imageUrl: String?,
-    sourceUrl: String? = null
+    aiSummary: String? = null,
+    sourceUrl: String? = null,
+    recommendations: List<HealthArticleItem> = emptyList(),
+    onRecommendationClick: (HealthArticleItem) -> Unit = {}
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().then(modifier),
@@ -484,6 +531,45 @@ private fun ArticleDetailContent(
                 }
             }
         }
+
+        if (!aiSummary.isNullOrBlank()) {
+            item {
+                Card(
+                    modifier = Modifier.padding(horizontal = 20.dp).fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                "AI TL;DR Summary",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = aiSummary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                            lineHeight = 22.sp
+                        )
+                    }
+                }
+            }
+        }
+
         item {
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Text(
@@ -515,6 +601,73 @@ private fun ArticleDetailContent(
                 }
             }
         }
+
+        if (recommendations.isNotEmpty()) {
+            item {
+                Column(modifier = Modifier.padding(top = 16.dp)) {
+                    Text(
+                        text = "Rekomendasi Untukmu",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 20.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    androidx.compose.foundation.lazy.LazyRow(
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(recommendations) { rec ->
+                            RecommendedArticleCard(article = rec) {
+                                onRecommendationClick(rec)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         item { Spacer(modifier = Modifier.height(100.dp)) }
+    }
+}
+
+@Composable
+private fun RecommendedArticleCard(
+    article: HealthArticleItem,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .width(220.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+    ) {
+        Column {
+            AsyncImage(
+                model = article.imageUrl ?: DEFAULT_ARTICLE_IMAGE,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+                contentScale = ContentScale.Crop
+            )
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = (article.category ?: "Kesehatan").uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = article.title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 18.sp
+                )
+            }
+        }
     }
 }

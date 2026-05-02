@@ -16,23 +16,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.halalyticscompose.ui.viewmodel.MainViewModel
+import com.example.halalyticscompose.ui.viewmodel.AuthViewModel
+import com.example.halalyticscompose.ui.viewmodel.HistoryViewModel
+import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasicProfileScreen(
     navController: NavController,
-    viewModel: MainViewModel = hiltViewModel()
+    authViewModel: AuthViewModel = hiltViewModel(),
+    historyViewModel: HistoryViewModel = hiltViewModel()
 ) {
-    val currentUser by viewModel.currentUser.collectAsState()
-    val totalScans by viewModel.totalScans.collectAsState()
-    val halalProducts by viewModel.halalProducts.collectAsState()
+    val userData by authViewModel.userData.collectAsState()
+    val totalScans by historyViewModel.totalScans.collectAsState()
+    val halalProducts by historyViewModel.halalProducts.collectAsState()
 
     // Refresh data when screen is opened
     LaunchedEffect(Unit) {
-        viewModel.refreshData()
+        authViewModel.loadUserProfile()
+        historyViewModel.refreshAll()
     }
     
     Box(
@@ -128,7 +131,7 @@ fun BasicProfileScreen(
                     
                     // User name
                     Text(
-                        text = currentUser ?: "Guest User",
+                        text = userData?.fullName ?: "Guest User",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1A202C)
@@ -272,9 +275,10 @@ fun BasicProfileScreen(
                     // Logout Button
                     Button(
                         onClick = {
-                            viewModel.logout()
-                            navController.navigate("login") {
-                                popUpTo("home") { inclusive = true }
+                            authViewModel.logout {
+                                navController.navigate("login") {
+                                    popUpTo(0) { inclusive = true }
+                                }
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),

@@ -31,7 +31,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.halalyticscompose.Data.Model.*
+import com.example.halalyticscompose.data.model.Product
+import com.example.halalyticscompose.data.model.HalalStatus
+import com.example.halalyticscompose.data.model.NutrientLevels
+import com.example.halalyticscompose.data.model.NutrientLevel
+import com.example.halalyticscompose.data.model.HalalInfo
+import com.example.halalyticscompose.data.model.AIConfidence
 import com.example.halalyticscompose.ui.theme.*
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 import com.example.halalyticscompose.ui.viewmodel.ProductUiState
@@ -47,7 +52,8 @@ fun ProductDetailScreen(
     barcode: String,
     mainViewModel: MainViewModel,
     viewModel: ProductViewModel = hiltViewModel(),
-    compareViewModel: com.example.halalyticscompose.ui.viewmodel.CompareViewModel = hiltViewModel()
+    compareViewModel: com.example.halalyticscompose.ui.viewmodel.CompareViewModel = hiltViewModel(),
+    favoritesViewModel: com.example.halalyticscompose.ui.viewmodel.FavoritesViewModel = hiltViewModel()
 ) {
     val productState by viewModel.productState.collectAsState()
     val compareQueue by compareViewModel.comparisonQueue.collectAsState()
@@ -56,9 +62,7 @@ fun ProductDetailScreen(
     var scanSaved by remember { mutableStateOf(false) }
 
     LaunchedEffect(barcode, token) {
-        val database = com.example.halalyticscompose.Data.Local.HalalyticsDatabase.getDatabase(context)
-        viewModel.initRepository(database.cachedScanResultDao())
-        token?.let { viewModel.setToken(it) }
+        val database = com.example.halalyticscompose.data.local.HalalyticsDatabase.getDatabase(context)
         viewModel.loadProduct(barcode)
     }
 
@@ -95,18 +99,7 @@ fun ProductDetailScreen(
                             val halalStatus = when (state.product.halalInfo?.halalStatus) {
                                 HalalStatus.HALAL -> "halal"; HalalStatus.NON_HALAL -> "haram"; else -> "syubhat"
                             }
-                            mainViewModel.cacheScanResult(
-                                productName = state.product.name, barcode = state.product.barcode,
-                                halalStatus = halalStatus, healthScore = state.product.nutriScore?.toIntOrNull(),
-                                ingredients = state.product.ingredientsTags, notes = state.product.halalNotes,
-                                imageUrl = state.product.imageFrontUrl, sugar = state.product.nutritionFacts?.sugars?.per100g,
-                                sodium = state.product.nutritionFacts?.sodium?.per100g
-                            )
-                            mainViewModel.addScanToHistory(
-                                productId = state.product.id, productName = state.product.name,
-                                barcode = state.product.barcode, category = state.product.category,
-                                statusHalal = halalStatus, imageUrl = state.product.imageFrontUrl
-                            )
+                            // Scan result saved to history via backend automatically
                             scanSaved = true
                         }
                     }
@@ -119,10 +112,7 @@ fun ProductDetailScreen(
                         alternativesState = alternativesState,
                         onRecheckHalal = { viewModel.recheckHalalStatus(state.product) },
                         onSaveToFavorites = {
-                             val halalStatus = when (state.product.halalInfo?.halalStatus) {
-                                HalalStatus.HALAL -> "halal"; HalalStatus.NON_HALAL -> "haram"; else -> "syubhat"
-                            }
-                            mainViewModel.toggleFavorite(state.product.id ?: 0, false, state.product.name, state.product.barcode, halalStatus)
+                            favoritesViewModel.toggleFavorite(barcode)
                         },
                         onAddToCompare = { 
                             compareViewModel.addToCompare(state.product.barcode)
@@ -228,9 +218,8 @@ fun ProductDetailContentPremium(
 ) {
     val familyProfiles by mainViewModel.familyProfiles.collectAsState()
     val selectedProfile by mainViewModel.selectedFamilyProfile.collectAsState()
-    val currentAllergies by mainViewModel.currentHealthAllergies.collectAsState()
-    val currentHealthName by mainViewModel.currentHealthName.collectAsState()
-    val recommendations by mainViewModel.recommendations.collectAsState()
+    val currentAllergies = selectedProfile?.allergies ?: ""
+    val currentHealthName = selectedProfile?.name ?: "Myself"
     
     val allergyList = currentAllergies.split(",").map { it.trim() }.filter { it.isNotEmpty() }
     val foundAllergens = allergyList.filter { allergy ->
@@ -414,10 +403,10 @@ fun NutrientLevelSuitePremium(levels: NutrientLevels) {
         Spacer(Modifier.height(16.dp))
         Box(modifier = Modifier.clip(RoundedCornerShape(28.dp)).background(MaterialTheme.colorScheme.surface).border(1.dp, MaterialTheme.colorScheme.onSurface.copy(0.05f), RoundedCornerShape(28.dp)).padding(24.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                levels.fat?.let { NutrientProgressPremium("Fat", it) }
-                levels.saturatedFat?.let { NutrientProgressPremium("Saturated Fat", it) }
-                levels.sugars?.let { NutrientProgressPremium("Sugars", it) }
-                levels.salt?.let { NutrientProgressPremium("Salt", it) }
+                levels.fat?.let { fatVal -> NutrientProgressPremium("Fat", fatVal) }
+                levels.saturatedFat?.let { satFatVal -> NutrientProgressPremium("Saturated Fat", satFatVal) }
+                levels.sugars?.let { sugarVal -> NutrientProgressPremium("Sugars", sugarVal) }
+                levels.salt?.let { saltVal -> NutrientProgressPremium("Salt", saltVal) }
             }
         }
     }
@@ -474,7 +463,7 @@ fun AlternativesSectionPremium(state: AlternativesUiState) {
                 }
             }
             is AlternativesUiState.Success -> {
-                val response = state.data
+                val response = state.response
                 
                 // Show reasoning
                 Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp).clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.error.copy(0.1f)).border(1.dp, MaterialTheme.colorScheme.error.copy(0.3f), RoundedCornerShape(16.dp)).padding(16.dp)) {

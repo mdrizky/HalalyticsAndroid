@@ -4,8 +4,8 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.Model.ReportResponse
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.ReportResponse
 import com.example.halalyticscompose.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext

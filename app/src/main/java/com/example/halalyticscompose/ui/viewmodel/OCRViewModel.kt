@@ -2,11 +2,11 @@ package com.example.halalyticscompose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.Network.ApiConfig
+import com.example.halalyticscompose.data.network.ApiConfig
 // import com.example.halalyticscompose.data.api.ProductSubmission - REMOVED
 // import com.example.halalyticscompose.data.api.ProductResponse - REMOVED
-import com.example.halalyticscompose.Data.Model.ApiResponse
-import com.example.halalyticscompose.Data.Model.OCRProductData
+import com.example.halalyticscompose.data.model.ApiResponse
+import com.example.halalyticscompose.data.model.OCRProductData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,12 +16,18 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import com.example.halalyticscompose.data.api.ProductSubmission
-import com.example.halalyticscompose.data.api.ProductResponse
+import com.example.halalyticscompose.data.api.OCRProductResponse
 
-class OCRViewModel : ViewModel() {
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.api.OCRProductApiService
 
-    private val apiService = ApiConfig.apiService
-    private val ocrProductApiService = ApiConfig.ocrProductApiService
+@HiltViewModel
+class OCRViewModel @Inject constructor(
+    private val apiService: ApiService,
+    private val ocrProductApiService: OCRProductApiService
+) : ViewModel() {
 
     private val _isSubmitting = MutableStateFlow(false)
     val isSubmitting: StateFlow<Boolean> = _isSubmitting.asStateFlow()
@@ -36,8 +42,8 @@ class OCRViewModel : ViewModel() {
     private val _ocrHistory = MutableStateFlow<List<OCRProductData>>(emptyList())
     val ocrHistory: StateFlow<List<OCRProductData>> = _ocrHistory.asStateFlow()
 
-    private val _ocrStatistics = MutableStateFlow<com.example.halalyticscompose.Data.Model.OCRStatisticsData?>(null)
-    val ocrStatistics: StateFlow<com.example.halalyticscompose.Data.Model.OCRStatisticsData?> = _ocrStatistics.asStateFlow()
+    private val _ocrStatistics = MutableStateFlow<com.example.halalyticscompose.data.model.OCRStatisticsData?>(null)
+    val ocrStatistics: StateFlow<com.example.halalyticscompose.data.model.OCRStatisticsData?> = _ocrStatistics.asStateFlow()
 
     private val _isLoadingHistory = MutableStateFlow(false)
     val isLoadingHistory: StateFlow<Boolean> = _isLoadingHistory.asStateFlow()
@@ -119,7 +125,7 @@ class OCRViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoadingHistory.value = true
             try {
-                val response = apiService.getUserOCRHistory("Bearer $token", userId)
+                val response = apiService.getUserOCRHistory("Bearer $token")
                 if (response.success) {
                     _ocrHistory.value = response.data ?: emptyList()
                 } else {
@@ -153,7 +159,7 @@ class OCRViewModel : ViewModel() {
         brand: String,
         ingredients: String,
         userId: String,
-        onSuccess: (ProductResponse) -> Unit,
+        onSuccess: (OCRProductResponse) -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {

@@ -30,8 +30,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.halalyticscompose.Data.Model.MedicalRecordRequest
+import com.example.halalyticscompose.data.model.MedicalRecordRequest
 import com.example.halalyticscompose.ui.viewmodel.MedicalRecordsViewModel
+import androidx.compose.ui.res.stringResource
+import com.example.halalyticscompose.R
 import com.example.halalyticscompose.utils.SessionManager
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
@@ -64,14 +66,14 @@ fun MedicalRecordsScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        "Rekam Medis Digital",
+                        stringResource(R.string.medical_records_title),
                         fontWeight = FontWeight.ExtraBold,
                         style = MaterialTheme.typography.titleLarge
                     ) 
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -111,10 +113,10 @@ fun MedicalRecordsScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Gagal memuat rekam medis", color = color.onErrorContainer, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.medical_records_error_load), color = color.onErrorContainer, fontWeight = FontWeight.Bold)
                         Text(error.orEmpty(), color = color.onErrorContainer, style = MaterialTheme.typography.bodySmall)
                         Button(onClick = { viewModel.loadRecords() }) {
-                            Text("Coba Lagi")
+                            Text(stringResource(R.string.error_retry))
                         }
                     }
                 }
@@ -141,14 +143,14 @@ fun MedicalRecordsScreen(
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        "Belum ada histori rekam medis",
+                        stringResource(R.string.medical_records_empty_title),
                         fontWeight = FontWeight.ExtraBold,
                         style = MaterialTheme.typography.titleMedium,
                         color = color.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Simpan hasil lab, resep, diagnosis, atau vaksinasi Anda di sini agar mudah diakses kapan saja.",
+                        stringResource(R.string.medical_records_empty_desc),
                         color = color.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -160,7 +162,7 @@ fun MedicalRecordsScreen(
                         modifier = Modifier.fillMaxWidth(0.8f),
                         contentPadding = PaddingValues(16.dp)
                     ) {
-                        Text("Tambah Rekam Medis", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.medical_records_add), fontWeight = FontWeight.Bold)
                     }
                 }
             } else {
@@ -274,13 +276,13 @@ fun AddMedicalRecordDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Tambah Rekam Medis") },
+        title = { Text(stringResource(R.string.medical_records_add)) },
         text = {
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Judul Dokumen") },
+                    label = { Text(stringResource(R.string.medical_records_dialog_title)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -289,7 +291,7 @@ fun AddMedicalRecordDialog(
                 OutlinedTextField(
                     value = type,
                     onValueChange = { type = it },
-                    label = { Text("Tipe (Lab, Resep, Diagnosis, Vaksinasi)") },
+                    label = { Text(stringResource(R.string.medical_records_dialog_type)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -297,7 +299,7 @@ fun AddMedicalRecordDialog(
                 OutlinedTextField(
                     value = hospital,
                     onValueChange = { hospital = it },
-                    label = { Text("Rumah Sakit / Klinik") },
+                    label = { Text(stringResource(R.string.medical_records_dialog_hospital)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -305,17 +307,17 @@ fun AddMedicalRecordDialog(
                 OutlinedTextField(
                     value = doctor,
                     onValueChange = { doctor = it },
-                    label = { Text("Nama Dokter") },
+                    label = { Text(stringResource(R.string.medical_records_dialog_doctor)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(onClick = { galleryLauncher.launch("image/*") }) {
-                    Text("Upload Foto Dokumen")
+                    Text(stringResource(R.string.medical_records_dialog_upload))
                 }
                 
                 if (selectedImageBitmap != null) {
-                    Text("Foto dipilih", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.medical_records_photo_selected), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
                 }
             }
         },
@@ -332,12 +334,12 @@ fun AddMedicalRecordDialog(
                 },
                 enabled = title.isNotBlank() && type.isNotBlank()
             ) {
-                Text("Simpan")
+                Text(stringResource(R.string.common_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Batal")
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )

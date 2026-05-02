@@ -11,22 +11,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.halalyticscompose.data.database.ProductHistoryEntity
 import com.example.halalyticscompose.ui.viewmodel.HistoryViewModel
 import com.example.halalyticscompose.ui.components.getHalalColor
 import com.example.halalyticscompose.ui.components.getHalalColorDark
 import com.example.halalyticscompose.ui.components.HalalColorIndicator
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.Icons
+import com.example.halalyticscompose.data.model.ScanHistoryItem
 
 @Composable
 fun RecentProductsSection(
     navController: NavController,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
-    val recentProducts by viewModel.getRecentProducts(5).collectAsState(initial = emptyList())
-    
+    val scanHistory by viewModel.scanHistory.collectAsState()
+    val recentProducts = scanHistory.take(5)
+
     if (recentProducts.isNotEmpty()) {
         Column(
             modifier = Modifier
@@ -43,50 +41,49 @@ fun RecentProductsSection(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
-                
+
                 TextButton(
                     onClick = { navController.navigate("history") }
                 ) {
                     Text("Lihat Semua")
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(12.dp))
-            
+
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.height(300.dp) // Limit height for home screen
             ) {
                 items(
                     items = recentProducts,
-                    key = { it.barcode }
+                    key = { it.barcode ?: it.id.toString() }
                 ) { product ->
-                    CompactProductCard(
+                    CompactHistoryCard(
                         product = product,
-                        onCardClick = { 
-                            navController.navigate("product_detail/${product.barcode}")
-                        },
-                        onFavoriteClick = { 
-                            viewModel.toggleFavorite(product.barcode)
+                        onCardClick = {
+                            product.barcode?.let { barcode ->
+                                navController.navigate("product_detail/$barcode")
+                            }
                         }
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-fun CompactProductCard(
-    product: ProductHistoryEntity,
+fun CompactHistoryCard(
+    product: ScanHistoryItem,
     onCardClick: () -> Unit,
-    onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = getHalalColor(product.status)
-    
+    val status = product.halalStatus ?: "Unknown"
+    val backgroundColor = getHalalColor(status)
+
     Card(
         onClick = onCardClick,
         modifier = modifier.fillMaxWidth(),
@@ -99,47 +96,30 @@ fun CompactProductCard(
         ) {
             // Status Indicator
             HalalColorIndicator(
-                status = product.status,
+                status = status,
                 modifier = Modifier.size(16.dp)
             )
-            
+
             Spacer(modifier = Modifier.width(12.dp))
-            
+
             // Product Info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = product.name,
+                    text = product.productName ?: "Produk Tidak Diketahui",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
-                    color = getHalalColorDark(product.status),
+                    color = getHalalColorDark(status),
                     maxLines = 1
                 )
-                
-                product.brand?.let { brand ->
+
+                product.barcode?.let { barcode ->
                     Text(
-                        text = brand,
+                        text = "Barcode: $barcode",
                         style = MaterialTheme.typography.bodySmall,
-                        color = getHalalColorDark(product.status).copy(alpha = 0.7f),
+                        color = getHalalColorDark(status).copy(alpha = 0.7f),
                         maxLines = 1
                     )
                 }
-            }
-            
-            // Favorite Button
-            IconButton(
-                onClick = onFavoriteClick,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = if (product.isFavorite) {
-                        androidx.compose.material.icons.Icons.Filled.Favorite
-                    } else {
-                        androidx.compose.material.icons.Icons.Outlined.FavoriteBorder
-                    },
-                    contentDescription = if (product.isFavorite) "Hapus dari Favorite" else "Tambah ke Favorite",
-                    tint = if (product.isFavorite) androidx.compose.ui.graphics.Color.Red else getHalalColorDark(product.status),
-                    modifier = Modifier.size(20.dp)
-                )
             }
         }
     }

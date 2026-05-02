@@ -207,7 +207,7 @@ fun PillScannerScreen(
 }
 
 @Composable
-fun PillResultCard(data: com.example.halalyticscompose.Data.Model.PillIdentifyData) {
+fun PillResultCard(data: com.example.halalyticscompose.data.model.PillIdentifyData) {
     Column {
         Text("Hasil Identifikasi:", fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Spacer(modifier = Modifier.height(12.dp))

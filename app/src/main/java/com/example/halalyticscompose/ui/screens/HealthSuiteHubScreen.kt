@@ -36,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -56,11 +57,11 @@ import androidx.compose.foundation.lazy.LazyRow
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 import com.example.halalyticscompose.ui.viewmodel.MedicalRecordsViewModel
 import androidx.navigation.NavController
+import androidx.compose.ui.res.stringResource
+import com.example.halalyticscompose.R
+import com.example.halalyticscompose.ui.theme.*
 
-private val Emerald = Color(0xFF00A878)
-private val Mint = Color(0xFFE6F7F0)
-private val OffWhite = Color(0xFFF7FAF8)
-private val Gold = Color(0xFFFFC857)
+// Color constants moved into theme-aware components
 
 private data class HubItem(
     val title: String,
@@ -100,21 +101,24 @@ fun HealthSuiteHubScreen(
     }
 
     Scaffold(
-        containerColor = OffWhite,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Health Hub", color = Emerald, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.health_suite_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
-                    IconButton(onClick = { navController.navigate("notifications") }) {
-                        Icon(Icons.Default.NotificationsNone, contentDescription = "Notifications")
+                    IconButton(onClick = { }) {
+                        Icon(Icons.Default.NotificationsNone, null)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = OffWhite)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                )
             )
         }
     ) { paddingValues ->
@@ -129,7 +133,7 @@ fun HealthSuiteHubScreen(
                 Text(
                     "Selected Health Context",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Emerald,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -158,7 +162,7 @@ fun HealthSuiteHubScreen(
             item {
                 Card(
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
                     Row(
                         modifier = Modifier
@@ -166,20 +170,21 @@ fun HealthSuiteHubScreen(
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .clip(CircleShape)
-                                .background(Emerald)
+                        Text(
+                            "Status Emergency",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Emergency Triage Status", fontWeight = FontWeight.Bold)
-                            Text("Semua sistem aman. Tidak ada red-flag saat ini.", color = Color(0xFF64748B))
-                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            "Siap siaga dengan bantuan triage AI.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                         Text(
                             text = "Details",
-                            color = Emerald,
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.clickable { navController.navigate("ai_analysis") }
                         )
@@ -190,30 +195,27 @@ fun HealthSuiteHubScreen(
             item {
                 Card(
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(92.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Mint),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("POWERED BY GEMINI AI", color = Emerald, fontWeight = FontWeight.Bold)
-                        }
-                        Text("Smart Resume", fontWeight = FontWeight.Bold)
                         Text(
-                            "Upload dokumen medis untuk ringkasan AI instan dan status kesehatan.",
-                            color = Color(0xFF64748B)
+                            stringResource(R.string.health_suite_hero_title),
+                            fontWeight = FontWeight.ExtraBold,
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            stringResource(R.string.health_suite_hero_subtitle),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                         )
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { navController.navigate("medical_resume") },
                             shape = RoundedCornerShape(10.dp),
-                            colors = CardDefaults.cardColors(containerColor = Emerald)
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
                         ) {
                             Row(
                                 modifier = Modifier
@@ -234,27 +236,31 @@ fun HealthSuiteHubScreen(
             item {
                 Card(
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
                     Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.SmartToy, contentDescription = null, tint = Emerald)
+                            Icon(Icons.Default.SmartToy, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Halalytics AI Assistant", color = Emerald, fontWeight = FontWeight.Bold)
+                            Text("Halalytics AI Assistant", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                         }
-                        Card(colors = CardDefaults.cardColors(containerColor = OffWhite), shape = RoundedCornerShape(10.dp)) {
-                            Text(
-                                "Saya sudah analisis data kesehatan terakhir. Mau lanjut triage keluhan sekarang?",
-                                modifier = Modifier.padding(10.dp),
-                                color = Color(0xFF334155)
-                            )
-                        }
+                        Text(
+                            stringResource(R.string.health_suite_item_assistant_title),
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
                         OutlinedTextField(
                             value = "",
                             onValueChange = { },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().clickable { navController.navigate("health_assistant") },
                             enabled = false,
-                            placeholder = { Text("Ask about your health...") }
+                            placeholder = { Text(stringResource(R.string.home_search_hint)) },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                disabledBorderColor = MaterialTheme.colorScheme.outline
+                            )
                         )
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             QuickHubChip("AI Triage", "health_assistant", navController)
@@ -274,7 +280,7 @@ fun HealthSuiteHubScreen(
                     Text("Recent Health Summaries", fontWeight = FontWeight.Bold)
                     Text(
                         text = "View All",
-                        color = Emerald,
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.clickable { navController.navigate("medical_records") }
                     )
@@ -361,7 +367,7 @@ private fun SummaryCard(item: HubItem, navController: NavController) {
                     .background(Mint),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Description, contentDescription = null, tint = Emerald)
+                Icon(Icons.Default.Description, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             }
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -380,7 +386,7 @@ private fun QuickHubChip(label: String, route: String, navController: NavControl
         shape = RoundedCornerShape(100.dp),
         colors = CardDefaults.cardColors(containerColor = Mint)
     ) {
-        Text(label, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp), color = Emerald)
+        Text(label, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp), color = MaterialTheme.colorScheme.primary)
     }
 }
 
@@ -400,7 +406,7 @@ private fun RowScope.QuickHubIcon(label: String, icon: androidx.compose.ui.graph
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Icon(icon, contentDescription = label, tint = Emerald)
+            Icon(icon, contentDescription = label, tint = MaterialTheme.colorScheme.primary)
             Text(label, style = MaterialTheme.typography.bodySmall)
         }
     }
@@ -412,13 +418,13 @@ private fun QuickHubProfileChip(name: String, isSelected: Boolean, onClick: () -
         modifier = Modifier.clickable { onClick() },
         shape = RoundedCornerShape(100.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) Emerald else Emerald.copy(alpha = 0.1f)
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
         )
     ) {
         Text(
             text = name,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            color = if (isSelected) Color.White else Emerald,
+            color = if (isSelected) Color.White else MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.bodySmall
         )

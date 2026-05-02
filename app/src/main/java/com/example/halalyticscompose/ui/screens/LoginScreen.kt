@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -50,19 +51,46 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.halalyticscompose.ui.viewmodel.MainViewModel
+import com.example.halalyticscompose.ui.viewmodel.AuthViewModel
+import com.example.halalyticscompose.data.model.LoginRequest
+import com.example.halalyticscompose.R
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    viewModel: MainViewModel = hiltViewModel()
+    prefillUsername: String = "",
+    prefillPassword: String = "",
+    showRegisterSuccess: Boolean = false,
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf(prefillUsername) }
+    var password by remember { mutableStateOf(prefillPassword) }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    val googleSignInLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            val task = com.google.android.gms.auth.api.signin.GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(com.google.android.gms.common.api.ApiException::class.java)
+                val idToken = account?.idToken
+                if (idToken != null) {
+                    viewModel.loginWithGoogle(idToken) {
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    }
+                }
+            } catch (e: com.google.android.gms.common.api.ApiException) {
+                android.util.Log.e("LoginScreen", "Google sign in failed", e)
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -191,14 +219,12 @@ fun LoginScreen(
                         onClick = {
                             if (username.isBlank() || password.isBlank()) return@Button
                             viewModel.login(
-                                username = username,
-                                password = password,
+                                com.example.halalyticscompose.data.model.LoginRequest(email = username, password = password),
                                 onSuccess = {
                                     navController.navigate("home") {
                                         popUpTo("login") { inclusive = true }
                                     }
-                                },
-                                onError = {}
+                                }
                             )
                         },
                         modifier = Modifier
@@ -236,6 +262,93 @@ fun LoginScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            // ─── SOCIAL LOGIN SECTION ───
+            Text(
+                text = "Atau masuk dengan",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Google Button
+                SocialLoginButton(
+                    onClick = {
+                        val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN)
+                            .requestEmail()
+                            .requestIdToken("YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com") // User must replace this
+                            .build()
+                        val googleSignInClient = com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(context, gso)
+                        googleSignInLauncher.launch(googleSignInClient.signInIntent)
+                    },
+                    iconRes = R.drawable.ic_google,
+                    text = "Google",
+                    modifier = Modifier.weight(1f),
+                    isLoading = isLoading
+                )
+
+                // Facebook Button
+                SocialLoginButton(
+                    onClick = {
+                        // Facebook Login Implementation
+                        android.widget.Toast.makeText(context, "Facebook login segera hadir!", android.widget.Toast.LENGTH_SHORT).show()
+                    },
+                    icon = Icons.Filled.Person, // Use Person as placeholder for Facebook icon
+                    text = "Facebook",
+                    modifier = Modifier.weight(1f),
+                    isLoading = isLoading
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+fun SocialLoginButton(
+    onClick: () -> Unit,
+    iconRes: Int? = null,
+    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    text: String,
+    modifier: Modifier = Modifier,
+    isLoading: Boolean = false
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier.height(50.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        enabled = !isLoading
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            if (iconRes != null) {
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(iconRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+            } else if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text, fontWeight = FontWeight.Medium, fontSize = 14.sp)
         }
     }
 }

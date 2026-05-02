@@ -50,6 +50,7 @@ FORMAT JSON WAJIB:
       "duration": "string",
       "when_to_take": "string",
       "halal_status": "Halal|Perlu cek label|Syubhat",
+      "price_range": "Rp ... - Rp ...",
       "safety_note": "string",
       "side_effects": ["string"]
     }
@@ -57,6 +58,7 @@ FORMAT JSON WAJIB:
   "dosage_guidelines": "string",
   "drug_mechanism": "string",
   "halal_check": {"status": "string", "notes": "string"},
+  "alternative_medicines": ["string"],
   "usage_instructions": "string",
   "lifestyle_advice": "string",
   "first_aid_steps": ["string"],
@@ -99,6 +101,43 @@ Pastikan ada:
 - confidence level
 - TLDR
     """.trimIndent()
+
+    /**
+     * Build personalized user message with full profile context
+     */
+    fun buildPersonalizedUserMessage(
+        symptoms: String,
+        age: Int? = null,
+        weight: Float? = null,
+        height: Float? = null,
+        gender: String? = null,
+        allergies: String? = null,
+        medicalHistory: String? = null,
+        isGlutenFree: Boolean = false,
+        hasNutAllergy: Boolean = false
+    ): String {
+        val profileContext = StringBuilder()
+        profileContext.append("Profil Pasien:\n")
+        age?.let { profileContext.append("- Umur: $it tahun\n") }
+        weight?.let { profileContext.append("- Berat: $it kg\n") }
+        height?.let { profileContext.append("- Tinggi: $it cm\n") }
+        gender?.let { profileContext.append("- Jenis Kelamin: $it\n") }
+        allergies?.let { profileContext.append("- Alergi: $it\n") }
+        medicalHistory?.let { profileContext.append("- Riwayat Medis: $it\n") }
+        if (isGlutenFree) profileContext.append("- Diet: Bebas Gluten (Gluten Free)\n")
+        if (hasNutAllergy) profileContext.append("- Kondisi: Alergi Kacang (Nut Allergy)\n")
+
+        return """
+$profileContext
+Keluhan pasien saat ini: $symptoms
+
+Tolong berikan analisis MEDIS EDUKATIF yang disesuaikan dengan PROFIL PASIEN di atas.
+Jika ada obat yang berinteraksi negatif dengan riwayat medis atau alergi, berikan PERINGATAN KERAS.
+Pastikan status HALAL obat diperhatikan dengan ketat.
+
+Susun analisis super lengkap 16 poin sesuai format JSON yang ditentukan.
+        """.trimIndent()
+    }
 
     /**
      * Build prompt untuk kasus tidak spesifik (agar tidak UNKNOWN lagi)

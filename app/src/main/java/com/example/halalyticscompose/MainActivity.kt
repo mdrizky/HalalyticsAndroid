@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -169,6 +170,10 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val mainViewModel: MainViewModel = hiltViewModel()
+            val authViewModel: com.example.halalyticscompose.ui.viewmodel.AuthViewModel = hiltViewModel()
+            val historyViewModel: com.example.halalyticscompose.ui.viewmodel.HistoryViewModel = hiltViewModel()
+            val healthViewModel: com.example.halalyticscompose.ui.viewmodel.HealthViewModel = hiltViewModel()
+            
             // Database and DAO are now injected via Hilt
             val isDarkMode by mainViewModel.isDarkMode.collectAsState()
             val appLanguage by mainViewModel.appLanguage.collectAsState()
@@ -176,8 +181,8 @@ class MainActivity : ComponentActivity() {
             val biometricLockEnabled by mainViewModel.biometricLockEnabled.collectAsState()
             val autoLogoutEnabled by mainViewModel.autoLogoutEnabled.collectAsState()
             val autoLogoutMinutes by mainViewModel.autoLogoutMinutes.collectAsState()
-            val isLoggedIn by mainViewModel.isLoggedIn.collectAsState()
-            val isAdmin by mainViewModel.isAdmin.collectAsState()
+            val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+            val isAdmin by authViewModel.isAdmin.collectAsState()
 
             HalalyticsComposeTheme(darkTheme = isDarkMode) {
                 Surface(
@@ -186,6 +191,16 @@ class MainActivity : ComponentActivity() {
                     contentColor = MaterialTheme.colorScheme.onBackground
                 ) {
                     val navController = rememberNavController()
+                    
+                    // Handle Notification Navigation (e.g. from Blood Emergency Alerts)
+                    LaunchedEffect(intent) {
+                        val navigateTo = intent.getStringExtra("navigate_to")
+                        if (!navigateTo.isNullOrEmpty()) {
+                            // Delay slightly to ensure startDestination is set
+                            navController.navigate(navigateTo)
+                        }
+                    }
+                    
                     val context = LocalContext.current
                     val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
 
@@ -210,6 +225,21 @@ class MainActivity : ComponentActivity() {
                     com.example.halalyticscompose.utils.SessionManager.getInstance(context)
                 }
 
+                // Sync FCM Token
+                LaunchedEffect(isLoggedIn) {
+                    if (isLoggedIn) {
+                        try {
+                            com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    task.result?.let { mainViewModel.updateFcmToken(it) }
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e("MainActivity", "Firebase not initialized")
+                        }
+                    }
+                }
+
                 DisposableEffect(lifecycleOwner, autoLogoutEnabled, autoLogoutMinutes, isLoggedIn) {
                     val observer = LifecycleEventObserver { _, event ->
                         if (!autoLogoutEnabled) return@LifecycleEventObserver
@@ -226,7 +256,11 @@ class MainActivity : ComponentActivity() {
                                         val timeoutMs = autoLogoutMinutes * 60_000L
                                         val idleMs = System.currentTimeMillis() - lastTs
                                         if (idleMs >= timeoutMs) {
-                                            mainViewModel.logout(navController)
+                                            authViewModel.logout {
+                                                navController.navigate("login") {
+                                                    popUpTo(0) { inclusive = true }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -241,7 +275,7 @@ class MainActivity : ComponentActivity() {
                 }
                 
                 // Health Scanner Feature ViewModel
-                val healthViewModel: HealthScannerViewModel = hiltViewModel()
+                val healthScannerViewModel: HealthScannerViewModel = hiltViewModel()
                 
                 // Notifications
                 val notificationViewModel: NotificationViewModel = hiltViewModel()
@@ -319,11 +353,33 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // Login Screen
-                    composable("login") {
+                    // Login Screen (supports auto-fill from register)
+                    composable(
+                        "login?reg_user={reg_user}&reg_pass={reg_pass}&reg_success={reg_success}",
+                        arguments = listOf(
+                            androidx.navigation.navArgument("reg_user") { 
+                                type = androidx.navigation.NavType.StringType
+                                defaultValue = ""
+                            },
+                            androidx.navigation.navArgument("reg_pass") {
+                                type = androidx.navigation.NavType.StringType
+                                defaultValue = ""
+                            },
+                            androidx.navigation.navArgument("reg_success") {
+                                type = androidx.navigation.NavType.StringType
+                                defaultValue = ""
+                            }
+                        )
+                    ) { backStackEntry ->
+                        val regUser = backStackEntry.arguments?.getString("reg_user") ?: ""
+                        val regPass = backStackEntry.arguments?.getString("reg_pass") ?: ""
+                        val regSuccess = backStackEntry.arguments?.getString("reg_success") == "1"
                         MainLayout(navController = navController) { paddingValues ->
                             LoginScreen(
-                                navController = navController
+                                navController = navController,
+                                prefillUsername = regUser,
+                                prefillPassword = regPass,
+                                showRegisterSuccess = regSuccess
                             )
                         }
                     }
@@ -332,8 +388,7 @@ class MainActivity : ComponentActivity() {
                     composable("register") {
                         MainLayout(navController = navController) { paddingValues ->
                             SimpleRegisterScreen(
-                                navController = navController,
-                                viewModel = mainViewModel
+                                navController = navController
                             )
                         }
                     }
@@ -341,8 +396,7 @@ class MainActivity : ComponentActivity() {
                     composable("basic_profile") {
                         MainLayout(navController = navController) { paddingValues ->
                             BasicProfileScreen(
-                                navController = navController,
-                                viewModel = mainViewModel
+                                navController = navController
                             )
                         }
                     }
@@ -352,7 +406,6 @@ class MainActivity : ComponentActivity() {
                         MainLayout(navController = navController, showBottomNav = true) { paddingValues ->
                             HomeScreen(
                                 navController = navController,
-                                viewModel = mainViewModel,
                                 paddingValues = paddingValues
                             )
                         }
@@ -415,7 +468,6 @@ class MainActivity : ComponentActivity() {
                         MainLayout(navController = navController) { paddingValues ->
                             ScanScreen(
                                 navController = navController,
-                                viewModel = mainViewModel,
                                 paddingValues = paddingValues
                             )
                         }
@@ -433,7 +485,6 @@ class MainActivity : ComponentActivity() {
                         MainLayout(navController = navController, showBottomNav = true) { paddingValues ->
                             ProfileScreen(
                                 navController = navController,
-                                viewModel = mainViewModel,
                                 paddingValues = paddingValues
                             )
                         }
@@ -442,8 +493,7 @@ class MainActivity : ComponentActivity() {
                     composable("profile_status") {
                         MainLayout(navController = navController) { paddingValues ->
                             ProfileStatusScreen(
-                                navController = navController,
-                                viewModel = mainViewModel
+                                navController = navController
                             )
                         }
                     }
@@ -451,7 +501,7 @@ class MainActivity : ComponentActivity() {
                     // Account Management Screen
                     composable("account_management") {
                         MainLayout(navController = navController) { paddingValues ->
-                            AccountManagementScreen(navController = navController, viewModel = mainViewModel)
+                            AccountManagementScreen(navController = navController)
                         }
                     }
                     
@@ -484,8 +534,7 @@ class MainActivity : ComponentActivity() {
                     composable("ai_analysis") { backStackEntry ->
                         MainLayout(navController = navController) { paddingValues ->
                             AiAnalysisScreen(
-                                navController = navController,
-                                mainViewModel = mainViewModel
+                                navController = navController
                             )
                         }
                     }
@@ -530,13 +579,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    composable("marketplace") {
-                        MainLayout(navController = navController) {
-                            com.example.halalyticscompose.feature.expansion.ui.MarketplaceScreen(
-                                navController = navController
-                            )
-                        }
-                    }
+
 
                     composable("community") {
                         MainLayout(navController = navController) {
@@ -632,6 +675,65 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     
+                    // 🩸 BLOOD DONATION ROUTES
+                    composable("donor_home") {
+                        val token = sessionManager.getAuthToken() ?: ""
+                        val donorViewModel: com.example.halalyticscompose.ui.viewmodel.DonorViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+                        MainLayout(navController = navController) {
+                            com.example.halalyticscompose.ui.screens.donor.DonorHomeScreen(
+                                navController = navController,
+                                viewModel = donorViewModel,
+                                token = token
+                            )
+                        }
+                    }
+
+                    composable("donor_events") {
+                        val donorViewModel: com.example.halalyticscompose.ui.viewmodel.DonorViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+                        MainLayout(navController = navController) {
+                            com.example.halalyticscompose.ui.screens.donor.DonorEventsScreen(
+                                navController = navController,
+                                viewModel = donorViewModel
+                            )
+                        }
+                    }
+
+                    composable("donor_event_detail/{eventId}") { backStackEntry ->
+                        val eventId = backStackEntry.arguments?.getString("eventId")?.toIntOrNull() ?: 0
+                        MainLayout(navController = navController) {
+                            com.example.halalyticscompose.ui.screens.donor.DonorEventDetailScreen(
+                                navController = navController,
+                                eventId = eventId
+                            )
+                        }
+                    }
+
+                    composable("donor_screening/{eventId}") { backStackEntry ->
+                        val token = sessionManager.getAuthToken() ?: ""
+                        val donorViewModel: com.example.halalyticscompose.ui.viewmodel.DonorViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+                        val eventId = backStackEntry.arguments?.getString("eventId")?.toIntOrNull() ?: 0
+                        MainLayout(navController = navController) {
+                            com.example.halalyticscompose.ui.screens.donor.SelfScreeningScreen(
+                                navController = navController,
+                                viewModel = donorViewModel,
+                                token = token,
+                                eventId = eventId
+                            )
+                        }
+                    }
+
+                    composable("donor_history") {
+                        val token = sessionManager.getAuthToken() ?: ""
+                        val donorViewModel: com.example.halalyticscompose.ui.viewmodel.DonorViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+                        MainLayout(navController = navController) {
+                            com.example.halalyticscompose.ui.screens.donor.DonorHistoryScreen(
+                                navController = navController,
+                                viewModel = donorViewModel,
+                                token = token
+                            )
+                        }
+                    }
+                    
                     // Edit Profile Screen
                     composable("edit_profile") {
                         MainLayout(navController = navController) { paddingValues ->
@@ -645,8 +747,7 @@ class MainActivity : ComponentActivity() {
                     composable("family_box") {
                         MainLayout(navController = navController) { paddingValues ->
                             FamilyBoxScreen(
-                                navController = navController,
-                                viewModel = mainViewModel
+                                navController = navController
                             )
                         }
                     }
@@ -739,7 +840,7 @@ class MainActivity : ComponentActivity() {
                         MainLayout(navController = navController) { paddingValues ->
                             HealthScannerScreen(
                                 navController = navController,
-                                viewModel = healthViewModel
+                                viewModel = healthScannerViewModel
                             )
                         }
                     }
@@ -748,7 +849,7 @@ class MainActivity : ComponentActivity() {
                         MainLayout(navController = navController) { paddingValues ->
                             AnalysisResultScreen(
                                 navController = navController,
-                                viewModel = healthViewModel
+                                viewModel = healthScannerViewModel
                             )
                         }
                     }
@@ -832,15 +933,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    // Certificate Verification Route
-                    composable("certificate_result/{qrData}") { backStackEntry ->
-                        val qrData = backStackEntry.arguments?.getString("qrData") ?: ""
-                        CertificateVerificationWrapper(
-                            navController = navController,
-                            viewModel = mainViewModel,
-                            qrData = qrData
-                        )
-                    }
+
 
                     // Contribution Screen
                     composable(
@@ -884,8 +977,7 @@ class MainActivity : ComponentActivity() {
                     composable("health_profile") {
                         MainLayout(navController = navController) { paddingValues ->
                             HealthProfileScreen(
-                                navController = navController,
-                                viewModel = mainViewModel
+                                navController = navController
                             )
                         }
                     }
@@ -895,8 +987,7 @@ class MainActivity : ComponentActivity() {
                         MainLayout(navController = navController) { paddingValues ->
                             MedicalRouteGuard(enabled = biometricLockEnabled) {
                                 HealthMonitorScreen(
-                                    navController = navController,
-                                    viewModel = mainViewModel
+                                    navController = navController
                                 )
                             }
                         }
@@ -986,8 +1077,7 @@ class MainActivity : ComponentActivity() {
                     composable("meal_scan") {
                         MainLayout(navController = navController) { paddingValues ->
                             MealScanScreen(
-                                navController = navController,
-                                mainViewModel = mainViewModel
+                                navController = navController
                             )
                         }
                     }
@@ -1079,8 +1169,7 @@ class MainActivity : ComponentActivity() {
                         if (isAdmin) {
                             MainLayout(navController = navController) { paddingValues ->
                                 AdminPanelScreen(
-                                    navController = navController,
-                                    mainViewModel = mainViewModel
+                                    navController = navController
                                 )
                             }
                         } else {
@@ -1132,16 +1221,9 @@ class MainActivity : ComponentActivity() {
                             onNavigateBack = { navController.popBackStack() },
                             onGoToScan = { navController.navigate("ocr_scan") },
                             onGoToNutrition = { navController.navigate("nutrition_dashboard") },
-                            onGoToAr = { navController.navigate("ar_finder") },
-                            onGoToMarketplace = { navController.navigate("marketplace") },
+
                             onGoToCommunity = { navController.navigate("community") },
                             onGoToHalocode = { navController.navigate("halocode") }
-                        )
-                    }
-
-                    composable("ar_finder") {
-                        ArFinderScreen(
-                            onNavigateBack = { navController.popBackStack() }
                         )
                     }
 
@@ -1193,12 +1275,6 @@ class MainActivity : ComponentActivity() {
                     composable("notification_settings") {
                         MainLayout(navController = navController) { paddingValues ->
                             NotificationSettingsScreen(navController = navController)
-                        }
-                    }
-
-                    composable("halal_cert_verify") {
-                        MainLayout(navController = navController) { paddingValues ->
-                            HalalCertVerifyScreen(navController = navController)
                         }
                     }
 
@@ -1257,43 +1333,4 @@ class MainActivity : ComponentActivity() {
     }
 
 
-@Composable
-fun CertificateVerificationWrapper(
-    navController: androidx.navigation.NavController,
-    viewModel: com.example.halalyticscompose.ui.viewmodel.MainViewModel,
-    qrData: String
-) {
-    var info by remember {
-        mutableStateOf<com.example.halalyticscompose.Data.Model.CertificateInfo?>(
-            null
-        )
-    }
-    var error by remember { mutableStateOf<String?>(null) }
-    val context = androidx.compose.ui.platform.LocalContext.current
 
-    LaunchedEffect(qrData) {
-        viewModel.verifyCertificate(
-            qrData = qrData,
-            onSuccess = { info = it },
-            onError = { error = it }
-        )
-    }
-
-    if (info != null) {
-        CertificateResultScreen(navController = navController, info = info!!)
-    } else if (error != null) {
-        // Show error and pop back
-        LaunchedEffect(error) {
-            android.widget.Toast.makeText(context, error, android.widget.Toast.LENGTH_LONG).show()
-            navController.popBackStack()
-        }
-    } else {
-        // Loading state
-        Box(
-            modifier = Modifier.fillMaxSize().background(DarkBackground),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(color = HalalGreen)
-        }
-    }
-}

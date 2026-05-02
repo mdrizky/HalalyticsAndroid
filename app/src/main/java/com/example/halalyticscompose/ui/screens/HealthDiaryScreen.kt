@@ -50,7 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.halalyticscompose.Data.Model.HealthMetricData
+import com.example.halalyticscompose.data.model.HealthMetricData
 import com.example.halalyticscompose.ui.viewmodel.HealthDiaryViewModel
 
 private val Emerald = Color(0xFF00A878)

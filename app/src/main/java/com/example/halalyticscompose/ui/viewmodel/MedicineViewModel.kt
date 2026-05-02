@@ -3,17 +3,17 @@ package com.example.halalyticscompose.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.Model.Product
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.Network.ApiErrorHandler
+import com.example.halalyticscompose.data.model.Product
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.network.ApiErrorHandler
 import com.example.halalyticscompose.utils.SessionManager
-import com.example.halalyticscompose.Data.Model.SymptomsAnalysisResponse
-import com.example.halalyticscompose.Data.Model.MedicineSearchResponse
-import com.example.halalyticscompose.Data.Model.MedicationReminderResponse
-import com.example.halalyticscompose.Data.Model.UserRemindersResponse
-import com.example.halalyticscompose.Data.Model.NextDoseResponse
-import com.example.halalyticscompose.Data.Model.GenericResponse
-import com.example.halalyticscompose.Data.Model.SafeScheduleData
+import com.example.halalyticscompose.data.model.SymptomsAnalysisResponse
+import com.example.halalyticscompose.data.model.MedicineSearchResponse
+import com.example.halalyticscompose.data.model.MedicationReminderResponse
+import com.example.halalyticscompose.data.model.UserRemindersResponse
+import com.example.halalyticscompose.data.model.NextDoseResponse
+import com.example.halalyticscompose.data.model.GenericResponse
+import com.example.halalyticscompose.data.model.SafeScheduleData
 import com.example.halalyticscompose.repository.MedicalRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -53,20 +53,20 @@ class MedicineViewModel @Inject constructor(
         }.getOrNull()
     }
 
-    private val _medicines = MutableStateFlow<List<com.example.halalyticscompose.Data.Model.MedicineData>>(emptyList())
-    val medicines: StateFlow<List<com.example.halalyticscompose.Data.Model.MedicineData>> = _medicines.asStateFlow()
+    private val _medicines = MutableStateFlow<List<com.example.halalyticscompose.data.model.MedicineData>>(emptyList())
+    val medicines: StateFlow<List<com.example.halalyticscompose.data.model.MedicineData>> = _medicines.asStateFlow()
 
-    private val _symptomsAnalysis = MutableStateFlow<com.example.halalyticscompose.Data.Model.SymptomsAnalysis?>(null)
-    val symptomsAnalysis: StateFlow<com.example.halalyticscompose.Data.Model.SymptomsAnalysis?> = _symptomsAnalysis.asStateFlow()
+    private val _symptomsAnalysis = MutableStateFlow<com.example.halalyticscompose.data.model.SymptomsAnalysis?>(null)
+    val symptomsAnalysis: StateFlow<com.example.halalyticscompose.data.model.SymptomsAnalysis?> = _symptomsAnalysis.asStateFlow()
 
-    private val _recommendedMedicines = MutableStateFlow<List<com.example.halalyticscompose.Data.Model.MedicineData>>(emptyList())
-    val recommendedMedicines: StateFlow<List<com.example.halalyticscompose.Data.Model.MedicineData>> = _recommendedMedicines.asStateFlow()
+    private val _recommendedMedicines = MutableStateFlow<List<com.example.halalyticscompose.data.model.MedicineData>>(emptyList())
+    val recommendedMedicines: StateFlow<List<com.example.halalyticscompose.data.model.MedicineData>> = _recommendedMedicines.asStateFlow()
 
-    private val _reminders = MutableStateFlow<List<com.example.halalyticscompose.Data.Model.MedicationReminderItem>>(emptyList())
-    val reminders: StateFlow<List<com.example.halalyticscompose.Data.Model.MedicationReminderItem>> = _reminders.asStateFlow()
+    private val _reminders = MutableStateFlow<List<com.example.halalyticscompose.data.model.MedicationReminderItem>>(emptyList())
+    val reminders: StateFlow<List<com.example.halalyticscompose.data.model.MedicationReminderItem>> = _reminders.asStateFlow()
 
-    private val _nextDoses = MutableStateFlow<List<com.example.halalyticscompose.Data.Model.NextDose>>(emptyList())
-    val nextDoses: StateFlow<List<com.example.halalyticscompose.Data.Model.NextDose>> = _nextDoses.asStateFlow()
+    private val _nextDoses = MutableStateFlow<List<com.example.halalyticscompose.data.model.NextDose>>(emptyList())
+    val nextDoses: StateFlow<List<com.example.halalyticscompose.data.model.NextDose>> = _nextDoses.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -74,17 +74,17 @@ class MedicineViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    private val _selectedMedicine = MutableStateFlow<com.example.halalyticscompose.Data.Model.MedicineData?>(null)
-    val selectedMedicine: StateFlow<com.example.halalyticscompose.Data.Model.MedicineData?> = _selectedMedicine.asStateFlow()
+    private val _selectedMedicine = MutableStateFlow<com.example.halalyticscompose.data.model.MedicineData?>(null)
+    val selectedMedicine: StateFlow<com.example.halalyticscompose.data.model.MedicineData?> = _selectedMedicine.asStateFlow()
 
     private val _safeSchedule = MutableStateFlow<SafeScheduleData?>(null)
     val safeSchedule: StateFlow<SafeScheduleData?> = _safeSchedule.asStateFlow()
 
-    private val _personalRiskScore = MutableStateFlow<com.example.halalyticscompose.Data.Model.PersonalRiskScoreResponse?>(null)
-    val personalRiskScore: StateFlow<com.example.halalyticscompose.Data.Model.PersonalRiskScoreResponse?> = _personalRiskScore.asStateFlow()
+    private val _personalRiskScore = MutableStateFlow<com.example.halalyticscompose.data.model.PersonalRiskScoreResponse?>(null)
+    val personalRiskScore: StateFlow<com.example.halalyticscompose.data.model.PersonalRiskScoreResponse?> = _personalRiskScore.asStateFlow()
 
-    private val _drugFoodConflict = MutableStateFlow<com.example.halalyticscompose.Data.Model.DrugFoodConflictData?>(null)
-    val drugFoodConflict: StateFlow<com.example.halalyticscompose.Data.Model.DrugFoodConflictData?> = _drugFoodConflict.asStateFlow()
+    private val _drugFoodConflict = MutableStateFlow<com.example.halalyticscompose.data.model.DrugFoodConflictData?>(null)
+    val drugFoodConflict: StateFlow<com.example.halalyticscompose.data.model.DrugFoodConflictData?> = _drugFoodConflict.asStateFlow()
 
     private val _isRiskLoading = MutableStateFlow(false)
     val isRiskLoading: StateFlow<Boolean> = _isRiskLoading.asStateFlow()
@@ -134,7 +134,17 @@ class MedicineViewModel @Inject constructor(
                 if (!backendSucceeded) {
                     Log.d("MedicineVM", "Falling back to direct AI analysis...")
                     try {
-                        val directResult = medicalRepository.analyzeSymptomsDirect(cleanedSymptoms)
+                        val directResult = medicalRepository.analyzeSymptomsDirect(
+                            symptoms = cleanedSymptoms,
+                            age = sessionManager.getAge(),
+                            weight = sessionManager.getWeight(),
+                            height = sessionManager.getHeight(),
+                            gender = sessionManager.getGender(),
+                            allergies = sessionManager.getAllergy(),
+                            medicalHistory = sessionManager.getMedicalHistory(),
+                            isGlutenFree = sessionManager.isGlutenFree(),
+                            hasNutAllergy = sessionManager.hasNutAllergy()
+                        )
                         _symptomsAnalysis.value = directResult
                         Log.d("MedicineVM", "Direct AI analysis success: ${directResult.condition}")
                     } catch (aiError: Exception) {
@@ -244,7 +254,7 @@ class MedicineViewModel @Inject constructor(
                 val userId = sessionManager.getUserId()
                 if (userId == 0) return@launch
 
-                val response = apiService.getUserMedicineReminders(token, userId.toString())
+                val response = apiService.getUserMedicineReminders(token)
 
                 if (response.body()?.success == true) {
                     _reminders.value = response.body()?.data ?: emptyList()
@@ -270,7 +280,7 @@ class MedicineViewModel @Inject constructor(
                 val userId = sessionManager.getUserId()
                 if (userId == 0) return@launch
 
-                val response = apiService.markMedicineAsTaken(token, reminderId, userId.toString())
+                val response = apiService.markMedicineAsTaken(token, reminderId, "taken")
 
                 if (response.body()?.success == true) {
                     _errorMessage.value = "Medicine marked as taken"
@@ -297,10 +307,10 @@ class MedicineViewModel @Inject constructor(
                 val userId = sessionManager.getUserId()
                 if (userId == 0) return@launch
 
-                val response = apiService.getNextDose(token, userId.toString())
+                val response = apiService.getNextDose(token)
 
                 if (response.body()?.success == true) {
-                    _nextDoses.value = (response.body()?.next_doses as? List<com.example.halalyticscompose.Data.Model.NextDose>) ?: emptyList()
+                    _nextDoses.value = (response.body()?.next_doses as? List<com.example.halalyticscompose.data.model.NextDose>) ?: emptyList()
                 } else {
                     _errorMessage.value = response.body()?.message ?: "Failed to get next doses"
                 }
@@ -454,17 +464,3 @@ class MedicineViewModel @Inject constructor(
     }
 }
 
-// ✅ Manual Factory for non-Hilt usage
-class MedicineViewModelFactory(
-    private val apiService: ApiService,
-    private val sessionManager: SessionManager,
-    private val medicalRepository: MedicalRepository
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(MedicineViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return MedicineViewModel(apiService, sessionManager, medicalRepository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}

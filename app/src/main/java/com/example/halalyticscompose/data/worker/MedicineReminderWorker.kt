@@ -10,7 +10,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.halalyticscompose.MainActivity
 import com.example.halalyticscompose.R
-import com.example.halalyticscompose.Data.API.ApiService
+import com.example.halalyticscompose.data.api.ApiService
 import com.example.halalyticscompose.utils.SessionManager
 import kotlinx.coroutines.flow.first
 
@@ -23,13 +23,13 @@ class MedicineReminderWorker(
     override suspend fun doWork(): Result {
         return try {
             val sessionManager = SessionManager(applicationContext)
-            val apiService = com.example.halalyticscompose.Data.Network.ApiConfig.apiService
+            val apiService = com.example.halalyticscompose.data.network.ApiConfig.apiService
             
             val userId = sessionManager.getUserId() ?: return Result.failure()
             val token = sessionManager.getBearerToken() ?: return Result.failure()
             
             // Get user reminders
-            val response = apiService.getUserMedicineReminders(token, userId.toString())
+            val response = apiService.getUserMedicineReminders(token)
             
             if (response.isSuccessful) {
                 val reminders = response.body()?.data ?: emptyList()

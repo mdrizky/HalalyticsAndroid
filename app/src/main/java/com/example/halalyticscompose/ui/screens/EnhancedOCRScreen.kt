@@ -61,7 +61,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -144,7 +144,9 @@ fun EnhancedOCRScreen(
         )
     }
 
-    var capturedImagePath by remember { mutableStateOf<String?>(null) }
+    var capturedFrontPath by remember { mutableStateOf<String?>(null) }
+    var capturedBackPath by remember { mutableStateOf<String?>(null) }
+    var captureStep by remember { mutableStateOf(0) } // 0: Front, 1: Back, 2: Done
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     var overlayIngredients by remember { mutableStateOf<List<OverlayIngredient>>(emptyList()) }
     var smartInventoryEnabled by remember { mutableStateOf(true) }
@@ -167,7 +169,7 @@ fun EnhancedOCRScreen(
                     context = context,
                     imageUri = it,
                     onDone = { overlays, rawText, guessedName ->
-                        capturedImagePath = it.toString()
+                        if (captureStep == 0) capturedFrontPath = it.toString() else capturedBackPath = it.toString()
                         overlayIngredients = overlays
                         detectedIngredientsText = rawText
                         if (detectedProductName.isBlank()) detectedProductName = guessedName
@@ -245,9 +247,15 @@ fun EnhancedOCRScreen(
                         .height(430.dp)
                         .background(Color(0xFF0B1220))
                 ) {
-                    if (capturedImagePath != null) {
+                    val currentDisplayImage = when (captureStep) {
+                        0 -> capturedFrontPath
+                        1 -> capturedBackPath
+                        else -> capturedBackPath ?: capturedFrontPath
+                    }
+
+                    if (currentDisplayImage != null && captureStep == 2) {
                         AsyncImage(
-                            model = capturedImagePath,
+                            model = currentDisplayImage,
                             contentDescription = "Captured",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
@@ -258,9 +266,11 @@ fun EnhancedOCRScreen(
                             lifecycleOwner = lifecycleOwner,
                             onCaptureReady = { imageCapture = it },
                             onRealtimeDetected = { overlays ->
-                                overlayIngredients = overlays
-                                if (detectedIngredientsText.isBlank()) {
-                                    detectedIngredientsText = overlays.joinToString(", ") { it.text }
+                                if (captureStep == 1) { // Only analyze ingredients when on back side
+                                    overlayIngredients = overlays
+                                    if (detectedIngredientsText.isBlank()) {
+                                        detectedIngredientsText = overlays.joinToString(", ") { it.text }
+                                    }
                                 }
                             }
                         )
@@ -274,6 +284,27 @@ fun EnhancedOCRScreen(
                             .height(220.dp)
                             .border(1.dp, Color.White.copy(alpha = 0.45f), RoundedCornerShape(16.dp))
                     )
+
+                    // Step Indicator
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 20.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color.Black.copy(alpha = 0.6f))
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = when(captureStep) {
+                                0 -> "STEP 1: FOTO DEPAN PRODUK"
+                                1 -> "STEP 2: FOTO KOMPOSISI (BELAKANG)"
+                                else -> "ANALISIS SIAP"
+                            },
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
 
                     // Scan line
                     Box(
@@ -290,7 +321,7 @@ fun EnhancedOCRScreen(
                     )
 
                     // Overlay ingredient boxes
-                    if (overlayIngredients.isNotEmpty()) {
+                    if (overlayIngredients.isNotEmpty() && captureStep == 1) {
                         OverlayIngredientBoxes(items = overlayIngredients)
                     }
 
@@ -317,17 +348,24 @@ fun EnhancedOCRScreen(
                                     capture = imageCapture,
                                     context = context,
                                     onCaptured = { path ->
-                                        capturedImagePath = path
-                                        analyzeCapturedImage(
-                                            context = context,
-                                            imageUri = Uri.fromFile(File(path)),
-                                            onDone = { overlays, rawText, guessedName ->
-                                                overlayIngredients = overlays
-                                                detectedIngredientsText = rawText
-                                                if (detectedProductName.isBlank()) detectedProductName = guessedName
-                                            },
-                                            onError = { err -> errorMessage = err }
-                                        )
+                                        if (captureStep == 0) {
+                                            capturedFrontPath = path
+                                            captureStep = 1
+                                            Toast.makeText(context, "Sekarang foto bagian Ingredients", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            capturedBackPath = path
+                                            captureStep = 2
+                                            analyzeCapturedImage(
+                                                context = context,
+                                                imageUri = Uri.fromFile(File(path)),
+                                                onDone = { overlays, rawText, guessedName ->
+                                                    overlayIngredients = overlays
+                                                    detectedIngredientsText = rawText
+                                                    if (detectedProductName.isBlank()) detectedProductName = guessedName
+                                                },
+                                                onError = { err -> errorMessage = err }
+                                            )
+                                        }
                                     },
                                     onError = { err -> errorMessage = err }
                                 )
@@ -335,13 +373,24 @@ fun EnhancedOCRScreen(
                             modifier = Modifier
                                 .size(72.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF00B894))
+                                .background(if (captureStep == 2) Color(0xFF10B981) else Color(0xFF00B894))
                         ) {
-                            Icon(Icons.Default.QrCodeScanner, contentDescription = "Capture", tint = Color.White, modifier = Modifier.size(28.dp))
+                            Icon(
+                                imageVector = if (captureStep == 2) Icons.Default.CheckCircle else Icons.Default.QrCodeScanner,
+                                contentDescription = "Capture",
+                                tint = Color.White,
+                                modifier = Modifier.size(28.dp)
+                            )
                         }
 
                         IconButton(
-                            onClick = { capturedImagePath = null },
+                            onClick = { 
+                                capturedFrontPath = null
+                                capturedBackPath = null
+                                captureStep = 0
+                                overlayIngredients = emptyList()
+                                detectedIngredientsText = ""
+                            },
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(CircleShape)
@@ -388,7 +437,7 @@ fun EnhancedOCRScreen(
 
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = if (detectedProductName.isBlank()) "Produk belum dikenali" else "Product: $detectedProductName",
+                            text = if (detectedProductName.isBlank()) "Produk belum dikenali" else "AI Detected: $detectedProductName",
                             color = Color(0xFF64748B),
                             fontSize = 13.sp
                         )
@@ -410,20 +459,20 @@ fun EnhancedOCRScreen(
                                 Icon(Icons.Default.Save, contentDescription = null, tint = Color(0xFF059669))
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text("Smart Inventory", fontWeight = FontWeight.Bold, color = Color(0xFF065F46))
-                                    Text("Auto-add ke pantry setelah scan", fontSize = 12.sp, color = Color(0xFF047857))
+                                    Text("AI Deep Analysis", fontWeight = FontWeight.Bold, color = Color(0xFF065F46))
+                                    Text("Menggunakan Gemini Vision untuk cek risiko", fontSize = 12.sp, color = Color(0xFF047857))
                                 }
                                 Switch(checked = smartInventoryEnabled, onCheckedChange = { smartInventoryEnabled = it })
                             }
                         }
 
                         Spacer(modifier = Modifier.height(14.dp))
-                        Text("HALAL INTERACTION CHECKER", color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("INGREDIENTS INSIGHT", color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         Spacer(modifier = Modifier.height(8.dp))
 
                         if (overlayIngredients.isEmpty()) {
                             Text(
-                                text = "Arahkan kamera ke daftar ingredients untuk analisis realtime.",
+                                text = "Foto kemasan depan lalu kemasan belakang untuk melihat hasil analisis AI.",
                                 color = Color(0xFF64748B),
                                 fontSize = 13.sp
                             )
@@ -442,8 +491,8 @@ fun EnhancedOCRScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
                             onClick = {
-                                if (detectedIngredientsText.isBlank()) {
-                                    Toast.makeText(context, "Belum ada hasil OCR ingredients", Toast.LENGTH_SHORT).show()
+                                if (capturedFrontPath == null || capturedBackPath == null) {
+                                    Toast.makeText(context, "Lengkapi foto depan dan belakang", Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
 
@@ -453,18 +502,15 @@ fun EnhancedOCRScreen(
                                     return@Button
                                 }
 
-                                val generatedBarcode = if (detectedBarcode.isNotBlank()) detectedBarcode else "OCR-${System.currentTimeMillis()}"
-                                val generatedName = if (detectedProductName.isNotBlank()) detectedProductName else "Produk OCR"
-
-                                ocrViewModel.submitProduct(
+                                ocrViewModel.submitOCR(
                                     token = token,
-                                    barcode = generatedBarcode,
-                                    name = generatedName,
-                                    brand = detectedBrand,
-                                    ingredients = detectedIngredientsText,
-                                    userId = sessionManager.getUserId().toString(),
+                                    frontImage = File(capturedFrontPath!!),
+                                    backImage = File(capturedBackPath!!),
+                                    ocrText = detectedIngredientsText,
+                                    familyMemberId = null,
+                                    language = "id",
                                     onSuccess = {
-                                        Toast.makeText(context, "Produk OCR tersimpan", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Analisis AI Berhasil Disimpan", Toast.LENGTH_SHORT).show()
                                         navController.navigate("history")
                                     },
                                     onError = { err ->
@@ -472,7 +518,7 @@ fun EnhancedOCRScreen(
                                     }
                                 )
                             },
-                            enabled = !isSubmitting,
+                            enabled = !isSubmitting && captureStep == 2,
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981))
                         ) {
@@ -481,7 +527,7 @@ fun EnhancedOCRScreen(
                             } else {
                                 Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.White)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("View Full Report", color = Color.White, fontWeight = FontWeight.Bold)
+                                Text("Process AI Report", color = Color.White, fontWeight = FontWeight.Bold)
                             }
                         }
                     }

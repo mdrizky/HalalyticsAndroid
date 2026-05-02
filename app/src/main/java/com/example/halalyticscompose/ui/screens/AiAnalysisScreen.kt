@@ -38,12 +38,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 @Composable
 fun AiAnalysisScreen(
     navController: NavController,
-    mainViewModel: MainViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel(),
+    viewModel: AiAnalysisViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val color = MaterialTheme.colorScheme
     var ingredientsText by remember { mutableStateOf("") }
-    var viewModel by remember { mutableStateOf<AiAnalysisViewModel?>(null) }
     
     val selectedProfile by mainViewModel.selectedFamilyProfile.collectAsState()
     val familyProfiles by mainViewModel.familyProfiles.collectAsState()
@@ -54,25 +54,18 @@ fun AiAnalysisScreen(
     
     LaunchedEffect(Unit) {
         ingredientsText = ingredientsArgument
-        val sessionManager = SessionManager.getInstance(context)
-        val aiViewModel = AiAnalysisViewModel()
-        aiViewModel.setSessionManager(sessionManager)
-        viewModel = aiViewModel
-        
         mainViewModel.fetchFamilyProfiles()
         
         if (ingredientsText.isNotEmpty()) {
-            aiViewModel.analyzeIngredients(ingredientsText, selectedProfile?.id)
+            viewModel.analyzeIngredients(ingredientsText, selectedProfile?.id)
         }
     }
     
-    val uiState by viewModel?.uiState?.collectAsState() ?: MutableStateFlow(com.example.halalyticscompose.ui.viewmodel.AiAnalysisUiState()).collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     
     LaunchedEffect(ingredientsText, selectedProfile) {
-        viewModel?.let { vm ->
-            if (ingredientsText.isNotEmpty()) {
-                vm.analyzeIngredients(ingredientsText, selectedProfile?.id)
-            }
+        if (ingredientsText.isNotEmpty()) {
+            viewModel.analyzeIngredients(ingredientsText, selectedProfile?.id)
         }
     }
 
@@ -288,7 +281,7 @@ fun AiAnalysisScreen(
                                 .height(56.dp)
                                 .clip(RoundedCornerShape(16.dp))
                                 .background(Brush.linearGradient(listOf(color.primary, color.secondary)))
-                                .clickable { viewModel?.analyzeIngredients(ingredientsText) },
+                                .clickable { viewModel.analyzeIngredients(ingredientsText) },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(stringResource(R.string.ai_analysis_retry), color = color.onPrimary, fontWeight = FontWeight.Bold)

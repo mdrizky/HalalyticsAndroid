@@ -1,6 +1,7 @@
 package com.example.halalyticscompose.ui.screens
 
 import android.app.TimePickerDialog
+import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -20,36 +21,40 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Observer
 import androidx.navigation.NavController
+import androidx.compose.ui.res.stringResource
+import com.example.halalyticscompose.R
+import com.example.halalyticscompose.ui.viewmodel.MedicineViewModel
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
-// ═══════════════════════════════════════════════════════════════════
-// COLOR CONSTANTS — Emerald Forest Premium
-// ═══════════════════════════════════════════════════════════════════
+// Color Constants moved to theme-aware components
 private val EmeraldDark = Color(0xFF004D40)
-private val EmeraldMedium = Color(0xFF00695C)
-private val EmeraldLight = Color(0xFF26A69A)
-private val SageBg = Color(0xFFF4F9F8)
-private val SoftSage = Color(0xFFE0F2F1)
-private val CardBg = Color(0xFFFFFFFF)
-private val TextDark = Color(0xFF212121)
-private val TextMedium = Color(0xFF757575)
-private val TextLight = Color(0xFF9E9E9E)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddMedicineReminderScreen(navController: NavController) {
+fun AddMedicineReminderScreen(
+    navController: NavController,
+    viewModel: MedicineViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
 
     // Get selected medicine from search
     val selectedName = navController.currentBackStackEntry
         ?.savedStateHandle?.get<String>("selected_medicine_name") ?: ""
+    val selectedId = navController.currentBackStackEntry
+        ?.savedStateHandle?.get<Int>("selected_medicine_id") ?: 0
     val selectedDose = navController.currentBackStackEntry
         ?.savedStateHandle?.get<String>("selected_medicine_dose") ?: "1.0"
     val selectedDoseUnit = navController.currentBackStackEntry
         ?.savedStateHandle?.get<String>("selected_medicine_dose_unit") ?: "tablet"
 
     var medicineName by remember { mutableStateOf(selectedName) }
+    var medicineId by remember { mutableIntStateOf(selectedId) }
     var frequencyPerDay by remember { mutableIntStateOf(3) }
     var durationDays by remember { mutableIntStateOf(7) }
     var doseAmount by remember { mutableStateOf(selectedDose) }
@@ -58,6 +63,10 @@ fun AddMedicineReminderScreen(navController: NavController) {
     var showDosageAccordion by remember { mutableStateOf(false) }
     var showInstructionAccordion by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
+
+    // Listen for save result
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     // Auto-calculate notification times
     val notificationTimes = remember(frequencyPerDay) {
@@ -72,17 +81,38 @@ fun AddMedicineReminderScreen(navController: NavController) {
         }
     }
 
-    // Refresh name when returning from search
-    LaunchedEffect(Unit) {
-        navController.currentBackStackEntry
-            ?.savedStateHandle
-            ?.getLiveData<String>("selected_medicine_name")
-            ?.observeForever { name ->
-                if (name.isNotBlank()) medicineName = name
-            }
+    // Refresh name & ID when returning from search — using DisposableEffect to avoid memory leak
+    DisposableEffect(Unit) {
+        val nameHandle = navController.currentBackStackEntry?.savedStateHandle
+        val nameObserver = Observer<String> { name ->
+            if (!name.isNullOrBlank()) medicineName = name
+        }
+        val idObserver = Observer<Int> { id ->
+            if (id != null && id > 0) medicineId = id
+        }
+        nameHandle?.getLiveData<String>("selected_medicine_name")?.observeForever(nameObserver)
+        nameHandle?.getLiveData<Int>("selected_medicine_id")?.observeForever(idObserver)
+
+        onDispose {
+            nameHandle?.getLiveData<String>("selected_medicine_name")?.removeObserver(nameObserver)
+            nameHandle?.getLiveData<Int>("selected_medicine_id")?.removeObserver(idObserver)
+        }
     }
 
-    Scaffold(containerColor = SageBg) { padding ->
+    // Navigate back after successful save
+    LaunchedEffect(errorMessage, isLoading) {
+        if (isSaving && !isLoading && errorMessage != null) {
+            if (errorMessage!!.contains("successfully", ignoreCase = true)) {
+                Toast.makeText(context, context.getString(R.string.medicine_reminder_save_success), Toast.LENGTH_SHORT).show()
+                navController.popBackStack()
+            } else {
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                isSaving = false
+            }
+        }
+    }
+
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -95,7 +125,11 @@ fun AddMedicineReminderScreen(navController: NavController) {
                     .fillMaxWidth()
                     .background(
                         Brush.linearGradient(
-                            listOf(EmeraldDark, EmeraldMedium, EmeraldLight)
+                            listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                                MaterialTheme.colorScheme.secondary
+                            )
                         )
                     )
                     .padding(horizontal = 20.dp)
@@ -120,7 +154,7 @@ fun AddMedicineReminderScreen(navController: NavController) {
                         )
                     }
                     Text(
-                        "Tambah Pengingat Baru",
+                        stringResource(R.string.medicine_reminder_add_title),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 17.sp
@@ -134,7 +168,7 @@ fun AddMedicineReminderScreen(navController: NavController) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = SoftSage)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
                 ) {
                     Row(
                         modifier = Modifier.padding(16.dp),
@@ -144,7 +178,7 @@ fun AddMedicineReminderScreen(navController: NavController) {
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(EmeraldDark.copy(alpha = 0.1f)),
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text("💊", fontSize = 22.sp)
@@ -157,13 +191,13 @@ fun AddMedicineReminderScreen(navController: NavController) {
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
                                     maxLines = 2,
-                                    color = TextDark
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                             IconButton(onClick = { navController.navigate("medicine_search") }) {
                                 Icon(
                                     Icons.Default.Edit, null,
-                                    tint = EmeraldDark,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -174,13 +208,13 @@ fun AddMedicineReminderScreen(navController: NavController) {
                             ) {
                                 Icon(
                                     Icons.Default.Search, null,
-                                    tint = EmeraldDark
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    "Cari dan Pilih Obat",
+                                    stringResource(R.string.medicine_reminder_search_placeholder),
                                     fontWeight = FontWeight.Bold,
-                                    color = EmeraldDark
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
@@ -191,12 +225,12 @@ fun AddMedicineReminderScreen(navController: NavController) {
 
                 // ── Frekuensi ──
                 Text(
-                    "Berapa kali sehari?",
+                    stringResource(R.string.medicine_reminder_freq_label),
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
-                    color = TextDark
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Text("Wajib diisi", fontSize = 11.sp, color = TextLight)
+                Text(stringResource(R.string.medicine_reminder_freq_hint), fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Row(
@@ -217,8 +251,8 @@ fun AddMedicineReminderScreen(navController: NavController) {
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = EmeraldDark,
-                                selectedLabelColor = Color.White
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                             )
                         )
                     }
@@ -230,7 +264,7 @@ fun AddMedicineReminderScreen(navController: NavController) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBg),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Row(
@@ -239,14 +273,14 @@ fun AddMedicineReminderScreen(navController: NavController) {
                     ) {
                         Icon(
                             Icons.Default.Notifications, null,
-                            tint = EmeraldLight,
+                            tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Notifikasi pada ${notificationTimes.joinToString(", ")}",
+                            stringResource(R.string.medicine_reminder_notif_at, notificationTimes.joinToString(", ")),
                             fontSize = 12.sp,
-                            color = TextMedium
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -270,21 +304,21 @@ fun AddMedicineReminderScreen(navController: NavController) {
                         Text("⏰", fontSize = 16.sp)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Jadwal ${index + 1}",
+                            stringResource(R.string.medicine_reminder_schedule_label, index + 1),
                             fontSize = 13.sp,
-                            color = TextDark,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f)
                         )
                         Text(
                             time,
                             fontWeight = FontWeight.Bold,
-                            color = EmeraldDark,
+                            color = MaterialTheme.colorScheme.primary,
                             fontSize = 14.sp
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             Icons.Default.Edit, null,
-                            tint = TextLight,
+                            tint = MaterialTheme.colorScheme.outline,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -294,12 +328,12 @@ fun AddMedicineReminderScreen(navController: NavController) {
 
                 // ── Durasi ──
                 Text(
-                    "Berapa lama dikonsumsi?",
+                    stringResource(R.string.medicine_reminder_duration_label),
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
-                    color = TextDark
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Text("Wajib diisi", fontSize = 11.sp, color = TextLight)
+                Text(stringResource(R.string.medicine_reminder_freq_hint), fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Row(
@@ -327,9 +361,9 @@ fun AddMedicineReminderScreen(navController: NavController) {
                 }
 
                 Text(
-                    "Pengingat selama $durationDays hari ke depan",
+                    stringResource(R.string.medicine_reminder_duration_desc, durationDays),
                     fontSize = 12.sp,
-                    color = TextMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 6.dp)
                 )
 
@@ -341,39 +375,39 @@ fun AddMedicineReminderScreen(navController: NavController) {
                         .fillMaxWidth()
                         .clickable { showDosageAccordion = !showDosageAccordion },
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBg),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
-                                modifier = Modifier
+                                 modifier = Modifier
                                     .size(28.dp)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(SoftSage),
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text("📋", fontSize = 14.sp)
                             }
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text(
-                                "Petunjuk Penggunaan",
+                             Text(
+                                stringResource(R.string.medicine_reminder_usage_guide),
                                 fontWeight = FontWeight.SemiBold,
-                                color = TextDark,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.weight(1f)
                             )
-                            Icon(
+                             Icon(
                                 if (showDosageAccordion) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                null, tint = TextLight
+                                null, tint = MaterialTheme.colorScheme.outline
                             )
                         }
                         AnimatedVisibility(visible = showDosageAccordion) {
                             Column(modifier = Modifier.padding(top = 14.dp)) {
-                                Text(
-                                    "Dosis",
+                                 Text(
+                                    stringResource(R.string.medicine_reminder_dose_label),
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 13.sp,
-                                    color = TextDark
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(
@@ -387,14 +421,14 @@ fun AddMedicineReminderScreen(navController: NavController) {
                                         shape = RoundedCornerShape(12.dp),
                                         singleLine = true
                                     )
-                                    Surface(
+                                     Surface(
                                         shape = RoundedCornerShape(10.dp),
-                                        color = SoftSage
+                                        color = MaterialTheme.colorScheme.primaryContainer
                                     ) {
                                         Text(
-                                            doseUnit,
+                                             doseUnit,
                                             fontWeight = FontWeight.Bold,
-                                            color = EmeraldDark,
+                                            color = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                                             fontSize = 13.sp
                                         )
@@ -413,7 +447,7 @@ fun AddMedicineReminderScreen(navController: NavController) {
                         .fillMaxWidth()
                         .clickable { showInstructionAccordion = !showInstructionAccordion },
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBg),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -422,37 +456,37 @@ fun AddMedicineReminderScreen(navController: NavController) {
                                 modifier = Modifier
                                     .size(28.dp)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFFFFF3E0)),
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text("❓", fontSize = 14.sp)
                             }
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text(
-                                "Cara Penggunaan",
+                             Text(
+                                stringResource(R.string.medicine_reminder_usage_method),
                                 fontWeight = FontWeight.SemiBold,
-                                color = TextDark,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.weight(1f)
                             )
-                            Icon(
+                             Icon(
                                 if (showInstructionAccordion) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                null, tint = TextLight
+                                null, tint = MaterialTheme.colorScheme.outline
                             )
                         }
                         AnimatedVisibility(visible = showInstructionAccordion) {
                             Column(modifier = Modifier.padding(top = 14.dp)) {
-                                Text(
-                                    "Instruksi lainnya (opsional)",
+                                 Text(
+                                    stringResource(R.string.medicine_reminder_instruction_hint),
                                     fontSize = 12.sp,
-                                    color = TextMedium
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 OutlinedTextField(
                                     value = customInstruction,
                                     onValueChange = { customInstruction = it },
-                                    placeholder = {
+                                     placeholder = {
                                         Text(
-                                            "Contoh: Minum dengan air putih setelah makan",
+                                            stringResource(R.string.medicine_reminder_instruction_placeholder),
                                             fontSize = 13.sp
                                         )
                                     },
@@ -473,15 +507,28 @@ fun AddMedicineReminderScreen(navController: NavController) {
                 Button(
                     onClick = {
                         isSaving = true
-                        navController.popBackStack()
+                        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        val startDate = dateFormat.format(Date())
+                        val calendar = Calendar.getInstance()
+                        calendar.add(Calendar.DAY_OF_YEAR, durationDays)
+                        val endDate = dateFormat.format(calendar.time)
+
+                        viewModel.createReminder(
+                            medicineId = medicineId,
+                            symptoms = null,
+                            frequencyPerDay = frequencyPerDay,
+                            startDate = startDate,
+                            endDate = endDate,
+                            notes = customInstruction.takeIf { it.isNotBlank() }
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = EmeraldDark,
-                        disabledContainerColor = Color.LightGray
+                     colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     enabled = medicineName.isNotBlank() && !isSaving
                 ) {
@@ -496,8 +543,8 @@ fun AddMedicineReminderScreen(navController: NavController) {
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            "SIMPAN PENGINGAT",
+                         Text(
+                            stringResource(R.string.medicine_reminder_save_button),
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp
                         )

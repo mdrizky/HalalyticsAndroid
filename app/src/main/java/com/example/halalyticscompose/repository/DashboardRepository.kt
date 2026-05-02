@@ -1,7 +1,7 @@
 package com.example.halalyticscompose.repository
 
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.Model.DailyMissionData
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.DailyMissionData
 import javax.inject.Inject
 import javax.inject.Singleton
 

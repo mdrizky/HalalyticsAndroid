@@ -1,8 +1,8 @@
 package com.example.halalyticscompose.services
 
-import com.example.halalyticscompose.Data.Model.AdminStats
-import com.example.halalyticscompose.Data.Model.NotificationUpdate
-import com.example.halalyticscompose.Data.Model.ScanHistoryUpdate
+import com.example.halalyticscompose.data.model.AdminStats
+import com.example.halalyticscompose.data.model.NotificationUpdate
+import com.example.halalyticscompose.data.model.ScanHistoryUpdate
 import com.google.firebase.database.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow

@@ -70,8 +70,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.halalyticscompose.Data.API.BeautyProduct
-import com.example.halalyticscompose.Data.API.bestIngredientsText
+import com.example.halalyticscompose.data.api.BeautyProduct
+import com.example.halalyticscompose.data.api.bestIngredientsText
 import com.example.halalyticscompose.ui.viewmodel.SkincareViewModel
 import com.google.gson.Gson
 

@@ -2,6 +2,8 @@ package com.example.halalyticscompose.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,13 +53,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.example.halalyticscompose.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.halalyticscompose.ui.theme.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.halalyticscompose.Data.Model.ScanHistoryItem
+import com.example.halalyticscompose.data.model.ScanHistoryItem
 import com.example.halalyticscompose.ui.viewmodel.ScanHistoryViewModel
 import com.example.halalyticscompose.utils.SessionManager
 import com.example.halalyticscompose.utils.toRelativeTime
@@ -68,19 +74,7 @@ import androidx.compose.ui.layout.ContentScale
 // ═══════════════════════════════════════════════════════════════════
 // COLOR CONSTANTS — Emerald Forest
 // ═══════════════════════════════════════════════════════════════════
-private val EmeraldDark = Color(0xFF004D40)
-private val EmeraldMedium = Color(0xFF00695C)
-private val EmeraldLight = Color(0xFF26A69A)
-private val SoftSage = Color(0xFFE0F2F1)
-private val BgLight = Color(0xFFF4F9F8)
-private val CardBg = Color(0xFFFFFFFF)
-private val TextDark = Color(0xFF212121)
-private val TextMedium = Color(0xFF757575)
-private val TextLight = Color(0xFF9E9E9E)
-private val HalalGreen = Color(0xFF2E7D32)
-private val HaramRed = Color(0xFFD32F2F)
-private val SyubhatAmber = Color(0xFFF57C00)
-private val Danger = Color(0xFFFF4757)
+// Color Constants moved to theme-aware components
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,7 +93,7 @@ fun ScanHistoryScreen(
     val loading by viewModel.loading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
-    var selectedFilter by remember { mutableStateOf("Semua") }
+    var selectedFilter by remember { mutableStateOf(context.getString(R.string.history_filter_all)) }
     var deleteId by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(token, userId) {
@@ -108,19 +102,20 @@ fun ScanHistoryScreen(
         }
     }
 
-    val filteredHistory = remember(history, selectedFilter) {
-        if (selectedFilter == "Semua") history
+    val filterAll = stringResource(R.string.history_filter_all)
+    val filteredHistory = remember(history, selectedFilter, filterAll) {
+        if (selectedFilter == filterAll) history
         else history.filter { (it.halalStatus ?: "unknown").equals(selectedFilter, ignoreCase = true) }
     }
 
     Scaffold(
-        containerColor = BgLight,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "Riwayat Scan",
-                        color = Color.White,
+                        stringResource(R.string.history_title),
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
@@ -129,19 +124,19 @@ fun ScanHistoryScreen(
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
-                            tint = Color.White
+                            contentDescription = stringResource(R.string.common_back),
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = EmeraldDark)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
             )
         }
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(padding),
             contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 120.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
@@ -212,16 +207,16 @@ fun ScanHistoryScreen(
     if (deleteId != null) {
         AlertDialog(
             onDismissRequest = { deleteId = null },
-            title = { Text("Hapus Riwayat", fontWeight = FontWeight.Bold) },
-            text = { Text("Data riwayat ini akan dihapus permanen.") },
+            title = { Text(stringResource(R.string.history_delete_title), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.history_delete_confirm)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteHistory(token, deleteId!!)
                     deleteId = null
-                }) { Text("Hapus", color = Danger) }
+                }) { Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
-                TextButton(onClick = { deleteId = null }) { Text("Batal") }
+                TextButton(onClick = { deleteId = null }) { Text(stringResource(R.string.common_cancel)) }
             }
         )
     }
@@ -243,17 +238,21 @@ private fun StatsHeader(total: Int, halal: Int, haram: Int, today: Int) {
                 .fillMaxWidth()
                 .background(
                     Brush.linearGradient(
-                        listOf(EmeraldDark, EmeraldMedium, EmeraldLight)
+                        listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                            MaterialTheme.colorScheme.secondary
+                        )
                     ),
                     RoundedCornerShape(18.dp)
                 )
                 .padding(18.dp)
         ) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                StatItem(total.toString(), "Total Scan", Icons.Default.QrCodeScanner)
-                StatItem(halal.toString(), "Halal", Icons.Default.CheckCircle)
-                StatItem(haram.toString(), "Haram", Icons.Default.Cancel)
-                StatItem(today.toString(), "Hari Ini", null)
+                StatItem(total.toString(), stringResource(R.string.history_total), Icons.Default.QrCodeScanner)
+                StatItem(halal.toString(), stringResource(R.string.halal_status_halal), Icons.Default.CheckCircle)
+                StatItem(haram.toString(), stringResource(R.string.halal_status_haram), Icons.Default.Cancel)
+                StatItem(today.toString(), stringResource(R.string.history_today), null)
             }
         }
     }
@@ -277,16 +276,24 @@ private fun StatItem(value: String, label: String, icon: ImageVector? = null) {
 
 @Composable
 private fun FilterRow(selected: String, onSelect: (String) -> Unit) {
-    val filters = listOf("Semua", "Halal", "Syubhat", "Haram")
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    val filters = listOf(
+        stringResource(R.string.history_filter_all),
+        stringResource(R.string.halal_status_halal),
+        stringResource(R.string.halal_status_syubhat),
+        stringResource(R.string.halal_status_haram)
+    )
+    Row(
+        modifier = Modifier.horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         filters.forEach { filter ->
             val isSelected = selected == filter
             val (bg, textColor) = when {
-                isSelected && filter == "Halal" -> Pair(HalalGreen.copy(alpha = 0.15f), HalalGreen)
-                isSelected && filter == "Haram" -> Pair(HaramRed.copy(alpha = 0.15f), HaramRed)
-                isSelected && filter == "Syubhat" -> Pair(SyubhatAmber.copy(alpha = 0.15f), SyubhatAmber)
-                isSelected -> Pair(EmeraldDark.copy(alpha = 0.12f), EmeraldDark)
-                else -> Pair(Color(0xFFF0F5F4), TextMedium)
+                isSelected && filter == stringResource(R.string.halal_status_halal) -> Pair(HalalGreen.copy(alpha = 0.15f), HalalGreen)
+                isSelected && filter == stringResource(R.string.halal_status_haram) -> Pair(HaramRed.copy(alpha = 0.15f), HaramRed)
+                isSelected && filter == stringResource(R.string.halal_status_syubhat) -> Pair(MushboohYellow.copy(alpha = 0.15f), MushboohYellow)
+                isSelected -> Pair(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), MaterialTheme.colorScheme.primary)
+                else -> Pair(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Box(
                 modifier = Modifier
@@ -316,7 +323,7 @@ private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: ()
     val statusColor = when (status) {
         "halal" -> HalalGreen
         "haram" -> HaramRed
-        else -> SyubhatAmber
+        else -> MushboohYellow
     }
 
     Card(
@@ -324,7 +331,7 @@ private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: ()
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -347,7 +354,7 @@ private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: ()
                     modifier = Modifier
                         .size(48.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFF0F5F4)),
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
                     if (!item.productImage.isNullOrBlank()) {
@@ -364,8 +371,8 @@ private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: ()
                 Spacer(modifier = Modifier.size(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        item.productName ?: "Produk",
-                        color = TextDark,
+                        item.productName ?: stringResource(R.string.empty_products),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
                         maxLines = 1,
@@ -374,7 +381,7 @@ private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: ()
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         item.createdAt.toRelativeTime(),
-                        color = TextLight,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 11.sp
                     )
                 }
@@ -397,7 +404,7 @@ private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: ()
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = null,
-                            tint = TextLight,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -415,7 +422,7 @@ private fun HistoryCard(item: ScanHistoryItem, onClick: () -> Unit, onDelete: ()
 private fun EmptyHistoryCard() {
     Card(
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -428,22 +435,22 @@ private fun EmptyHistoryCard() {
                 modifier = Modifier
                     .size(56.dp)
                     .clip(CircleShape)
-                    .background(SoftSage),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.QrCodeScanner,
                     null,
-                    tint = EmeraldDark,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(28.dp)
                 )
             }
             Spacer(modifier = Modifier.height(14.dp))
-            Text("Belum ada riwayat scan", color = TextDark, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            Text(stringResource(R.string.history_empty_title), color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp)
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                "Scan produk pertama untuk melihat histori halal Anda.",
-                color = TextMedium,
+                stringResource(R.string.history_empty_desc),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )

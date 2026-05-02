@@ -60,6 +60,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -95,27 +96,53 @@ fun HalocodeScreen(
     }
 
     Scaffold(
+        containerColor = Color(0xFFFAFAFA),
         topBar = {
+            @OptIn(ExperimentalMaterial3Api::class)
             TopAppBar(
-                title = { Text("Halocode") },
+                title = { 
+                    Text(
+                        "Halocode Expert", 
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                ),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
+                .padding(padding),
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Surface(
+                color = Color.White,
+                shadowElevation = 1.dp
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text(
+                        text = "Konsultasi Real-time",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFF1A1A1A)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Pilih pakar terpercaya untuk solusi kesehatan & halal Anda.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray,
+                    )
+                }
+            }
+            
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                Spacer(modifier = Modifier.height(16.dp))
 
             if (currentConsultation != null) {
                 ConsultationBanner(
@@ -185,6 +212,7 @@ fun HalocodeScreen(
             }
         }
     }
+}
 }
 
 @Composable
@@ -262,39 +290,51 @@ private fun HalocodeExpertCard(
     expert: HalocodeExpert,
     onConsult: () -> Unit,
 ) {
-    Card(shape = RoundedCornerShape(20.dp), elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)) {
+    Card(
+        shape = RoundedCornerShape(20.dp), 
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (expert.photoUrl.isNullOrBlank()) {
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(Icons.Default.Chat, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Box(
+                modifier = Modifier
+                    .size(68.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFFF1F8E9)),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (expert.photoUrl.isNullOrBlank()) {
+                    Icon(
+                        Icons.Default.Chat, 
+                        contentDescription = null, 
+                        tint = Color(0xFF00C853),
+                        modifier = Modifier.size(32.dp)
+                    )
+                } else {
+                    AsyncImage(
+                        model = expert.photoUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
                 }
-            } else {
-                AsyncImage(
-                    model = expert.photoUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape),
-                )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(expert.name, fontWeight = FontWeight.Bold)
+                    Text(
+                        expert.name, 
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = Color(0xFF1A1A1A)
+                    )
                     if (expert.isVerified) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Icon(
@@ -308,36 +348,40 @@ private fun HalocodeExpertCard(
                 Text(
                     text = expert.specialization,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color.Gray,
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Rp ${rupiah(expert.pricePerSession)} / sesi",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    text = "Rating ${expert.rating} • ${expert.totalReviews} ulasan",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
+                Spacer(modifier = Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Default.Circle,
                         contentDescription = null,
-                        tint = if (expert.isOnline) Color(0xFF2E7D32) else Color(0xFF9E9E9E),
-                        modifier = Modifier.size(10.dp),
+                        tint = if (expert.isOnline) Color(0xFF00C853) else Color(0xFFBDBDBD),
+                        modifier = Modifier.size(8.dp),
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(if (expert.isOnline) "Online" else "Offline", style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        if (expert.isOnline) "Online" else "Offline", 
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (expert.isOnline) Color(0xFF00C853) else Color.Gray,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-                Button(onClick = onConsult) {
-                    Text("Konsultasi")
-                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Rp ${rupiah(expert.pricePerSession)} / sesi",
+                    color = Color(0xFF00C853),
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 14.sp
+                )
+            }
+
+            IconButton(
+                onClick = onConsult,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(Color(0xFF00C853))
+            ) {
+                Icon(Icons.Default.Chat, contentDescription = null, tint = Color.White)
             }
         }
     }

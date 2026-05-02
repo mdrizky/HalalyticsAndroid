@@ -29,6 +29,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.halalyticscompose.data.model.RegisterRequest
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -42,9 +44,12 @@ import com.example.halalyticscompose.ui.theme.*
 @Composable
 fun SimpleRegisterScreen(
     navController: NavController,
-    viewModel: com.example.halalyticscompose.ui.viewmodel.MainViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    viewModel: com.example.halalyticscompose.ui.viewmodel.AuthViewModel = hiltViewModel(),
+    mainViewModel: com.example.halalyticscompose.ui.viewmodel.MainViewModel = hiltViewModel()
 ) {
-    val isDarkMode by viewModel.isDarkMode.collectAsState()
+    val isDarkMode by mainViewModel.isDarkMode.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val viewModelError by viewModel.errorMessage.collectAsState()
     var fullName by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -56,7 +61,6 @@ fun SimpleRegisterScreen(
     var medicalHistory by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isConfirmPasswordVisible by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     
@@ -538,27 +542,24 @@ fun SimpleRegisterScreen(
                                 return@Button
                             }
                             
-                            isLoading = true
                             errorMessage = ""
                             
                             viewModel.register(
-                                fullName = fullName,
-                                username = username,
-                                email = email,
-                                password = password,
-                                phone = phone,
-                                bloodType = bloodType,
-                                allergy = allergy,
-                                medicalHistory = medicalHistory,
+                                com.example.halalyticscompose.data.model.RegisterRequest(
+                                    fullName = fullName,
+                                    username = username,
+                                    email = email,
+                                    password = password,
+                                    passwordConfirmation = confirmPassword,
+                                    phone = phone,
+                                    bloodType = bloodType,
+                                    allergy = allergy,
+                                    medicalHistory = medicalHistory
+                                ),
                                 onSuccess = {
-                                    isLoading = false
                                     navController.navigate("basic_profile") {
                                         popUpTo("register") { inclusive = true }
                                     }
-                                },
-                                onError = { error ->
-                                    isLoading = false
-                                    errorMessage = error
                                 }
                             )
                         },

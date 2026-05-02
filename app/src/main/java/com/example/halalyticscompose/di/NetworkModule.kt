@@ -2,7 +2,7 @@ package com.example.halalyticscompose.di
 
 import android.util.Log
 import com.example.halalyticscompose.BuildConfig
-import com.example.halalyticscompose.Data.API.ApiService
+import com.example.halalyticscompose.data.api.ApiService
 import com.example.halalyticscompose.data.api.NotificationApiService
 import com.example.halalyticscompose.data.api.OCRProductApiService
 import com.example.halalyticscompose.data.api.ProductApiService
@@ -43,15 +43,15 @@ object NetworkModule {
                 .header("Accept", "application/json")
                 .header("X-Request-Id", requestId)
 
-            val currentContentType = original.header("Content-Type")?.lowercase().orEmpty()
-            if (original.body != null &&
-                currentContentType.isEmpty() &&
-                !currentContentType.contains("multipart")
-            ) {
-                requestBuilder.header("Content-Type", "application/json")
+            val body = original.body
+            val currentContentType = body?.contentType()?.toString()?.lowercase().orEmpty()
+            if (body != null && currentContentType.isNotBlank()) {
+                // Keep the request body's own content type. Forcing JSON here
+                // breaks Retrofit form submissions like login/register.
+                requestBuilder.header("Content-Type", currentContentType)
             }
 
-            val request = requestBuilder.method(original.method, original.body).build()
+            val request = requestBuilder.method(original.method, body).build()
 
             try {
                 val response = chain.proceed(request)
@@ -76,7 +76,7 @@ object NetworkModule {
 
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG) {
-                HttpLoggingInterceptor.Level.BASIC
+                HttpLoggingInterceptor.Level.BODY
             } else {
                 HttpLoggingInterceptor.Level.NONE
             }
@@ -144,6 +144,52 @@ object NetworkModule {
     @Singleton
     fun provideExpansionApiService(retrofit: Retrofit): ExpansionApiService {
         return retrofit.create(ExpansionApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideExternalApiService(retrofit: Retrofit): com.example.halalyticscompose.data.network.ExternalApiService {
+        return retrofit.create(com.example.halalyticscompose.data.network.ExternalApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideIngredientApiService(retrofit: Retrofit): com.example.halalyticscompose.data.api.IngredientApiService {
+        return retrofit.create(com.example.halalyticscompose.data.api.IngredientApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    @javax.inject.Named("OpenFoodFactsRetrofit")
+    fun provideOpenFoodFactsRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://world.openfoodfacts.org/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideOpenFoodFactsApiService(@javax.inject.Named("OpenFoodFactsRetrofit") retrofit: Retrofit): com.example.halalyticscompose.data.api.OpenFoodFactsApiService {
+        return retrofit.create(com.example.halalyticscompose.data.api.OpenFoodFactsApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    @javax.inject.Named("OpenBeautyFactsRetrofit")
+    fun provideOpenBeautyFactsRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://world.openbeautyfacts.org/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideOpenBeautyFactsApiService(@javax.inject.Named("OpenBeautyFactsRetrofit") retrofit: Retrofit): com.example.halalyticscompose.data.api.OpenBeautyFactsApiService {
+        return retrofit.create(com.example.halalyticscompose.data.api.OpenBeautyFactsApiService::class.java)
     }
 
     @Provides

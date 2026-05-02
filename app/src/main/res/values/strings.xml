@@ -31,13 +31,45 @@
     <string name="home_action_assistant">Asisten</string>
     <string name="home_action_halal">Halal</string>
     <string name="home_action_interaction">Interaksi</string>
-    <string name="home_action_lab">Lab</string>
     <string name="home_action_report">AI Report</string>
     <string name="home_poster_title">Poster &amp; Edukasi</string>
     <string name="home_recent_scan">Scan Terbaru</string>
     <string name="home_see_all">Lihat semua</string>
     <string name="home_updated_at">Terakhir update %1$s</string>
     <string name="home_updated_unknown">Belum ada update</string>
+    <string name="home_categories">Kategori</string>
+    <string name="home_recommendations">Rekomendasi</string>
+    <string name="home_health_articles">Artikel Kesehatan</string>
+    <string name="home_total_scans_label">Total Scan</string>
+    <string name="home_halal_points_label">Poin Halal</string>
+    <string name="home_health_score_label">Skor Sehat</string>
+    <string name="home_streak_label">Streak</string>
+    <string name="home_ai_insight_title">AI Daily Insight</string>
+
+    <string name="feature_scan_ai">Scan AI</string>
+    <string name="feature_cek_obat">Cek Obat</string>
+    <string name="feature_kosmetik">Kosmetik</string>
+    <string name="feature_halal_points">Halal</string>
+    <string name="feature_bpom_id">BPOM</string>
+    <string name="feature_ai_chat_id">AI Chat</string>
+    <string name="feature_riwayat_id">Riwayat</string>
+    <string name="feature_lainnya_id">Lainnya</string>
+    <string name="feature_my_contribution">Kontribusi Saya</string>
+    <string name="feature_favorite_list">Favorit</string>
+    <string name="feature_edit_profile">Edit Profil</string>
+    <string name="feature_logout_label">Keluar</string>
+
+    <string name="section_activity_contribution">Aktivitas &amp; Kontribusi</string>
+    <string name="section_account">Akun</string>
+    <string name="section_security">Keamanan</string>
+    <string name="section_about">Tentang Halalytics</string>
+    <string name="section_crash_diagnostics">Diagnosa Crash</string>
+
+    <string name="home_meat_category">Daging</string>
+    <string name="home_all_features_sheet">Semua Fitur</string>
+    <string name="home_scan_barcode_sheet">Scan Barcode</string>
+    <string name="home_medicine_reminders_sheet">Pengingat Obat</string>
+    <string name="home_mental_quiz_sheet">Kuis Mental</string>
     <string name="search_hub_title">Cari Produk</string>
     <string name="search_hub_hint">Cari makanan, obat, kosmetik...</string>
     <string name="search_hub_all">Semua</string>
@@ -88,10 +120,51 @@
     <string name="health_suite_select">Pilih Layanan AI</string>
     <string name="drug_interaction_title">Cek Interaksi Obat</string>
     <string name="common_back">Kembali</string>
+    <string name="common_delete">Hapus</string>
+    <string name="common_cancel">Batal</string>
     <string name="common_dropdown">Dropdown</string>
     <string name="common_open">Buka</string>
+    <string name="common_close">Tutup</string>
+    <string name="common_save">Simpan</string>
+    <string name="common_edit">Edit</string>
+    <string name="home_greeting_generic">Halo</string>
     <string name="bottom_nav_search">Cari</string>
     <string name="bottom_nav_history">Riwayat</string>
+    <string name="bottom_nav_profile">Profil</string>
+    <string name="bottom_nav_health">Kesehatan</string>
+    <string name="bottom_nav_scan">Scan</string>
+    <string name="mental_health_title">Kesehatan Mental</string>
+    <string name="mental_health_subtitle">Jaga ketenangan pikiran dan hati Anda.</string>
+    <string name="mental_health_topics">Topik Pilihan</string>
+    <string name="mental_health_experts">Konsultasi Pakar</string>
+    <string name="mental_health_articles">Bacaan Terkait</string>
+    <string name="mental_health_find_expert">Carikan Ahli</string>
+
+    <string name="mental_health_topic_stress">Stres</string>
+    <string name="mental_health_topic_stress_desc">Stres adalah respons alami tubuh terhadap tekanan. Stres berkepanjangan dapat memengaruhi kesehatan fisik dan mental Anda. Pelajari cara mengelola stres dengan efektif.</string>
+    <string name="mental_health_topic_anxiety">Gangguan Kecemasan</string>
+    <string name="mental_health_topic_anxiety_desc">Gangguan kecemasan melibatkan rasa khawatir berlebihan yang sulit dikendalikan. Penanganan yang tepat dapat membantu Anda kembali beraktivitas normal.</string>
+    <string name="mental_health_topic_depression">Depresi</string>
+    <string name="mental_health_topic_depression_desc">Depresi lebih dari sekadar rasa sedih biasa. Ini adalah kondisi medis yang memengaruhi cara Anda berpikir, merasa, dan bertindak. Dengan penanganan tepat, depresi bisa diatasi.</string>
+    <string name="mental_health_topic_family">Keluarga &amp; Hubungan</string>
+    <string name="mental_health_topic_family_desc">Masalah dalam keluarga atau hubungan bisa menjadi sumber stres yang signifikan. Konseling dapat membantu memperbaiki komunikasi dan membangun hubungan yang lebih sehat.</string>
+    <string name="mental_health_topic_lonely">Kesepian</string>
+    <string name="mental_health_topic_lonely_desc">Kesepian adalah perasaan terisolasi meskipun dikelilingi orang lain. Ini umum terjadi dan bisa diatasi dengan langkah-langkah kecil menuju koneksi sosial.</string>
+
+    
+    
+    
+    <string name="health_suite_item_assistant_title">Tanya AI Kesehatan</string>
+
+    <string name="health_assistant_welcome">Halo, saya asisten medis AI Anda. Ada keluhan apa hari ini? Ceritakan gejala Anda untuk diagnosis awal.</string>
+    <string name="health_assistant_placeholder">Ceritakan keluhan Anda atau klik mic...</string>
+    <string name="common_analyze">Analyze</string>
+    
+    
+    
+    
+    
+    
 
     <string name="scan_hub_title">Scan Center</string>
     <string name="scan_hub_subtitle">Pilih mode scan sesuai kebutuhan analisis.</string>
@@ -131,7 +204,7 @@
     <string name="register_error_allergy">Pilih status alergi</string>
     <string name="register_error_medical_history">Masukkan riwayat medis</string>
 
-    <string name="health_suite_item_assistant_title">Health Assistant</string>
+    
     <string name="health_suite_item_assistant_desc">Chatbot konsultasi gejala dan tindakan awal.</string>
     <string name="health_suite_item_analysis_title">AI Analysis</string>
     <string name="health_suite_item_analysis_desc">Analisis cepat keluhan + rekomendasi awal.</string>
@@ -145,8 +218,6 @@
     <string name="health_suite_item_medication_desc">Jadwal pintar dengan pesan suara AI.</string>
     <string name="health_suite_item_reminders_title">Reminder List</string>
     <string name="health_suite_item_reminders_desc">Daftar pengingat obat aktif harian.</string>
-    <string name="health_suite_item_lab_title">Lab Result Analysis</string>
-    <string name="health_suite_item_lab_desc">Pahami hasil cek lab dengan mudah.</string>
     <string name="health_suite_item_journey_title">Health Journey</string>
     <string name="health_suite_item_journey_desc">Pantau berat badan dan tensi secara rutin.</string>
     <string name="health_suite_item_halal_title">Halal Specialist</string>
@@ -198,4 +269,237 @@
     <string name="ai_insight_loading">AI sedang menganalisis</string>
     <string name="ai_insight_fallback">Aktifkan AI untuk insight harian tentang produk halal &amp; kesehatan Anda.</string>
     <string name="ai_powered_by">Powered by Gemini ✨</string>
+
+    <string name="all_features_title">Semua Fitur</string>
+    <string name="all_features_core">Layanan Utama</string>
+    <string name="all_features_health">Health Suite (Kesehatan)</string>
+    <string name="all_features_ai">Pintar &amp; AI</string>
+    <string name="all_features_expansion">AI Expansion</string>
+    <string name="all_features_support">Dukungan &amp; Lainnya</string>
+
+    <string name="feature_scan_halal">Scan Halal</string>
+    <string name="feature_bpom">BPOM</string>
+    <string name="feature_cosmetic">Kosmetik</string>
+    <string name="feature_check_medicine">Cek Obat</string>
+    <string name="feature_medical_records">Medical Records</string>
+    <string name="feature_medical_resume">Medical Resume</string>
+    <string name="feature_health_monitor">Pantauan Tubuh</string>
+    <string name="feature_ai_assistant">AI Assistant</string>
+    <string name="feature_health_journey">Health Journey</string>
+    <string name="feature_nutrition_scan">Nutrition Scan</string>
+    <string name="feature_health_diary">Health Diary</string>
+    <string name="feature_ocr_product">OCR Produk</string>
+    <string name="feature_nutrition_ai">Nutrisi AI</string>
+    <string name="feature_recipe_ai">Recipe AI</string>
+    <string name="feature_daily_mission">Misi Harian</string>
+    <string name="feature_halocode">Halocode</string>
+    <string name="feature_community">Komunitas</string>
+    <string name="feature_health_pass">Health Pass</string>
+    <string name="feature_emergency">Emergency</string>
+    <string name="feature_report_issue">Report Issue</string>
+    <string name="feature_intl_medicine">Intl Medicine</string>
+
+    <string name="history_title">Riwayat Scan</string>
+    <string name="history_total">Total Scan</string>
+    <string name="history_today">Hari Ini</string>
+    <string name="history_filter_all">Semua</string>
+    <string name="history_empty_title">Belum ada riwayat scan</string>
+    <string name="history_empty_desc">Scan produk pertama untuk melihat histori halal Anda.</string>
+    <string name="history_delete_title">Hapus Riwayat</string>
+    <string name="history_delete_confirm">Data riwayat ini akan dihapus permanen.</string>
+
+    <string name="notification_title">Notifikasi</string>
+    <string name="notification_unread">%d belum dibaca</string>
+    <string name="notification_mark_all">Tandai Baca Semua</string>
+    <string name="notification_empty">Belum ada notifikasi</string>
+
+    <string name="favorites_title">Halal-Ku</string>
+    <string name="favorites_filter_title">Filter Status Halal</string>
+    <string name="favorites_search_placeholder">Cari produk favorit...</string>
+    <string name="favorites_stats_title">Statistik Favorit</string>
+    <string name="favorites_stats_total">Total Produk: %d</string>
+    <string name="favorites_empty_title">Belum ada produk favorit</string>
+    <string name="favorites_empty_desc">Tekan icon bintang pada produk untuk menambahkan ke favorit</string>
+    <string name="favorites_search_empty_title">Tidak ada produk favorit yang ditemukan</string>
+    <string name="favorites_search_empty_desc">Coba kata kunci lain</string>
+
+    <string name="medical_records_title">Rekam Medis Digital</string>
+    <string name="medical_records_empty_title">Belum ada histori rekam medis</string>
+    <string name="medical_records_empty_desc">Simpan hasil lab, resep, diagnosis, atau vaksinasi Anda di sini agar mudah diakses kapan saja.</string>
+    <string name="medical_records_add">Tambah Rekam Medis</string>
+    <string name="medical_records_error_load">Gagal memuat rekam medis</string>
+    <string name="medical_records_dialog_title">Judul Dokumen</string>
+    <string name="medical_records_dialog_type">Tipe (Lab, Resep, Diagnosis, Vaksinasi)</string>
+    <string name="medical_records_dialog_hospital">Rumah Sakit / Klinik</string>
+    <string name="medical_records_dialog_doctor">Nama Dokter</string>
+    <string name="medical_records_dialog_upload">Upload Foto Dokumen</string>
+    <string name="medical_records_photo_selected">Foto dipilih</string>
+
+    <string name="daily_mission_title">Misi Harian AI</string>
+    <string name="daily_mission_welcome">Selamat datang, %s</string>
+    <string name="daily_mission_default_user">Sobat Halal</string>
+    <string name="daily_mission_subtitle">Selesaikan misi kecil hari ini untuk dapat poin dan kebiasaan sehat yang konsisten.</string>
+    <string name="daily_mission_progress_title">Progress Hari Ini</string>
+    <string name="daily_mission_progress_count">%1$d/%2$d misi selesai</string>
+    <string name="daily_mission_points">+%d poin</string>
+    <string name="daily_mission_quick_access">Akses Cepat</string>
+    <string name="settings_privacy_mode">Privacy Mode (anti screenshot)</string>
+    <string name="settings_biometric_lock">Biometric Lock (halaman medis)</string>
+    <string name="settings_auto_logout">Auto Logout</string>
+    <string name="settings_timeout_minutes">Timeout (menit)</string>
+    <string name="settings_biometric_unavailable">Biometrik tidak tersedia di perangkat ini.</string>
+    <string name="settings_biometric_not_active">Biometrik belum aktif. Aktifkan sidik jari/face unlock di pengaturan perangkat.</string>
+    <string name="settings_biometric_success">Biometric lock aktif.</string>
+    <string name="settings_biometric_title">Aktifkan Biometric Lock</string>
+    <string name="settings_biometric_subtitle">Lindungi halaman medis sensitif</string>
+    <string name="settings_biometric_desc">Konfirmasi identitas untuk mengaktifkan kunci biometrik</string>
+    <string name="settings_about_title">Tentang Halalytics</string>
+    <string name="settings_app_version">Halalytics v2.5.0 Premium</string>
+    <string name="settings_app_desc">Analisis Halal &amp; Kesehatan berbasis AI tingkat lanjut untuk gaya hidup yang lebih baik.</string>
+    <string name="settings_copyright">© 2026 DeepMind Agentics Team</string>
+    <string name="settings_no_crash">Tidak ada rekaman crash.</string>
+    <string name="settings_last_crash">Crash terakhir yang tercatat di perangkat:</string>
+    <string name="settings_clear_crash">Hapus Log Crash</string>
+    <string name="assistant_title">Asisten Medis AI</string>
+    <string name="assistant_hero_question">Apa yang Anda rasakan hari ini?</string>
+    <string name="assistant_mic_listening">Mendengarkan...</string>
+    <string name="assistant_mic_stopped">Dihentikan</string>
+    <string name="assistant_voice_detected">✓ Suara terdeteksi</string>
+    <string name="assistant_mic_permission_denied">Izin mikrofon diperlukan untuk fitur suara</string>
+    <string name="assistant_tts_reading">Sedang membacakan hasil analisis...</string>
+    <string name="assistant_urgent_warning">PERINGATAN DARURAT</string>
+    <string name="assistant_open_first_aid">Buka Panduan IGD</string>
+    <string name="assistant_diagnosis_report">LAPORAN DIAGNOSIS</string>
+    <string name="assistant_confidence_level">Tingkat Kepercayaan:</string>
+    <string name="assistant_symptom_summary">Ringkasan Keluhan</string>
+    <string name="assistant_why_happened">Mengapa ini terjadi?</string>
+    <string name="assistant_related_symptoms">Gejala Terkait</string>
+    <string name="assistant_potential_causes">Penyebab Potensial</string>
+    <string name="assistant_cause_analysis">Analisis Kemungkinan Penyebab</string>
+    <string name="assistant_main_disease_explanation">Penjelasan Penyakit Utama</string>
+    <string name="assistant_relation_to_case">Hubungan dengan keluhanmu:</string>
+    <string name="assistant_personal_triggers">Faktor Pemicu Personal</string>
+    <string name="assistant_handling_prevention">Saran Penanganan &amp; Pencegahan</string>
+    <string name="assistant_initial_handling">Penanganan Awal:</string>
+    <string name="assistant_future_prevention">Pencegahan Masa Depan:</string>
+    <string name="assistant_therapy_recommendation">Rekomendasi Terapi</string>
+    <string name="assistant_pharmacy_medicine">Obat Apotek (Paten/Generik):</string>
+    <string name="assistant_herbal_alternative">Alternatif / Herbal:</string>
+    <string name="assistant_med_function">Fungsi:</string>
+    <string name="assistant_med_dosage">Dosis:</string>
+    <string name="assistant_med_time">Waktu minum:</string>
+    <string name="assistant_med_how_to_take">Cara pakai:</string>
+    <string name="assistant_med_duration">Durasi:</string>
+    <string name="assistant_med_halal_status">Status halal:</string>
+    <string name="assistant_med_price_est">Estimasi Harga:</string>
+    <string name="assistant_med_safety_note">Catatan keamanan:</string>
+    <string name="assistant_halal_verification">Verifikasi Halal:</string>
+    <string name="assistant_usage_rules">Aturan Pakai &amp; Perhatian Khusus</string>
+    <string name="assistant_med_instructions">Instruksi:</string>
+    <string name="assistant_side_effects">Efek Samping Potensial:</string>
+    <string name="assistant_drug_mechanism">Mekanisme Obat</string>
+    <string name="assistant_immediate_action">Tindakan Langsung</string>
+    <string name="assistant_future_prevention_title">Pencegahan ke Depan</string>
+    <string name="assistant_follow_up_questions">Pertanyaan Lanjutan</string>
+    <string name="assistant_tldr">Ringkasan Cepat (TL;DR)</string>
+    <string name="assistant_doctor_advice">Saran Dokter Segera</string>
+    <string name="assistant_condition_monitoring">Pantauan Kondisi</string>
+    <string name="assistant_go_to_doctor">Ke IGD/Dokter</string>
+    <string name="assistant_chat_expert">Chat Pakar</string>
+    <string name="assistant_set_reminder">Atur Pengingat Obat</string>
+    <string name="assistant_ask_expert">Tanya Pakar</string>
+    <string name="assistant_disclaimer">Disclaimer: Analisis AI ini hanya edukasi awal, bukan diagnosis dokter.</string>
+    <string name="assistant_recommended_medicines">Rekomendasi Obat Halal</string>
+    <string name="assistant_schedule_dose">Jadwalkan Dosis</string>
+    <string name="assistant_doses_per_day">Dosis per hari</string>
+    <string name="assistant_start_date">Tanggal Mulai (YYYY-MM-DD)</string>
+    <string name="assistant_save_reminder">Simpan Pengingat</string>
+    <string name="scan_title">Scan Produk</string>
+    <string name="scan_tab_barcode">Barcode</string>
+    <string name="scan_tab_ocr">OCR</string>
+    <string name="scan_permission_required">Izin kamera diperlukan</string>
+    <string name="scan_permission_explanation">Untuk scan barcode, izinkan akses kamera</string>
+    <string name="scan_give_permission">Berikan Izin</string>
+    <string name="scan_start_instruction">Tekan \'Mulai Scan\' untuk mengaktifkan kamera</string>
+    <string name="scan_frame_barcode_instruction">Posisikan barcode\ndi dalam bingkai</string>
+    <string name="scan_frame_ocr_instruction">Ketuk OCR untuk mengambil\nkomposisi produk</string>
+    <string name="scan_import_gallery">Import dari Galeri</string>
+    <string name="scan_start_button">Mulai Scan</string>
+    <string name="scan_manual_input">atau masukkan barcode manual</string>
+    <string name="scan_report_missing">Barcode tidak ditemukan? Laporkan disini</string>
+    <string name="scan_no_barcode_found">Barcode tidak ditemukan di gambar</string>
+    <string name="scan_failed">Gagal memindai: %1$s</string>
+    <string name="scan_error_loading">Error memuat gambar</string>
+    <string name="med_reminder_title">Pengingat Obat</string>
+    <string name="med_reminder_active">Aktif</string>
+    <string name="med_reminder_next_schedule">Jadwal Berikutnya</string>
+    <string name="med_reminder_no_reminders">Belum Ada Pengingat</string>
+    <string name="med_reminder_no_reminders_desc">Buat pengingat obat pertama Anda untuk tidak lupa minum obat tepat waktu</string>
+    <string name="med_reminder_create_new">Buat Pengingat Baru</string>
+    <string name="med_reminder_mark_taken">Sudah Minum</string>
+    <string name="med_reminder_snooze">Tunda</string>
+    <string name="med_reminder_snooze_toast">Pengingat ditunda 15 menit</string>
+    <string name="med_reminder_delete_title">Hapus Pengingat</string>
+    <string name="med_reminder_delete_desc">Apakah Anda yakin ingin menghapus pengingat untuk %1$s?</string>
+    <string name="med_reminder_history">Riwayat Minum:</string>
+    <string name="med_reminder_started">Mulai:</string>
+    <string name="med_reminder_until">Sampai:</string>
+    <string name="med_reminder_for">Untuk:</string>
+    <string name="med_reminder_next_dose">Selanjutnya:</string>
+    <string name="med_reminder_times_per_day">%1$dx/hari</string>
+    <string name="med_reminder_today">Hari Ini</string>
+    
+    
+    
+    
+    <string name="mental_health_psychiatrist">Pilih Psikiater</string>
+    <string name="mental_health_psychiatrist_desc">Penanganan intensif atau terapi pengobatan</string>
+    <string name="mental_health_psychologist">Pilih Psikolog</string>
+    <string name="mental_health_psychologist_desc">Asesmen kesehatan mental dan konseling</string>
+    <string name="mental_health_quiz_title">Kuis Kesehatan Mental</string>
+    <string name="mental_health_quiz_subtitle">Dirancang oleh ahli. Hasil instan.</string>
+    <string name="mental_health_articles_title">Baca Tentang Kesehatan Mental</string>
+    <string name="mental_health_carikan_ahli">Carikan Ahli</string>
+    <string name="mental_health_quiz_start">Mulai →</string>
+    <!-- Admin Panel -->
+    <string name="admin_panel_title">Admin Dashboard</string>
+    <string name="admin_panel_overview">Ikhtisar</string>
+    <string name="admin_panel_pending">Menunggu</string>
+    <string name="admin_panel_users">Pengguna</string>
+    <string name="admin_panel_approved">Disetujui</string>
+    <string name="admin_panel_scans_today">Scan Hari Ini</string>
+    <string name="admin_panel_no_pending">Tidak ada produk menunggu persetujuan.</string>
+    <string name="admin_panel_approve">Setujui</string>
+    <string name="admin_panel_reject">Tolak</string>
+    <string name="admin_panel_pending_approvals">Persetujuan Tertunda</string>
+    <string name="admin_panel_refresh">Refresh</string>
+
+    <!-- Admin Notification -->
+    <string name="admin_notif_title">Notifikasi Admin</string>
+    <string name="admin_notif_empty">Tidak ada notifikasi</string>
+    <string name="admin_notif_empty_desc">Notifikasi akan muncul di sini ketika ada produk baru atau perubahan status</string>
+    <string name="admin_notif_mark_read">Tandai Semua Dibaca</string>
+    <string name="admin_notif_mark_read_single">Tandai dibaca</string>
+    <string name="admin_notif_delete">Hapus</string>
+    <string name="admin_notif_back">Kembali</string>
+    <string name="admin_notif_close">Tutup</string>
+
+    <!-- Add Medicine Reminder -->
+    <string name="medicine_reminder_add_title">Tambah Pengingat Baru</string>
+    <string name="medicine_reminder_search_placeholder">Cari dan Pilih Obat</string>
+    <string name="medicine_reminder_freq_label">Berapa kali sehari?</string>
+    <string name="medicine_reminder_freq_hint">Wajib diisi</string>
+    <string name="medicine_reminder_notif_at">Notifikasi pada %s</string>
+    <string name="medicine_reminder_schedule_label">Jadwal %d</string>
+    <string name="medicine_reminder_duration_label">Berapa lama dikonsumsi?</string>
+    <string name="medicine_reminder_duration_desc">Pengingat selama %d hari ke depan</string>
+    <string name="medicine_reminder_usage_guide">Petunjuk Penggunaan</string>
+    <string name="medicine_reminder_usage_method">Cara Penggunaan</string>
+    <string name="medicine_reminder_dose_label">Dosis</string>
+    <string name="medicine_reminder_instruction_placeholder">Contoh: Minum dengan air putih setelah makan</string>
+    <string name="medicine_reminder_instruction_hint">Instruksi lainnya (opsional)</string>
+    <string name="medicine_reminder_save_button">SIMPAN PENGINGAT</string>
+    <string name="medicine_reminder_save_success">Pengingat berhasil disimpan!</string>
+    <string name="scan_flash_toggle">Toggle Flash</string>
+    <string name="scan_live_badge">LIVE</string>
 </resources>

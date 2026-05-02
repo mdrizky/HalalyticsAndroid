@@ -2,18 +2,27 @@ package com.example.halalyticscompose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.Network.ApiConfig
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.LeaderboardMember
+import com.example.halalyticscompose.utils.SessionManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class LeaderboardViewModel : ViewModel() {
-    private val _leaderboard = MutableStateFlow<List<Any>>(emptyList())
-    val leaderboard: StateFlow<List<Any>> = _leaderboard.asStateFlow()
+@HiltViewModel
+class LeaderboardViewModel @Inject constructor(
+    private val apiService: ApiService,
+    private val sessionManager: SessionManager
+) : ViewModel() {
+    
+    private val _leaderboard = MutableStateFlow<List<LeaderboardMember>>(emptyList())
+    val leaderboard: StateFlow<List<LeaderboardMember>> = _leaderboard.asStateFlow()
 
-    private val _myRank = MutableStateFlow<Any?>(null)
-    val myRank: StateFlow<Any?> = _myRank.asStateFlow()
+    private val _myRank = MutableStateFlow<LeaderboardMember?>(null)
+    val myRank: StateFlow<LeaderboardMember?> = _myRank.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -26,24 +35,25 @@ class LeaderboardViewModel : ViewModel() {
             try {
                 _isLoading.value = true
                 _error.value = null
-                val response = ApiConfig.apiService.getLeaderboard(period = period)
+                val response = apiService.getLeaderboard(period = period)
                 if (response.success) {
-                    _leaderboard.value = response.content as? List<Any> ?: emptyList()
+                    _leaderboard.value = response.content ?: emptyList()
                 } else {
                     _error.value = response.message
                 }
             } catch (e: Exception) {
-                _error.value = e.localizedMessage
+                _error.value = e.localizedMessage ?: "Failed to load leaderboard"
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    fun loadMyRank(token: String, period: String = "monthly") {
+    fun loadMyRank(period: String = "monthly") {
+        val token = sessionManager.getAuthToken() ?: return
         viewModelScope.launch {
             try {
-                val response = ApiConfig.apiService.getMyRank("Bearer $token", period)
+                val response = apiService.getMyRank("Bearer $token", period)
                 if (response.success) {
                     _myRank.value = response.content
                 }

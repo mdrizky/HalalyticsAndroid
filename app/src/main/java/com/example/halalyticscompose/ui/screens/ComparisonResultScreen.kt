@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.halalyticscompose.Data.Model.ProductComparison
-import com.example.halalyticscompose.Data.Model.StandardizedProduct
+import com.example.halalyticscompose.data.model.ProductComparison
+import com.example.halalyticscompose.data.model.StandardizedProduct
 import com.example.halalyticscompose.ui.theme.HalalGreen
 import com.example.halalyticscompose.ui.viewmodel.CompareViewModel
 

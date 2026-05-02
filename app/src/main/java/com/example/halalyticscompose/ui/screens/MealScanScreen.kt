@@ -32,23 +32,22 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.halalyticscompose.Data.Model.MealData
+import com.example.halalyticscompose.data.model.MealData
 import com.example.halalyticscompose.ui.theme.HalalGreen
-import com.example.halalyticscompose.ui.viewmodel.MainViewModel
-// MealViewModel imports removed
+import com.example.halalyticscompose.ui.viewmodel.ScanViewModel
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.nio.ByteBuffer
 
 @Composable
 fun MealScanScreen(
     navController: NavController,
-    mainViewModel: MainViewModel
+    viewModel: ScanViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val token by mainViewModel.accessToken.collectAsState()
-    // Observe MainViewModel state instead of MealViewModel
-    val analysisState by mainViewModel.mealAnalysisState.collectAsState()
+    val analysisState by viewModel.mealAnalysisState.collectAsState()
 
     var hasCameraPermission by remember {
         mutableStateOf(
@@ -72,7 +71,6 @@ fun MealScanScreen(
         }
     }
 
-    // Robust Camera Controller
     val cameraController = remember {
         LifecycleCameraController(context).apply {
             bindToLifecycle(lifecycleOwner)
@@ -80,36 +78,15 @@ fun MealScanScreen(
         }
     }
     
-    // Camera Selection with Fallback (Fix for Emulator Crash)
-    LaunchedEffect(Unit) {
-        val provider = androidx.camera.lifecycle.ProcessCameraProvider.getInstance(context).get()
-        
-        try {
-            if (provider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA)) {
-                cameraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-            } else if (provider.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA)) {
-                cameraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
-            } else {
-                android.util.Log.e("MealScanScreen", "No camera found")
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("MealScanScreen", "Camera selection error: ${e.message}")
-        }
-    }
-
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         if (analysisState.data != null) {
-            // SHOW RESULT CARD
             MealResultCard(
                 data = analysisState.data!!,
                 onClose = { 
-                    // Reset MainViewModel state if possible, or just navigate back
-                    // For now, simple close logic (maybe navigate back)
                     navController.navigateUp()
                 }
             )
         } else {
-            // CAMERA PREVIEW
             if (hasCameraPermission) {
                 AndroidView(
                     modifier = Modifier.fillMaxSize(),
@@ -126,7 +103,6 @@ fun MealScanScreen(
                 }
             }
 
-            // OVERLAY UI
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -134,7 +110,6 @@ fun MealScanScreen(
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -162,39 +137,29 @@ fun MealScanScreen(
                         )
                     }
                     
-                    Spacer(modifier = Modifier.size(40.dp)) // Balance the layout
+                    Spacer(modifier = Modifier.size(40.dp))
                 }
 
-                // Focus Frame / Guide
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                         .aspectRatio(1f)
                         .padding(20.dp)
                 ) {
-                    // Corners
                     val strokeWidth = 4.dp
                     val length = 30.dp
                     val color = Color.White.copy(alpha = 0.8f)
                     
-                    // Top Left
                     Box(Modifier.align(Alignment.TopStart).size(length, strokeWidth).background(color))
                     Box(Modifier.align(Alignment.TopStart).size(strokeWidth, length).background(color))
-                    
-                    // Top Right
                     Box(Modifier.align(Alignment.TopEnd).size(length, strokeWidth).background(color))
                     Box(Modifier.align(Alignment.TopEnd).size(strokeWidth, length).background(color))
-                    
-                    // Bottom Left
                     Box(Modifier.align(Alignment.BottomStart).size(length, strokeWidth).background(color))
                     Box(Modifier.align(Alignment.BottomStart).size(strokeWidth, length).background(color))
-                    
-                    // Bottom Right
                     Box(Modifier.align(Alignment.BottomEnd).size(length, strokeWidth).background(color))
                     Box(Modifier.align(Alignment.BottomEnd).size(strokeWidth, length).background(color))
                 }
 
-                // Shutter / Loading
                 if (analysisState.isLoading) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator(color = HalalGreen, modifier = Modifier.size(64.dp))
@@ -214,15 +179,14 @@ fun MealScanScreen(
                             modifier = Modifier
                                 .size(84.dp)
                                 .clip(CircleShape)
-                                .background(Color.White) // Outer ring
+                                .background(Color.White)
                                 .padding(4.dp)
                         ) {
                             Button(
                                 onClick = {
                                     takePhoto(context, cameraController) { bitmap ->
-                                        // Save Bitmap to File and Analyze
                                         val file = saveBitmapToFile(context, bitmap)
-                                        mainViewModel.analyzeMealImage(file)
+                                        viewModel.analyzeMealImage(file)
                                     }
                                 },
                                 modifier = Modifier
@@ -268,10 +232,8 @@ fun MealResultCard(data: MealData, onClose: () -> Unit) {
                     color = Color.White
                 )
                 
-                // Halal Badge
                 val badgeColor = when(data.halalAnalysis.status.lowercase()) {
-                    "safe" -> HalalGreen
-                    "halal" -> HalalGreen
+                    "safe", "halal" -> HalalGreen
                     "haram" -> Color.Red
                     else -> Color(0xFFFFCC00)
                 }
@@ -292,7 +254,6 @@ fun MealResultCard(data: MealData, onClose: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Nutrition Grid
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 NutritionItem("Calories", "${data.nutrition.calories}", "kcal")
                 NutritionItem("Protein", "%.1f".format(data.nutrition.protein), "g")
@@ -338,11 +299,6 @@ private fun takePhoto(
                         onPhotoTaken(bitmap)
                     } catch (e: Exception) {
                         android.util.Log.e("MealScanScreen", "Error processing image: ${e.message}")
-                        android.widget.Toast.makeText(
-                            context,
-                            "Error processing image: ${e.message}",
-                            android.widget.Toast.LENGTH_SHORT
-                        ).show()
                     } finally {
                         image.close()
                     }
@@ -350,21 +306,11 @@ private fun takePhoto(
 
                 override fun onError(exception: ImageCaptureException) {
                     android.util.Log.e("MealScanScreen", "Camera capture error: ${exception.message}")
-                    android.widget.Toast.makeText(
-                        context,
-                        "Camera error: ${exception.message}",
-                        android.widget.Toast.LENGTH_SHORT
-                    ).show()
                 }
             }
         )
     } catch (e: Exception) {
         android.util.Log.e("MealScanScreen", "Error taking photo: ${e.message}")
-        android.widget.Toast.makeText(
-            context,
-            "Failed to take photo: ${e.message}",
-            android.widget.Toast.LENGTH_SHORT
-        ).show()
     }
 }
 
@@ -374,7 +320,6 @@ fun imageProxyToBitmap(image: ImageProxy): Bitmap {
     buffer.get(bytes)
     var bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     
-    // Rotate if needed (CameraX usually handles user rotation, but bitmap might be raw)
     val matrix = Matrix()
     matrix.postRotate(image.imageInfo.rotationDegrees.toFloat())
     bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
@@ -382,13 +327,13 @@ fun imageProxyToBitmap(image: ImageProxy): Bitmap {
     return bitmap
 }
 
-private fun saveBitmapToFile(context: android.content.Context, bitmap: Bitmap): java.io.File {
-    val file = java.io.File(context.cacheDir, "meal_scan_${System.currentTimeMillis()}.jpg")
+private fun saveBitmapToFile(context: android.content.Context, bitmap: Bitmap): File {
+    val file = File(context.cacheDir, "meal_scan_${System.currentTimeMillis()}.jpg")
     file.createNewFile()
-    val bos = java.io.ByteArrayOutputStream()
+    val bos = ByteArrayOutputStream()
     bitmap.compress(Bitmap.CompressFormat.JPEG, 90, bos)
     val bitmapdata = bos.toByteArray()
-    val fos = java.io.FileOutputStream(file)
+    val fos = FileOutputStream(file)
     fos.write(bitmapdata)
     fos.flush()
     fos.close()

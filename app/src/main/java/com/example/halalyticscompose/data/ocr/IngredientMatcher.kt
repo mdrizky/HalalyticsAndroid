@@ -1,8 +1,8 @@
 package com.example.halalyticscompose.data.ocr
 
-import com.example.halalyticscompose.Data.Local.Dao.HaramIngredientDao
-import com.example.halalyticscompose.Data.Local.Entities.HaramIngredientEntity
-import com.example.halalyticscompose.Data.Local.Entities.UserHealthProfileEntity
+import com.example.halalyticscompose.data.local.Dao.HaramIngredientDao
+import com.example.halalyticscompose.data.local.Entities.HaramIngredientEntity
+import com.example.halalyticscompose.data.local.Entities.UserHealthProfileEntity
 import javax.inject.Inject
 import kotlin.math.absoluteValue
 

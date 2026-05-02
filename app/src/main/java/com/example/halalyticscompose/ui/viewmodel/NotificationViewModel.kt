@@ -3,9 +3,11 @@ package com.example.halalyticscompose.ui.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.Model.*
-import com.example.halalyticscompose.Data.Network.ApiConfig
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.*
 import com.example.halalyticscompose.services.FirebaseRealtimeListener
+import com.example.halalyticscompose.utils.SessionManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,17 +16,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
+import javax.inject.Inject
 
-class NotificationViewModel : ViewModel() {
+@HiltViewModel
+class NotificationViewModel @Inject constructor(
+    private val apiService: ApiService,
+    private val sessionManager: SessionManager
+) : ViewModel() {
 
-    private val apiService = ApiConfig.apiService
     private var realtimeJob: Job? = null
     private var pollingJob: Job? = null
     private var realtimeStarted = false
-    private var currentToken: String? = null
-    private var currentUserId: Int? = null
     
-    // Notifications State
     private val _notifications = MutableStateFlow<List<NotificationItem>>(emptyList())
     val notifications: StateFlow<List<NotificationItem>> = _notifications.asStateFlow()
 
@@ -37,32 +40,25 @@ class NotificationViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    /**
-     * Load notifications from API and start realtime listener
-     */
-    fun loadNotifications(token: String, userId: Int) {
-        currentToken = token
-        currentUserId = userId
+    fun loadNotifications(token: String? = null, userId: Int? = null) {
+        val authToken = token ?: sessionManager.getAuthToken() ?: return
+        val currentUserId = userId ?: sessionManager.getUserId()
+        
         viewModelScope.launch {
             _loading.value = true
             _errorMessage.value = null
             try {
-                // Initial Load via API
-                val response = apiService.getNotifications("Bearer $token")
+                val response = apiService.getNotifications("Bearer $authToken")
                 if (response.success) {
                     _notifications.value = response.data.data
                     _unreadCount.value = response.unreadCount
-                } else {
-                    _errorMessage.value = "Gagal memuat notifikasi dari server"
                 }
-
-                // Start Listening to Firebase Realtime Events
-                if (!realtimeStarted) {
-                    startRealtimeListener(userId)
-                    startPollingFallback(token, userId)
+                
+                if (!realtimeStarted && currentUserId > 0) {
+                    startRealtimeListener(currentUserId)
+                    startPollingFallback(authToken, currentUserId)
                 }
             } catch (e: Exception) {
-                _errorMessage.value = formatApiError("Gagal memuat notifikasi", e)
                 Log.e("NotificationViewModel", "loadNotifications failed", e)
             } finally {
                 _loading.value = false
@@ -86,12 +82,9 @@ class NotificationViewModel : ViewModel() {
             if (response.success) {
                 _notifications.value = response.data.data
                 _unreadCount.value = response.unreadCount
-            } else {
-                _errorMessage.value = "Sinkronisasi notifikasi gagal"
             }
         } catch (e: Exception) {
-            _errorMessage.value = formatApiError("Sinkronisasi notifikasi gagal", e)
-            Log.e("NotificationViewModel", "poll refresh failed for userId=$userId", e)
+            Log.e("NotificationViewModel", "poll refresh failed", e)
         }
     }
 
@@ -100,21 +93,18 @@ class NotificationViewModel : ViewModel() {
         realtimeJob?.cancel()
         realtimeStarted = true
         realtimeJob = viewModelScope.launch {
-            // Listen for new notifications
             listener.listenToNotifications().collect { update ->
-                // Check if this notification is already in the list to avoid duplicates
                 val currentList = _notifications.value
                 val exists = currentList.any { it.id == update.id }
                 
                 if (!exists) {
-                    // Prepend new notification to top
                     val newNotification = NotificationItem(
                         id = update.id,
                         title = update.title,
                         message = update.message,
-                        type = update.type, // 'system', 'scan', etc
+                        type = update.type,
                         isRead = update.is_read,
-                        createdAt = java.time.Instant.ofEpochSecond(update.created_at).toString(), // simplified
+                        createdAt = java.time.Instant.ofEpochSecond(update.created_at).toString(),
                         actionType = update.action_type,
                         actionValue = update.action_value,
                         relatedProduct = null
@@ -126,24 +116,15 @@ class NotificationViewModel : ViewModel() {
                     
                     _notifications.value = newList
                     _unreadCount.value += 1
-                    _errorMessage.value = null
                 }
             }
         }
     }
 
-    private fun formatApiError(prefix: String, e: Exception): String {
-        return when (e) {
-            is HttpException -> "$prefix (${e.code()}): ${e.response()?.errorBody()?.string()?.take(180) ?: "HTTP error"}"
-            is IOException -> "$prefix: koneksi internet/server bermasalah"
-            else -> "$prefix: ${e.message ?: "unknown error"}"
-        }
-    }
-
-    fun markAsRead(token: String, notificationId: Int) {
+    fun markAsRead(notificationId: Int) {
+        val token = sessionManager.getAuthToken() ?: return
         viewModelScope.launch {
             try {
-                // Optimistic UI Update
                 val currentList = _notifications.value.map { 
                     if (it.id == notificationId && !it.isRead) {
                         _unreadCount.value = maxOf(0, _unreadCount.value - 1)
@@ -153,35 +134,25 @@ class NotificationViewModel : ViewModel() {
                     }
                 }
                 _notifications.value = currentList
-
-                // API Call
                 apiService.markAsRead("Bearer $token", notificationId)
             } catch (e: Exception) {
-                _errorMessage.value = formatApiError("Gagal menandai notifikasi", e)
                 Log.e("NotificationViewModel", "markAsRead failed", e)
             }
         }
     }
 
-    fun markAllAsRead(token: String) {
+    fun markAllAsRead() {
+        val token = sessionManager.getAuthToken() ?: return
         viewModelScope.launch {
             try {
-                // Optimistic UI Update
                 val currentList = _notifications.value.map { it.copy(isRead = true) }
                 _notifications.value = currentList
                 _unreadCount.value = 0
-
-                // API Call
                 apiService.markAllAsRead("Bearer $token")
             } catch (e: Exception) {
-                _errorMessage.value = formatApiError("Gagal menandai semua notifikasi", e)
                 Log.e("NotificationViewModel", "markAllAsRead failed", e)
             }
         }
-    }
-
-    fun clearError() {
-        _errorMessage.value = null
     }
 
     override fun onCleared() {

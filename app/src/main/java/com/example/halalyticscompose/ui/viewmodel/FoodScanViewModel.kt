@@ -2,8 +2,8 @@ package com.example.halalyticscompose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.Model.*
-import com.example.halalyticscompose.Data.Network.ApiConfig
+import com.example.halalyticscompose.data.model.*
+import com.example.halalyticscompose.data.network.ApiConfig
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -12,12 +12,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.utils.SessionManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 /**
  * ViewModel for Food Scan & Recognition feature
  */
-class FoodScanViewModel : ViewModel() {
-    
-    private val apiService = ApiConfig.apiService
+@HiltViewModel
+class FoodScanViewModel @Inject constructor(
+    private val apiService: ApiService,
+    private val sessionManager: SessionManager
+) : ViewModel() {
     
     // UI States
     private val _isLoading = MutableStateFlow(false)
@@ -45,12 +52,6 @@ class FoodScanViewModel : ViewModel() {
     private val _selectedPortion = MutableStateFlow(1.0)
     val selectedPortion: StateFlow<Double> = _selectedPortion.asStateFlow()
     
-    // Token for API calls
-    private var authToken: String = ""
-    
-    fun setAuthToken(token: String) {
-        authToken = token
-    }
     
     /**
      * Search for street foods by name
@@ -66,8 +67,9 @@ class FoodScanViewModel : ViewModel() {
                 _isLoading.value = true
                 _errorMessage.value = null
                 
+                val token = sessionManager.getBearerToken() ?: ""
                 // Using new API signature: searchFood(token, query) -> ApiResponse<List<StreetFood>>
-                val response = apiService.searchFood("Bearer $authToken", query)
+                val response = apiService.searchFood(token, query)
                 
                 if (response.success) {
                     _searchResults.value = response.data ?: emptyList()
@@ -92,7 +94,8 @@ class FoodScanViewModel : ViewModel() {
             try {
                 _isLoading.value = true
                 
-                val response = apiService.getPopularFoods("Bearer $authToken")
+                val token = sessionManager.getBearerToken() ?: ""
+                val response = apiService.getPopularFoods(token)
                 
                 if (response.success) {
                     _popularFoods.value = response.data ?: emptyList()
@@ -141,8 +144,9 @@ class FoodScanViewModel : ViewModel() {
                     portion = portion
                 )
                 
+                val token = sessionManager.getBearerToken() ?: ""
                 val response = apiService.analyzeFood(
-                    token = "Bearer $authToken",
+                    token = token,
                     request = request
                 )
                 
@@ -223,8 +227,9 @@ class FoodScanViewModel : ViewModel() {
                 val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
                 val body = okhttp3.MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
                 
+                val token = sessionManager.getBearerToken() ?: ""
                 // Call API
-                val response = apiService.recognizeFoodImage("Bearer $token", body)
+                val response = apiService.recognizeFoodImage(token, body)
                 
                 if (response.success && response.data != null) {
                     val matches = response.data.matches

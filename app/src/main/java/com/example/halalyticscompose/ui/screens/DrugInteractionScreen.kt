@@ -178,7 +178,7 @@ fun DrugInteractionScreen(
 
 @Composable
 fun InteractionResultCard(
-    data: com.example.halalyticscompose.Data.Model.DrugInteractionData,
+    data: com.example.halalyticscompose.data.model.DrugInteractionData,
     source: String? = null
 ) {
     val severityColor = when (data.severity.lowercase()) {

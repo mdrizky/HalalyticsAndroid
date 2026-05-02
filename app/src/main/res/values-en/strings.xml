@@ -31,7 +31,6 @@
     <string name="home_action_assistant">Assistant</string>
     <string name="home_action_halal">Halal</string>
     <string name="home_action_interaction">Interaction</string>
-    <string name="home_action_lab">Lab</string>
     <string name="home_action_report">AI Report</string>
     <string name="home_poster_title">Posters &amp; Education</string>
     <string name="home_recent_scan">Recent Scans</string>
@@ -145,8 +144,6 @@
     <string name="health_suite_item_medication_desc">Smart schedule with AI voice reminder.</string>
     <string name="health_suite_item_reminders_title">Reminder List</string>
     <string name="health_suite_item_reminders_desc">Daily active medication reminders.</string>
-    <string name="health_suite_item_lab_title">Lab Result Analysis</string>
-    <string name="health_suite_item_lab_desc">Understand lab results more easily.</string>
     <string name="health_suite_item_journey_title">Health Journey</string>
     <string name="health_suite_item_journey_desc">Track weight and blood pressure over time.</string>
     <string name="health_suite_item_halal_title">Halal Specialist</string>
@@ -198,4 +195,293 @@
     <string name="ai_insight_loading">AI is analyzing</string>
     <string name="ai_insight_fallback">Enable AI for daily insights on halal products &amp; your health.</string>
     <string name="ai_powered_by">Powered by Gemini ✨</string>
+
+    <string name="feature_scan_ai">Scan AI</string>
+    <string name="feature_cek_obat">Check Medicine</string>
+    <string name="feature_kosmetik">Cosmetics</string>
+    <string name="feature_halal_points">Halal</string>
+    <string name="feature_bpom_id">BPOM</string>
+    <string name="feature_ai_chat_id">AI Chat</string>
+    <string name="feature_riwayat_id">History</string>
+    <string name="feature_lainnya_id">More</string>
+    <string name="feature_my_contribution">My Contributions</string>
+    <string name="feature_favorite_list">Favorites</string>
+    <string name="feature_edit_profile">Edit Profile</string>
+    <string name="feature_logout_label">Logout</string>
+
+    <string name="section_activity_contribution">Activity &amp; Contribution</string>
+    <string name="section_account">Account</string>
+    <string name="section_security">Security</string>
+    <string name="section_about">About Halalytics</string>
+    <string name="section_crash_diagnostics">Crash Diagnostics</string>
+
+    <string name="home_categories">Categories</string>
+    <string name="home_recommendations">Recommendations</string>
+    <string name="home_health_articles">Health Articles</string>
+    <string name="home_meat_category">Meat</string>
+    <string name="home_all_features_sheet">All Features</string>
+    <string name="home_scan_barcode_sheet">Scan Barcode</string>
+    <string name="home_medicine_reminders_sheet">Medicine Reminders</string>
+    <string name="home_mental_quiz_sheet">Mental Quiz</string>
+
+    <!-- Mental Health Hub -->
+    <string name="mental_health_title">Mental Health Hub</string>
+    <string name="mental_health_desc">A safe space for your mental well-being. Get AI guidance and self-assessment tools.</string>
+    <string name="mental_health_topics">Health Topics</string>
+    <string name="topic_stress">Stress Management</string>
+    <string name="topic_anxiety">Overcoming Anxiety</string>
+    <string name="topic_sleep">Better Sleep Quality</string>
+    <string name="topic_selfcare">Self-Care Routine</string>
+    <string name="mental_health_assessments">Self Assessments</string>
+    <string name="assess_anxiety_title">Anxiety Test (GAD-7)</string>
+    <string name="assess_anxiety_desc">Check your anxiety level based on standard clinical metrics.</string>
+    <string name="assess_mood_title">Daily Mood Tracker</string>
+    <string name="assess_mood_desc">Track your emotional patterns over time.</string>
+    <string name="mental_health_consult">AI Consultation</string>
+    <string name="mental_health_consult_desc">Chat with AI for emotional support and initial guidance.</string>
+    <string name="mental_health_start">Start Chat</string>
+
+    <!-- All Features Screen -->
+    <string name="all_features_title">All Features</string>
+    <string name="all_features_core">Core Services</string>
+    <string name="all_features_health">Health Suite</string>
+    <string name="all_features_ai">Smart &amp; AI</string>
+    <string name="all_features_expansion">AI Expansion</string>
+    <string name="all_features_support">Support &amp; Others</string>
+
+    <string name="feature_scan_halal">Scan Halal</string>
+    <string name="feature_bpom">BPOM</string>
+    <string name="feature_cosmetic">Cosmetics</string>
+    <string name="feature_check_medicine">Check Medicine</string>
+    <string name="feature_medical_records">Medical Records</string>
+    <string name="feature_medical_resume">Medical Resume</string>
+    <string name="feature_health_monitor">Health Monitor</string>
+    <string name="feature_ai_assistant">AI Assistant</string>
+    <string name="feature_health_journey">Health Journey</string>
+    <string name="feature_nutrition_scan">Nutrition Scan</string>
+    <string name="feature_health_diary">Health Diary</string>
+    <string name="feature_ocr_product">OCR Product</string>
+    <string name="feature_nutrition_ai">Nutrition AI</string>
+    <string name="feature_recipe_ai">Recipe AI</string>
+    <string name="feature_daily_mission">Daily Mission</string>
+    <string name="feature_halocode">Halocode</string>
+    <string name="feature_community">Community</string>
+    <string name="feature_health_pass">Health Pass</string>
+    <string name="feature_emergency">Emergency</string>
+    <string name="feature_report_issue">Report Issue</string>
+    <string name="feature_intl_medicine">Intl Medicine</string>
+
+    <!-- Scan History -->
+    <string name="history_title">Scan History</string>
+    <string name="history_total">Total Scans</string>
+    <string name="history_today">Today</string>
+    <string name="history_empty_title">No scan history yet</string>
+    <string name="history_empty_desc">Scan your first product to see your halal history.</string>
+    <string name="history_delete_title">Delete History</string>
+    <string name="history_delete_confirm">This history data will be permanently deleted.</string>
+
+    <!-- Notifications -->
+    <string name="notification_title">Notifications</string>
+    <string name="notification_unread">%d unread</string>
+    <string name="notification_mark_all">Mark All as Read</string>
+    <string name="notification_empty">No notifications yet</string>
+
+    <!-- Favorites -->
+    <string name="favorites_title">My Halal</string>
+    <string name="favorites_filter_title">Filter Halal Status</string>
+    <string name="favorites_search_placeholder">Search favorite products...</string>
+    <string name="favorites_stats_title">Favorite Statistics</string>
+    <string name="favorites_stats_total">Total Products: %d</string>
+    <string name="favorites_empty_title">No favorite products yet</string>
+    <string name="favorites_empty_desc">Press the star icon on a product to add it to favorites.</string>
+    <string name="favorites_search_empty_title">No favorite products found</string>
+    <string name="favorites_search_empty_desc">Try another keyword</string>
+
+    <!-- Medical Records -->
+    <string name="medical_records_title">Digital Medical Records</string>
+    <string name="medical_records_empty_title">No medical records yet</string>
+    <string name="medical_records_empty_desc">Save your lab results, prescriptions, diagnosis, or vaccinations here for easy access.</string>
+    <string name="medical_records_add">Add Medical Record</string>
+    <string name="medical_records_error_load">Failed to load medical records</string>
+    <string name="medical_records_dialog_title">Document Title</string>
+    <string name="medical_records_dialog_type">Type (Lab, Prescription, Diagnosis, Vaccination)</string>
+    <string name="medical_records_dialog_hospital">Hospital / Clinic</string>
+    <string name="medical_records_dialog_doctor">Doctor Name</string>
+    <string name="medical_records_dialog_upload">Upload Document Photo</string>
+    <string name="medical_records_photo_selected">Photo selected</string>
+
+    <!-- Daily Missions -->
+    <string name="daily_mission_title">AI Daily Missions</string>
+    <string name="daily_mission_welcome">Welcome, %s</string>
+    <string name="daily_mission_default_user">Halal Friend</string>
+    <string name="daily_mission_subtitle">Complete small missions today to earn points and consistent healthy habits.</string>
+    <string name="daily_mission_progress_title">Today\'s Progress</string>
+    <string name="daily_mission_progress_count">%1$d/%2$d missions completed</string>
+    <string name="daily_mission_points">+%d points</string>
+    <string name="daily_mission_quick_access">Quick Access</string>
+    
+    <string name="common_close">Close</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_save">Save</string>
+    <string name="settings_privacy_mode">Privacy Mode (anti screenshot)</string>
+    <string name="settings_biometric_lock">Biometric Lock (medical screens)</string>
+    <string name="settings_auto_logout">Auto Logout</string>
+    <string name="settings_timeout_minutes">Timeout (minutes)</string>
+    <string name="settings_biometric_unavailable">Biometrics not available on this device.</string>
+    <string name="settings_biometric_not_active">Biometrics not active. Enable fingerprint/face unlock in device settings.</string>
+    <string name="settings_biometric_success">Biometric lock active.</string>
+    <string name="settings_biometric_title">Enable Biometric Lock</string>
+    <string name="settings_biometric_subtitle">Protect sensitive medical pages</string>
+    <string name="settings_biometric_desc">Confirm identity to enable biometric lock</string>
+    <string name="settings_about_title">About Halalytics</string>
+    <string name="settings_app_version">Halalytics v2.5.0 Premium</string>
+    <string name="settings_app_desc">Advanced AI-Powered Halal &amp; Health Analyzer for a better lifestyle.</string>
+    <string name="settings_copyright">© 2026 DeepMind Agentics Team</string>
+    <string name="settings_no_crash">No recorded crash.</string>
+    <string name="settings_last_crash">Last crash captured on device:</string>
+    <string name="settings_clear_crash">Clear Crash Log</string>
+    <string name="assistant_title">AI Medical Assistant</string>
+    <string name="assistant_hero_question">How are you feeling today?</string>
+    <string name="assistant_mic_listening">Listening...</string>
+    <string name="assistant_mic_stopped">Stopped</string>
+    <string name="assistant_voice_detected">✓ Voice detected</string>
+    <string name="assistant_mic_permission_denied">Microphone permission required for voice features</string>
+    <string name="assistant_tts_reading">Reading analysis results...</string>
+    <string name="assistant_urgent_warning">URGENT WARNING</string>
+    <string name="assistant_open_first_aid">Open ER Guide</string>
+    <string name="assistant_diagnosis_report">DIAGNOSIS REPORT</string>
+    <string name="assistant_confidence_level">Confidence Level:</string>
+    <string name="assistant_symptom_summary">Symptom Summary</string>
+    <string name="assistant_why_happened">Why did this happen?</string>
+    <string name="assistant_related_symptoms">Related Symptoms</string>
+    <string name="assistant_potential_causes">Potential Causes</string>
+    <string name="assistant_cause_analysis">Cause Probability Analysis</string>
+    <string name="assistant_main_disease_explanation">Main Condition Explanation</string>
+    <string name="assistant_relation_to_case">Relation to your case:</string>
+    <string name="assistant_personal_triggers">Personal Trigger Factors</string>
+    <string name="assistant_handling_prevention">Handling &amp; Prevention Advice</string>
+    <string name="assistant_initial_handling">Initial Handling:</string>
+    <string name="assistant_future_prevention">Future Prevention:</string>
+    <string name="assistant_therapy_recommendation">Therapy Recommendation</string>
+    <string name="assistant_pharmacy_medicine">Pharmacy Meds (Brand/Generic):</string>
+    <string name="assistant_herbal_alternative">Alternative / Herbal:</string>
+    <string name="assistant_med_function">Function:</string>
+    <string name="assistant_med_dosage">Dosage:</string>
+    <string name="assistant_med_time">Time to take:</string>
+    <string name="assistant_med_how_to_take">How to take:</string>
+    <string name="assistant_med_duration">Duration:</string>
+    <string name="assistant_med_halal_status">Halal status:</string>
+    <string name="assistant_med_price_est">Price Est:</string>
+    <string name="assistant_med_safety_note">Safety note:</string>
+    <string name="assistant_halal_verification">Halal Verification:</string>
+    <string name="assistant_usage_rules">Usage Rules &amp; Special Precautions</string>
+    <string name="assistant_med_instructions">Instructions:</string>
+    <string name="assistant_side_effects">Potential Side Effects:</string>
+    <string name="assistant_drug_mechanism">Drug Mechanism</string>
+    <string name="assistant_immediate_action">Immediate Actions</string>
+    <string name="assistant_future_prevention_title">Future Prevention</string>
+    <string name="assistant_follow_up_questions">Follow-up Questions</string>
+    <string name="assistant_tldr">Quick Summary (TL;DR)</string>
+    <string name="assistant_doctor_advice">Immediate Doctor Advice</string>
+    <string name="assistant_condition_monitoring">Condition Monitoring</string>
+    <string name="assistant_go_to_doctor">Go to ER/Doctor</string>
+    <string name="assistant_chat_expert">Chat Expert</string>
+    <string name="assistant_set_reminder">Set Medication Reminder</string>
+    <string name="assistant_ask_expert">Ask Expert</string>
+    <string name="assistant_disclaimer">Disclaimer: This AI analysis is for initial education only, not a doctor\'s diagnosis.</string>
+    <string name="assistant_recommended_medicines">Recommended Halal Medicines</string>
+    <string name="assistant_schedule_dose">Schedule Dose</string>
+    <string name="assistant_doses_per_day">Doses per day</string>
+    <string name="assistant_start_date">Start Date (YYYY-MM-DD)</string>
+    <string name="assistant_save_reminder">Save Reminder</string>
+    <string name="scan_title">Scan Product</string>
+    <string name="scan_tab_barcode">Barcode</string>
+    <string name="scan_tab_ocr">OCR</string>
+    <string name="scan_permission_required">Camera permission required</string>
+    <string name="scan_permission_explanation">To scan barcodes, please allow camera access</string>
+    <string name="scan_give_permission">Give Permission</string>
+    <string name="scan_start_instruction">Press \'Start Scan\' to activate camera</string>
+    <string name="scan_frame_barcode_instruction">Position barcode\nwithin the frame</string>
+    <string name="scan_frame_ocr_instruction">Tap OCR to capture\nproduct ingredients</string>
+    <string name="scan_import_gallery">Import from Gallery</string>
+    <string name="scan_start_button">Start Scan</string>
+    <string name="scan_manual_input">or enter barcode manually</string>
+    <string name="scan_report_missing">Barcode not found? Report here</string>
+    <string name="scan_no_barcode_found">No barcode found in image</string>
+    <string name="scan_failed">Failed to scan: %1$s</string>
+    <string name="scan_error_loading">Error loading image</string>
+    <string name="med_reminder_title">Medicine Reminders</string>
+    <string name="med_reminder_active">Active</string>
+    <string name="med_reminder_next_schedule">Next Schedule</string>
+    <string name="med_reminder_no_reminders">No Reminders Yet</string>
+    <string name="med_reminder_no_reminders_desc">Create your first medicine reminder so you don\'t forget to take it on time</string>
+    <string name="med_reminder_create_new">Create New Reminder</string>
+    <string name="med_reminder_mark_taken">Mark Taken</string>
+    <string name="med_reminder_snooze">Snooze</string>
+    <string name="med_reminder_snooze_toast">Reminder snoozed for 15 mins</string>
+    <string name="med_reminder_delete_title">Delete Reminder</string>
+    <string name="med_reminder_delete_desc">Are you sure you want to delete the reminder for %1$s?</string>
+    <string name="med_reminder_history">Taking History:</string>
+    <string name="med_reminder_started">Started:</string>
+    <string name="med_reminder_until">Until:</string>
+    <string name="med_reminder_for">For:</string>
+    <string name="med_reminder_next_dose">Next:</string>
+    <string name="med_reminder_times_per_day">%1$dx/day</string>
+    <string name="med_reminder_today">Today</string>
+    
+    <string name="mental_health_subtitle">Care for your peace of mind &amp; soul</string>
+    
+    <string name="mental_health_experts">Understand the Experts</string>
+    <string name="mental_health_psychiatrist">Choose Psychiatrist</string>
+    <string name="mental_health_psychiatrist_desc">Intensive care or medical therapy</string>
+    <string name="mental_health_psychologist">Choose Psychologist</string>
+    <string name="mental_health_psychologist_desc">Mental health assessment and counseling</string>
+    <string name="mental_health_quiz_title">Mental Health Quiz</string>
+    <string name="mental_health_quiz_subtitle">Designed by experts. Instant results.</string>
+    <string name="mental_health_articles_title">Read About Mental Health</string>
+    <string name="mental_health_carikan_ahli">Find Experts</string>
+    <string name="mental_health_quiz_start">Start →</string>
+
+    <!-- Admin Panel -->
+    <string name="admin_panel_title">Admin Dashboard</string>
+    <string name="admin_panel_overview">Overview</string>
+    <string name="admin_panel_pending">Pending</string>
+    <string name="admin_panel_users">Users</string>
+    <string name="admin_panel_approved">Approved</string>
+    <string name="admin_panel_scans_today">Scans Today</string>
+    <string name="admin_panel_no_pending">No products pending approval.</string>
+    <string name="admin_panel_approve">Approve</string>
+    <string name="admin_panel_reject">Reject</string>
+    <string name="admin_panel_pending_approvals">Pending Approvals</string>
+    <string name="admin_panel_refresh">Refresh</string>
+
+    <!-- Admin Notification -->
+    <string name="admin_notif_title">Admin Notifications</string>
+    <string name="admin_notif_empty">No notifications</string>
+    <string name="admin_notif_empty_desc">Notifications will appear here when there are new products or status changes</string>
+    <string name="admin_notif_mark_read">Mark All Read</string>
+    <string name="admin_notif_mark_read_single">Mark read</string>
+    <string name="admin_notif_delete">Delete</string>
+    <string name="admin_notif_back">Back</string>
+    <string name="admin_notif_close">Close</string>
+
+    <!-- Add Medicine Reminder -->
+    <string name="medicine_reminder_add_title">Add New Reminder</string>
+    <string name="medicine_reminder_search_placeholder">Search and Select Medicine</string>
+    <string name="medicine_reminder_freq_label">How many times a day?</string>
+    <string name="medicine_reminder_freq_hint">Required</string>
+    <string name="medicine_reminder_notif_at">Notifications at %s</string>
+    <string name="medicine_reminder_schedule_label">Schedule %d</string>
+    <string name="medicine_reminder_duration_label">How long to consume?</string>
+    <string name="medicine_reminder_duration_desc">Reminders for the next %d days</string>
+    <string name="medicine_reminder_usage_guide">Usage Guide</string>
+    <string name="medicine_reminder_usage_method">How to Use</string>
+    <string name="medicine_reminder_dose_label">Dosage</string>
+    <string name="medicine_reminder_instruction_placeholder">Example: Drink with water after eating</string>
+    <string name="medicine_reminder_instruction_hint">Additional instructions (optional)</string>
+    <string name="medicine_reminder_save_button">SAVE REMINDER</string>
+    <string name="medicine_reminder_save_success">Reminder saved successfully!</string>
+    <string name="scan_flash_toggle">Toggle Flash</string>
+    <string name="scan_live_badge">LIVE</string>
 </resources>

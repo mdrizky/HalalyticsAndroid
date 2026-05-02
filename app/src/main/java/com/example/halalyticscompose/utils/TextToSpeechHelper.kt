@@ -26,7 +26,7 @@ class TextToSpeechHelper(context: Context) {
         tts = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 // Try Indonesian first
-                val idResult = tts?.setLanguage(Locale("id", "ID"))
+                val idResult = tts?.setLanguage(Locale.Builder().setLanguage("id").setRegion("ID").build())
                 isReady = if (idResult == TextToSpeech.LANG_MISSING_DATA ||
                     idResult == TextToSpeech.LANG_NOT_SUPPORTED) {
                     // Fallback to English

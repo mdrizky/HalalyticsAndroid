@@ -1,7 +1,7 @@
 package com.example.halalyticscompose.repository
 
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.Model.*
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody

@@ -27,11 +27,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.halalyticscompose.Data.Model.ProductItem
+import com.example.halalyticscompose.data.model.ProductItem
 import com.example.halalyticscompose.ui.theme.*
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 import com.example.halalyticscompose.ui.viewmodel.ProductExternalViewModel
-import com.example.halalyticscompose.Data.Model.ProductImageResult
+import com.example.halalyticscompose.data.model.ProductImageResult
 import com.example.halalyticscompose.ui.components.ProductImagesSection
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -167,8 +167,9 @@ fun ProductExternalDetailScreen(
                             productId = null,
                             barcode = barcode,
                             productName = productDetail!!.getDisplayName(),
-                            category = productDetail!!.categories,
-                            statusHalal = if (productDetail!!.isHalal()) "Halal" else "Unknown"
+                            productImage = productDetail!!.getBestImageUrl(),
+                            halalStatus = if (productDetail!!.isHalal()) "halal" else "unknown",
+                            source = productDetail!!.source ?: "openfoodfacts"
                         )
                     },
                     modifier = Modifier.padding(top = 56.dp)

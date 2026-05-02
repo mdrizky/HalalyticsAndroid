@@ -61,10 +61,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.example.halalyticscompose.Data.Model.DailyNutritionLog
-import com.example.halalyticscompose.Data.Model.NutritionHistoryItem
-import com.example.halalyticscompose.presentation.viewmodel.NutritionUiState
-import com.example.halalyticscompose.presentation.viewmodel.NutritionViewModel
+import com.example.halalyticscompose.data.model.DailyNutritionLog
+import com.example.halalyticscompose.data.model.NutritionHistoryItem
+import com.example.halalyticscompose.ui.viewmodel.NutritionUiState
+import com.example.halalyticscompose.ui.viewmodel.NutritionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

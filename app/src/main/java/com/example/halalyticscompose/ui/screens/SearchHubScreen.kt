@@ -22,6 +22,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocalPharmacy
 import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Search
@@ -63,11 +64,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import android.net.Uri
 import coil.compose.AsyncImage
-import com.example.halalyticscompose.Data.API.BeautyProduct
-import com.example.halalyticscompose.Data.API.bestId
-import com.example.halalyticscompose.Data.API.bestIngredientsText
-import com.example.halalyticscompose.Data.Model.MedicineData
-import com.example.halalyticscompose.Data.Model.ProductItem
+import com.example.halalyticscompose.data.api.BeautyProduct
+import com.example.halalyticscompose.data.api.bestId
+import com.example.halalyticscompose.data.api.bestIngredientsText
+import com.example.halalyticscompose.data.model.MedicineData
+import com.example.halalyticscompose.data.model.ProductItem
 import com.google.gson.Gson
 import com.example.halalyticscompose.ui.viewmodel.MedicineViewModel
 import com.example.halalyticscompose.ui.viewmodel.ProductExternalViewModel
@@ -121,74 +122,99 @@ fun SearchHubScreen(
     Scaffold(
         containerColor = color.background,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Cari Obat, Food, Kosmetik",
-                        fontWeight = FontWeight.Bold,
-                        color = color.onBackground
+            Column {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Search Hub",
+                            fontWeight = FontWeight.ExtraBold,
+                            color = color.onBackground,
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.navigateUp() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = color.background,
+                        scrolledContainerColor = color.background
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                )
+                
+                // Enhanced Search Bar
+                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    OutlinedTextField(
+                        value = query,
+                        onValueChange = { query = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("Search medicine, food, or cosmetic...", color = color.onSurfaceVariant.copy(alpha = 0.6f)) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = color.primary) },
+                        trailingIcon = {
+                            if (query.isNotEmpty()) {
+                                IconButton(onClick = { query = "" }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Clear", tint = color.onSurfaceVariant)
+                                }
+                            }
+                        },
+                        singleLine = true,
+                        shape = RoundedCornerShape(20.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = color.surface,
+                            unfocusedContainerColor = color.surface,
+                            focusedBorderColor = color.primary,
+                            unfocusedBorderColor = Color.Transparent,
+                        ),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = { submitSearch() })
+                    )
+                }
+
+                // Custom Premium Tab Bar
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    SearchTab.entries.forEachIndexed { index, tab ->
+                        val isSelected = selectedTabIndex == index
+                        val tabColor = if (isSelected) color.primary else color.surfaceVariant.copy(alpha = 0.7f)
+                        val contentColor = if (isSelected) color.onPrimary else color.onSurfaceVariant
+                        
+                        Card(
+                            onClick = { selectedTabIndex = index },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = tabColor),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(vertical = 10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                val icon = when (tab) {
+                                    SearchTab.MEDICINE -> Icons.Default.LocalPharmacy
+                                    SearchTab.FOOD -> Icons.Default.CheckCircle
+                                    SearchTab.COSMETIC -> Icons.Default.Spa
+                                }
+                                Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = contentColor)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(tab.title, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium, fontSize = 11.sp, color = contentColor)
+                            }
+                        }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = color.background)
-            )
+                }
+            }
         }
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(padding)
                 .padding(horizontal = 16.dp)
         ) {
-            OutlinedTextField(
-                value = query,
-                onValueChange = { query = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                placeholder = { Text("Cari nama produk, obat, atau kosmetik...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = color.surface,
-                    unfocusedContainerColor = color.surface,
-                    focusedBorderColor = color.primary,
-                    unfocusedBorderColor = color.outlineVariant
-                ),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { submitSearch() })
-            )
-
-            TabRow(
-                selectedTabIndex = selectedTabIndex,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp),
-                containerColor = color.background
-            ) {
-                SearchTab.entries.forEachIndexed { index, tab ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        text = { Text(tab.title, fontWeight = FontWeight.SemiBold) },
-                        icon = {
-                            val icon = when (tab) {
-                                SearchTab.MEDICINE -> Icons.Default.LocalPharmacy
-                                SearchTab.FOOD -> Icons.Default.CheckCircle
-                                SearchTab.COSMETIC -> Icons.Default.Spa
-                            }
-                            Icon(icon, contentDescription = null)
-                        }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
 
             when (selectedTab) {
                 SearchTab.MEDICINE -> {

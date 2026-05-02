@@ -54,9 +54,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.example.halalyticscompose.Data.Model.IngredientSubstitution
-import com.example.halalyticscompose.Data.Model.RecipeIngredient
-import com.example.halalyticscompose.presentation.viewmodel.RecipeViewModel
+import com.example.halalyticscompose.data.model.IngredientSubstitution
+import com.example.halalyticscompose.data.model.RecipeIngredient
+import com.example.halalyticscompose.ui.viewmodel.RecipeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

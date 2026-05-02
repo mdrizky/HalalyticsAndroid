@@ -71,15 +71,20 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             "news" -> "halal_news" to "Halalytics News"
             "poster" -> "halal_poster" to "Halalytics Poster"
             "product" -> "halal_product" to "Update Produk"
+            "blood_emergency" -> "blood_emergency_channel" to "Blood Emergency Alerts"
             else -> "halal_alerts" to "Halalytics Alerts"
         }
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info) // Replace with app icon
+            .setSmallIcon(android.R.drawable.ic_dialog_info) 
             .setContentTitle(title)
             .setContentText(messageBody)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            
+        if (type == "blood_emergency") {
+            notificationBuilder.setCategory(NotificationCompat.CATEGORY_ALARM)
+        }
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 

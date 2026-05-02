@@ -19,25 +19,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.halalyticscompose.ui.viewmodel.AdminViewModel
-import com.example.halalyticscompose.Data.Model.AdminProduct
-import com.example.halalyticscompose.ui.viewmodel.MainViewModel
+import com.example.halalyticscompose.data.model.AdminProduct
+import com.example.halalyticscompose.ui.viewmodel.AuthViewModel
+import androidx.compose.ui.res.stringResource
+import com.example.halalyticscompose.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminPanelScreen(
     navController: androidx.navigation.NavController,
     viewModel: AdminViewModel = hiltViewModel(),
-    mainViewModel: MainViewModel
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val dashboardStats by viewModel.dashboardStats.collectAsState()
     val pendingProducts by viewModel.pendingProducts.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val actionResult by viewModel.actionResult.collectAsState()
-    
-    // Check Role Access
-    val currentUserRole = mainViewModel.currentUser.collectAsState().value // We might need to expose Role specifically
-    // Ideally MainViewModel or SessionManager exposes role directly. 
-    // For now assuming we are here means we are authorized or we check it.
+    val userData by authViewModel.userData.collectAsState()
     
     LaunchedEffect(Unit) {
         viewModel.loadDashboardData()
@@ -47,15 +45,19 @@ fun AdminPanelScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Admin Dashboard") },
+                title = { Text(stringResource(R.string.admin_panel_title), fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { 
                         viewModel.loadDashboardData()
                         viewModel.loadPendingProducts() 
                     }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.admin_panel_refresh))
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         }
     ) { paddingValues ->
@@ -64,24 +66,23 @@ fun AdminPanelScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Stats Section
                 item {
-                    Text("Overview", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.admin_panel_overview), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onBackground)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         StatCard(
-                            title = "Pending",
+                            title = stringResource(R.string.admin_panel_pending),
                             value = dashboardStats?.pendingApproval?.toString() ?: "0",
-                            color = Color(0xFFE57373),
+                            color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.weight(1f)
                         )
                         StatCard(
-                            title = "Users",
+                            title = stringResource(R.string.admin_panel_users),
                             value = dashboardStats?.totalUsers?.toString() ?: "0",
-                            color = Color(0xFF64B5F6),
+                            color = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -91,31 +92,29 @@ fun AdminPanelScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         StatCard(
-                            title = "Approved",
+                            title = stringResource(R.string.admin_panel_approved),
                             value = dashboardStats?.totalProducts?.toString() ?: "0",
-                            color = Color(0xFF81C784),
+                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.weight(1f)
                         )
                         StatCard(
-                            title = "Scans Today",
+                            title = stringResource(R.string.admin_panel_scans_today),
                             value = dashboardStats?.totalScansToday?.toString() ?: "0",
-                            color = Color(0xFFFFD54F),
+                            color = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier.weight(1f)
                         )
                     }
                 }
 
-                // Divider
                 item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) }
 
-                // Pending List Section
                 item {
-                    Text("Pending Approvals", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.admin_panel_pending_approvals), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onBackground)
                 }
 
                 if (pendingProducts.isEmpty()) {
                     item {
-                        Text("No pending products.", color = Color.Gray, modifier = Modifier.padding(8.dp))
+                        Text(stringResource(R.string.admin_panel_no_pending), color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(8.dp))
                     }
                 } else {
                     items(pendingProducts) { product ->
@@ -180,7 +179,6 @@ fun ProductApprovalCard(
             Text("Barcode: ${product.barcode}", fontSize = 14.sp, color = Color.Gray)
             Spacer(modifier = Modifier.height(8.dp))
             
-            // Health Stats Preview
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column {
                     Text("Sugar", fontSize = 12.sp, color = Color.Gray)
@@ -189,10 +187,6 @@ fun ProductApprovalCard(
                 Column {
                     Text("Caffeine", fontSize = 12.sp, color = Color.Gray)
                     Text("${product.caffeineMg}mg", fontWeight = FontWeight.Medium)
-                }
-                 Column {
-                    Text("Certificate", fontSize = 12.sp, color = Color.Gray)
-                    Text(product.halalCertificate ?: "-", fontWeight = FontWeight.Medium)
                 }
             }
             
@@ -204,20 +198,20 @@ fun ProductApprovalCard(
             ) {
                 OutlinedButton(
                     onClick = onReject,
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
                     Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Reject")
+                    Text(stringResource(R.string.admin_panel_reject))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = onApprove,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF43A047))
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Approve")
+                    Text(stringResource(R.string.admin_panel_approve))
                 }
             }
         }

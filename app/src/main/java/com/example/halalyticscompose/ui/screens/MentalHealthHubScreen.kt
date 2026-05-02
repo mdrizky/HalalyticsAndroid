@@ -22,26 +22,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.halalyticscompose.ui.viewmodel.MentalHealthViewModel
 import androidx.navigation.NavController
+import androidx.compose.ui.res.stringResource
+import com.example.halalyticscompose.R
 
 // ═══════════════════════════════════════════════════════════════════
 // COLOR CONSTANTS — Emerald Forest Premium + Semantic Accents
 // ═══════════════════════════════════════════════════════════════════
-private val EmeraldDark = Color(0xFF004D40)
-private val EmeraldMedium = Color(0xFF00695C)
-private val EmeraldLight = Color(0xFF26A69A)
-private val SageBg = Color(0xFFF4F9F8)
-private val SoftSage = Color(0xFFE0F2F1)
-private val CardBg = Color(0xFFFFFFFF)
-private val TextDark = Color(0xFF212121)
-private val TextMedium = Color(0xFF757575)
-private val TextLight = Color(0xFF9E9E9E)
-
-// Accent colors for topics (kept for semantic purpose)
-private val WarmPurple = Color(0xFF6A1B9A)
-private val SoftPink = Color(0xFFAD1457)
-private val CalmBlue = Color(0xFF1565C0)
-private val SoftTeal = Color(0xFF00695C)
+// Color constants moved into theme-aware components
+val CalmBlue = Color(0xFFE3F2FD)
+val WarmPurple = Color(0xFFF3E5F5)
 
 data class MentalHealthTopic(
     val title: String,
@@ -58,16 +50,26 @@ data class MentalHealthArticle(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MentalHealthHubScreen(navController: NavController) {
+fun MentalHealthHubScreen(
+    navController: NavController,
+    viewModel: MentalHealthViewModel = hiltViewModel()
+) {
     var selectedTopic by remember { mutableStateOf<MentalHealthTopic?>(null) }
     var selectedArticleCategory by remember { mutableStateOf("Kesehatan Mental") }
 
+    val news by viewModel.news.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadNews()
+    }
+
     val topics = listOf(
-        MentalHealthTopic("Stres", "😤", Color(0xFFF57C00), "Stres adalah respons alami tubuh terhadap tekanan. Stres berkepanjangan dapat memengaruhi kesehatan fisik dan mental Anda. Pelajari cara mengelola stres dengan efektif."),
-        MentalHealthTopic("Gangguan\nKecemasan", "😰", CalmBlue, "Gangguan kecemasan melibatkan rasa khawatir berlebihan yang sulit dikendalikan. Penanganan yang tepat dapat membantu Anda kembali beraktivitas normal."),
-        MentalHealthTopic("Depresi", "😔", WarmPurple, "Depresi lebih dari sekadar rasa sedih biasa. Ini adalah kondisi medis yang memengaruhi cara Anda berpikir, merasa, dan bertindak. Dengan penanganan tepat, depresi bisa diatasi."),
-        MentalHealthTopic("Keluarga &\nHubungan", "👨‍👩‍👧‍👦", SoftPink, "Masalah dalam keluarga atau hubungan bisa menjadi sumber stres yang signifikan. Konseling dapat membantu memperbaiki komunikasi dan membangun hubungan yang lebih sehat."),
-        MentalHealthTopic("Kesepian", "🏠", SoftTeal, "Kesepian adalah perasaan terisolasi meskipun dikelilingi orang lain. Ini umum terjadi dan bisa diatasi dengan langkah-langkah kecil menuju koneksi sosial."),
+        MentalHealthTopic(stringResource(R.string.mental_health_topic_stress), "😤", Color(0xFFF57C00), stringResource(R.string.mental_health_topic_stress_desc)),
+        MentalHealthTopic(stringResource(R.string.mental_health_topic_anxiety), "😰", Color(0xFF1565C0), stringResource(R.string.mental_health_topic_anxiety_desc)),
+        MentalHealthTopic(stringResource(R.string.mental_health_topic_depression), "😔", Color(0xFF6A1B9A), stringResource(R.string.mental_health_topic_depression_desc)),
+        MentalHealthTopic(stringResource(R.string.mental_health_topic_family), "👨‍👩‍👧‍👦", Color(0xFFAD1457), stringResource(R.string.mental_health_topic_family_desc)),
+        MentalHealthTopic(stringResource(R.string.mental_health_topic_lonely), "🏠", Color(0xFF00695C), stringResource(R.string.mental_health_topic_lonely_desc)),
     )
 
     val articles = listOf(
@@ -79,9 +81,9 @@ fun MentalHealthHubScreen(navController: NavController) {
         MentalHealthArticle("Cara Membangun Rutinitas Pagi yang Positif", "Kesehatan Mental", "🌅"),
     )
 
-    val articleCategories = listOf("Kesehatan Mental", "Stres", "Kecemasan", "Hubungan")
+    val articleCategories = listOf(stringResource(R.string.search_hub_all), "Stres", "Kecemasan", "Hubungan")
 
-    Scaffold(containerColor = SageBg) { padding ->
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -92,58 +94,35 @@ fun MentalHealthHubScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        Brush.linearGradient(
-                            listOf(EmeraldDark, EmeraldMedium, EmeraldLight)
-                        )
-                    )
                     .padding(horizontal = 20.dp)
                     .padding(top = 16.dp, bottom = 28.dp)
             ) {
-                Column {
-                    // Back + Title
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.15f))
-                                .clickable { navController.popBackStack() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack, null,
-                                tint = Color.White, modifier = Modifier.size(18.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
                         Text(
-                            "Kesehatan Mental",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
+                            stringResource(R.string.mental_health_title),
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                        Text(
+                            stringResource(R.string.mental_health_subtitle),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 13.sp
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(18.dp))
-
-                    // Hero tagline
-                    Text(
-                        "Jangan abaikan\nkesehatan mentalmu.",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.White,
-                        lineHeight = 28.sp
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        "Dapatkan bantuan dari ahli yang tepat.",
-                        fontSize = 13.sp,
-                        color = Color.White.copy(alpha = 0.8f)
-                    )
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surface)
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = MaterialTheme.colorScheme.primary)
+                    }
                 }
             }
 
@@ -158,15 +137,15 @@ fun MentalHealthHubScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Jelajahi Topik Konseling",
+                    stringResource(R.string.mental_health_topics),
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
-                    color = TextDark
+                    color = MaterialTheme.colorScheme.onBackground
                 )
-                TextButton(onClick = { }) {
+                TextButton(onClick = { navController.navigate("halocode") }) {
                     Text(
-                        "Lihat Semua",
-                        color = EmeraldDark,
+                        stringResource(R.string.home_see_all),
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )
@@ -185,7 +164,7 @@ fun MentalHealthHubScreen(navController: NavController) {
                         shape = RoundedCornerShape(16.dp),
                         border = if (selectedTopic == topic) BorderStroke(2.dp, topic.color) else null,
                         colors = CardDefaults.cardColors(
-                            containerColor = if (selectedTopic == topic) topic.color.copy(alpha = 0.08f) else CardBg
+                            containerColor = if (selectedTopic == topic) topic.color.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceVariant
                         ),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
@@ -201,7 +180,7 @@ fun MentalHealthHubScreen(navController: NavController) {
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
                                 maxLines = 2,
-                                color = TextDark
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -223,15 +202,15 @@ fun MentalHealthHubScreen(navController: NavController) {
                             topic.description,
                             fontSize = 13.sp,
                             lineHeight = 20.sp,
-                            color = TextDark
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
-                            onClick = { /* Cari psikolog */ },
+                            onClick = { navController.navigate("halocode") },
                             shape = RoundedCornerShape(10.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = topic.color)
                         ) {
-                            Text("Carikan Ahli", fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.mental_health_carikan_ahli), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -241,10 +220,10 @@ fun MentalHealthHubScreen(navController: NavController) {
 
             // ── PAHAMI PERBEDAAN ANTAR AHLI ──
             Text(
-                "Pahami Perbedaan Antar Ahli",
+                stringResource(R.string.mental_health_experts),
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,
-                color = TextDark,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
             Spacer(modifier = Modifier.height(12.dp))
@@ -257,9 +236,9 @@ fun MentalHealthHubScreen(navController: NavController) {
             ) {
                 // Psikiater Card
                 Card(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).clickable { navController.navigate("halocode") },
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBg),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -267,23 +246,23 @@ fun MentalHealthHubScreen(navController: NavController) {
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(WarmPurple.copy(alpha = 0.08f)),
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text("🧑‍⚕️", fontSize = 22.sp)
                         }
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            "Pilih Psikiater",
+                            stringResource(R.string.mental_health_psychiatrist),
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
-                            color = TextDark
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            "Penanganan intensif atau terapi pengobatan",
+                            stringResource(R.string.mental_health_psychiatrist_desc),
                             fontSize = 11.sp,
-                            color = TextMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 16.sp
                         )
                     }
@@ -291,9 +270,8 @@ fun MentalHealthHubScreen(navController: NavController) {
 
                 // Psikolog Card
                 Card(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBg),
+                    modifier = Modifier.weight(1f).clickable { navController.navigate("halocode") },
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -301,23 +279,23 @@ fun MentalHealthHubScreen(navController: NavController) {
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(CalmBlue.copy(alpha = 0.08f)),
+                                .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text("🧠", fontSize = 22.sp)
                         }
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            "Pilih Psikolog",
+                            stringResource(R.string.mental_health_psychologist),
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
-                            color = TextDark
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            "Asesmen kesehatan mental dan konseling",
+                            stringResource(R.string.mental_health_psychologist_desc),
                             fontSize = 11.sp,
-                            color = TextMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 16.sp
                         )
                     }
@@ -328,16 +306,16 @@ fun MentalHealthHubScreen(navController: NavController) {
 
             // ── KUIS KESEHATAN MENTAL ──
             Text(
-                "Kuis Kesehatan Mental",
+                stringResource(R.string.mental_health_quiz_title),
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,
-                color = TextDark,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
             Text(
-                "Dirancang oleh ahli. Hasil instan.",
+                stringResource(R.string.mental_health_quiz_subtitle),
                 fontSize = 12.sp,
-                color = TextMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -372,10 +350,10 @@ fun MentalHealthHubScreen(navController: NavController) {
 
             // ── BACA TENTANG KESEHATAN MENTAL ──
             Text(
-                "Baca Tentang Kesehatan Mental",
+                stringResource(R.string.mental_health_articles_title),
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,
-                color = TextDark,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -392,8 +370,8 @@ fun MentalHealthHubScreen(navController: NavController) {
                         label = { Text(cat, fontSize = 12.sp) },
                         shape = RoundedCornerShape(20.dp),
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = EmeraldDark,
-                            selectedLabelColor = Color.White
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                 }
@@ -411,46 +389,46 @@ fun MentalHealthHubScreen(navController: NavController) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 8.dp)
-                            .clickable { /* navigate to article */ },
+                            .clickable { navController.navigate("health_articles") },
                         shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = CardBg),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Row(
                             modifier = Modifier.padding(14.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Box(
+                             Box(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(SoftSage),
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(article.emoji, fontSize = 20.sp)
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(
+                                 Text(
                                     article.title,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Medium,
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis,
-                                    color = TextDark,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     lineHeight = 18.sp
                                 )
                                 Spacer(modifier = Modifier.height(3.dp))
-                                Text(
+                                 Text(
                                     article.category,
                                     fontSize = 11.sp,
-                                    color = EmeraldDark,
+                                    color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
-                            Icon(
+                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowForward, null,
-                                tint = TextLight,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -476,8 +454,8 @@ fun QuizCard(
         modifier = Modifier
             .width(200.dp)
             .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+         shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         border = BorderStroke(1.dp, color.copy(alpha = 0.15f))
     ) {
@@ -498,21 +476,21 @@ fun QuizCard(
                 fontSize = 18.sp,
                 color = color
             )
-            Text(
+             Text(
                 subtitle,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                color = TextDark
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
+             Text(
                 description,
                 fontSize = 11.sp,
-                color = TextMedium
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                "Mulai →",
+             Text(
+                stringResource(R.string.mental_health_quiz_start),
                 fontWeight = FontWeight.Bold,
                 color = color,
                 fontSize = 13.sp

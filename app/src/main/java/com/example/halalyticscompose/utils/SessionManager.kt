@@ -35,6 +35,7 @@ class SessionManager(private val context: Context) {
         private const val KEY_ROLE = "role"
         private const val KEY_IMAGE_URL = "image_url"
         private const val KEY_EMERGENCY_CONTACT = "emergency_contact"
+        private const val KEY_GENDER = "gender"
         
         // Health profile keys
         private const val KEY_AGE = "age"
@@ -149,7 +150,8 @@ class SessionManager(private val context: Context) {
         allergy: String?,
         medicalHistory: String?,
         role: String,
-        imageUrl: String?
+        imageUrl: String?,
+        gender: String? = null
     ) {
         prefs.edit().apply {
             putInt(KEY_USER_ID, userId)
@@ -162,6 +164,7 @@ class SessionManager(private val context: Context) {
             putString(KEY_MEDICAL_HISTORY, medicalHistory)
             putString(KEY_ROLE, role)
             putString(KEY_IMAGE_URL, imageUrl)
+            putString(KEY_GENDER, gender)
             putString(KEY_EMERGENCY_CONTACT, phone) // Use phone as default emergency contact for now
             apply()
         }
@@ -178,6 +181,23 @@ class SessionManager(private val context: Context) {
     fun getRole(): String? = prefs.getString(KEY_ROLE, null)
     fun getImageUrl(): String? = prefs.getString(KEY_IMAGE_URL, null)
     fun getEmergencyContact(): String? = prefs.getString(KEY_EMERGENCY_CONTACT, null)
+    fun getGender(): String? = prefs.getString(KEY_GENDER, null)
+    
+    fun saveRole(role: String) {
+        prefs.edit().putString(KEY_ROLE, role).apply()
+    }
+
+    fun saveUserId(userId: Int) {
+        prefs.edit().putInt(KEY_USER_ID, userId).apply()
+    }
+
+    fun saveUser(name: String, email: String) {
+        prefs.edit().apply {
+            putString(KEY_FULL_NAME, name)
+            putString(KEY_EMAIL, email)
+            apply()
+        }
+    }
     
     // ========================================
     // Health Profile Methods
@@ -190,7 +210,8 @@ class SessionManager(private val context: Context) {
         bmi: Float?,
         activityLevel: String?,
         dietPreference: String?,
-        goal: String?
+        goal: String?,
+        gender: String? = null
     ) {
         prefs.edit().apply {
             age?.let { putInt(KEY_AGE, it) }
@@ -200,6 +221,7 @@ class SessionManager(private val context: Context) {
             putString(KEY_ACTIVITY_LEVEL, activityLevel)
             putString(KEY_DIET_PREFERENCE, dietPreference)
             putString(KEY_GOAL, goal)
+            putString(KEY_GENDER, gender)
             apply()
         }
     }

@@ -2,11 +2,11 @@ package com.example.halalyticscompose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.API.BeautyProduct
-import com.example.halalyticscompose.Data.API.bestId
-import com.example.halalyticscompose.Data.Model.*
-import com.example.halalyticscompose.Data.Network.ApiConfig
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.api.BeautyProduct
+import com.example.halalyticscompose.data.api.bestId
+import com.example.halalyticscompose.data.model.*
+import com.example.halalyticscompose.data.network.ApiConfig
 import com.example.halalyticscompose.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SkincareViewModel @Inject constructor(
     private val apiService: ApiService,
+    private val openBeautyFactsApiService: com.example.halalyticscompose.data.api.OpenBeautyFactsApiService,
     private val sessionManager: SessionManager
 ) : ViewModel() {
     companion object {
@@ -104,11 +105,10 @@ class SkincareViewModel @Inject constructor(
             _isLoading.value = true
             _errorMessage.value = null
             try {
-                val openBeautyFactsApi = ApiConfig.getOpenBeautyFactsApiService()
                 val merged = mutableListOf<BeautyProduct>()
 
                 for (page in 1..MAX_PAGES_TO_FETCH) {
-                    val response = openBeautyFactsApi.searchBeautyProducts(query = query, page = page, pageSize = 100)
+                    val response = openBeautyFactsApiService.searchBeautyProducts(query = query, page = page, pageSize = 100)
                     if (!response.isSuccessful || response.body() == null) {
                         if (page == 1) {
                             val errorBody = sanitizeErrorMessage(response.errorBody()?.string()?.take(220))
@@ -243,7 +243,7 @@ class SkincareViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val response = ApiConfig.getOpenBeautyFactsApiService().getBeautyProductDetail(productId)
+                val response = openBeautyFactsApiService.getBeautyProductDetail(productId)
                 if (response.isSuccessful) {
                     val product = response.body()?.product
                     if (product != null) {

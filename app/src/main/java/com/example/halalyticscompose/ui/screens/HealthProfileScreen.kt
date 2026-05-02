@@ -19,23 +19,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.halalyticscompose.ui.viewmodel.MainViewModel
+import com.example.halalyticscompose.ui.viewmodel.AuthViewModel
+import com.example.halalyticscompose.ui.viewmodel.HistoryViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HealthProfileScreen(
     navController: NavController,
-    viewModel: MainViewModel
+    authViewModel: AuthViewModel = hiltViewModel(),
+    historyViewModel: HistoryViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
     val color = MaterialTheme.colorScheme
     
     // Health data
-    val bmi by viewModel.bmi.collectAsState()
-    val activityLevel by viewModel.activityLevel.collectAsState()
-    val totalScans by viewModel.totalScans.collectAsState()
-    val halalProducts by viewModel.halalProducts.collectAsState()
-    val userData by viewModel.userData.collectAsState()
+    val userData by authViewModel.userData.collectAsState()
+    val totalScans by historyViewModel.totalScans.collectAsState()
+    val halalProducts by historyViewModel.halalProducts.collectAsState()
+    
+    // Calculated values
+    val bmi = userData?.bmi?.toString() ?: "0.0"
+    val activityLevel = userData?.activityLevel ?: "Sedang"
 
     var showBmiDialog by remember { mutableStateOf(false) }
     var showActivityDialog by remember { mutableStateOf(false) }
@@ -245,7 +250,7 @@ fun HealthProfileScreen(
                         val h = heightInput.toDoubleOrNull()
                         val w = weightInput.toDoubleOrNull()
                         if (h != null && w != null && h > 0 && w > 0) {
-                            viewModel.updateProfile(
+                            authViewModel.updateProfile(
                                 height = h,
                                 weight = w
                             )
@@ -290,7 +295,7 @@ fun HealthProfileScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.updateProfile(activityLevel = selectedActivity)
+                        authViewModel.updateProfile(activityLevel = selectedActivity)
                         showActivityDialog = false
                     }
                 ) { Text("Simpan") }

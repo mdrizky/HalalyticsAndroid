@@ -110,7 +110,7 @@ fun HalalSpecialistScreen(
 }
 
 @Composable
-fun HalalAnalysisView(data: com.example.halalyticscompose.Data.Model.HalalAlternativeData) {
+fun HalalAnalysisView(data: com.example.halalyticscompose.data.model.HalalAlternativeData) {
     Column(modifier = Modifier.fillMaxWidth()) {
         if (!data.problematicIngredients.isNullOrEmpty()) {
             Text("Bahan Bermasalah Terdeteksi:", fontWeight = FontWeight.Bold, color = Color(0xFFEF4444))

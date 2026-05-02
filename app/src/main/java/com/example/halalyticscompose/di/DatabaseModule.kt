@@ -2,7 +2,7 @@ package com.example.halalyticscompose.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.halalyticscompose.Data.Local.HalalyticsDatabase
+import com.example.halalyticscompose.data.local.HalalyticsDatabase
 import com.example.halalyticscompose.data.database.ProductHistoryDao
 import com.example.halalyticscompose.data.database.ProductRepository
 import dagger.Binds
@@ -53,22 +53,22 @@ object DatabaseModule {
     }
 
     @Provides
-    fun provideConsumptionDao(database: HalalyticsDatabase): com.example.halalyticscompose.Data.Local.Dao.ConsumptionDao {
+    fun provideConsumptionDao(database: HalalyticsDatabase): com.example.halalyticscompose.data.local.Dao.ConsumptionDao {
         return database.consumptionDao()
     }
 
     @Provides
-    fun provideHaramIngredientDao(database: HalalyticsDatabase): com.example.halalyticscompose.Data.Local.Dao.HaramIngredientDao {
+    fun provideHaramIngredientDao(database: HalalyticsDatabase): com.example.halalyticscompose.data.local.Dao.HaramIngredientDao {
         return database.haramIngredientDao()
     }
 
     @Provides
-    fun provideUserHealthProfileDao(database: HalalyticsDatabase): com.example.halalyticscompose.Data.Local.Dao.UserHealthProfileDao {
+    fun provideUserHealthProfileDao(database: HalalyticsDatabase): com.example.halalyticscompose.data.local.Dao.UserHealthProfileDao {
         return database.userHealthProfileDao()
     }
 
     @Provides
-    fun provideCachedScanResultDao(database: HalalyticsDatabase): com.example.halalyticscompose.Data.Local.Dao.CachedScanResultDao {
+    fun provideCachedScanResultDao(database: HalalyticsDatabase): com.example.halalyticscompose.data.local.Dao.CachedScanResultDao {
         return database.cachedScanResultDao()
     }
     

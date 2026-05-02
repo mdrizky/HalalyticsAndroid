@@ -12,72 +12,34 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.halalyticscompose.ui.viewmodel.MedicineViewModel
+import com.example.halalyticscompose.data.model.MedicineData
 import kotlinx.coroutines.delay
 
 private val MintTheme = Color(0xFF00BFA6)
-
-data class SearchableMedicine(
-    val id: Long,
-    val name: String,
-    val unit: String,
-    val category: String,
-    val defaultDose: String = "1.0",
-    val defaultDoseUnit: String = "tablet"
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MedicineSearchScreen(
     navController: NavController,
-    onMedicineSelected: (SearchableMedicine) -> Unit = {}
+    viewModel: MedicineViewModel = hiltViewModel(),
+    onMedicineSelected: (MedicineData) -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var isSearching by remember { mutableStateOf(false) }
-
-    // Mock data — in production, query API
-    val allMedicines = remember {
-        listOf(
-            SearchableMedicine(1, "Tolak Angin Cair Plus Madu 15 ml 12 Sachet", "Per Box", "Herbal", "1.0", "sachet"),
-            SearchableMedicine(2, "Tolak Angin Anak Cair Plus Madu 10 ml 5 Sachet", "Per Box", "Herbal Anak", "1.0", "sachet"),
-            SearchableMedicine(3, "Paracetamol 500mg Tablet", "Per Strip (10 Tablet)", "Analgesik", "1.0", "tablet"),
-            SearchableMedicine(4, "Amoxicillin 500mg Kapsul", "Per Strip (10 Kapsul)", "Antibiotik", "1.0", "kapsul"),
-            SearchableMedicine(5, "Omeprazole 20mg Kapsul", "Per Strip (10 Kapsul)", "Anti Asam Lambung", "1.0", "kapsul"),
-            SearchableMedicine(6, "Cetirizine 10mg Tablet", "Per Strip (10 Tablet)", "Antihistamin", "1.0", "tablet"),
-            SearchableMedicine(7, "Ibuprofen 400mg Tablet", "Per Strip (10 Tablet)", "Anti Inflamasi", "1.0", "tablet"),
-            SearchableMedicine(8, "Vitamin C 1000mg Tablet Effervescent", "Per Tube (10 Tablet)", "Vitamin", "1.0", "tablet"),
-            SearchableMedicine(9, "OBH Combi Batuk Plus Flu 100ml", "Per Botol", "Batuk & Flu", "5.0", "ml"),
-            SearchableMedicine(10, "Promag Tablet Kunyah", "Per Strip (6 Tablet)", "Antasida", "1.0", "tablet"),
-            SearchableMedicine(11, "Neurobion Forte Tablet", "Per Strip (10 Tablet)", "Multivitamin", "1.0", "tablet"),
-            SearchableMedicine(12, "Diclofenac Sodium 50mg Tablet", "Per Strip (10 Tablet)", "Anti Inflamasi", "1.0", "tablet"),
-            SearchableMedicine(13, "Metformin 500mg Tablet", "Per Strip (10 Tablet)", "Diabetes", "1.0", "tablet"),
-            SearchableMedicine(14, "Amlodipine 5mg Tablet", "Per Strip (10 Tablet)", "Hipertensi", "1.0", "tablet"),
-            SearchableMedicine(15, "Simvastatin 20mg Tablet", "Per Strip (10 Tablet)", "Kolesterol", "1.0", "tablet"),
-            SearchableMedicine(16, "Salbutamol Inhaler 100mcg", "Per Unit", "Asma", "1.0", "puff"),
-            SearchableMedicine(17, "Antangin JRG Cair 15ml", "Per Sachet", "Herbal", "1.0", "sachet"),
-            SearchableMedicine(18, "Bodrex Extra Tablet", "Per Strip (4 Tablet)", "Analgesik", "1.0", "tablet"),
-            SearchableMedicine(19, "Mixagrip Flu & Batuk Tablet", "Per Strip (4 Tablet)", "Flu & Batuk", "1.0", "tablet"),
-            SearchableMedicine(20, "Dexamethasone 0.5mg Tablet", "Per Strip (10 Tablet)", "Kortikosteroid", "1.0", "tablet"),
-        )
-    }
-
-    val filteredMedicines = if (searchQuery.length >= 2) {
-        allMedicines.filter { it.name.contains(searchQuery, ignoreCase = true) }
-    } else {
-        allMedicines
-    }
+    val medicineList by viewModel.medicines.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     LaunchedEffect(searchQuery) {
         if (searchQuery.length >= 2) {
-            isSearching = true
-            delay(300) // debounce
-            isSearching = false
+            delay(500) // debounce
+            viewModel.searchMedicine(searchQuery)
         }
     }
 
@@ -118,7 +80,7 @@ fun MedicineSearchScreen(
                 singleLine = true
             )
 
-            if (isSearching) {
+            if (isLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), color = MintTheme)
             }
 
@@ -126,23 +88,24 @@ fun MedicineSearchScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                items(filteredMedicines) { medicine ->
+                items(medicineList) { medicine ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
+                                val id = medicine.id ?: medicine.idMedicine ?: 0
                                 navController.previousBackStackEntry
                                     ?.savedStateHandle
                                     ?.set("selected_medicine_name", medicine.name)
                                 navController.previousBackStackEntry
                                     ?.savedStateHandle
-                                    ?.set("selected_medicine_id", medicine.id)
+                                    ?.set("selected_medicine_id", id)
                                 navController.previousBackStackEntry
                                     ?.savedStateHandle
-                                    ?.set("selected_medicine_dose", medicine.defaultDose)
+                                    ?.set("selected_medicine_dose", "1.0")
                                 navController.previousBackStackEntry
                                     ?.savedStateHandle
-                                    ?.set("selected_medicine_dose_unit", medicine.defaultDoseUnit)
+                                    ?.set("selected_medicine_dose_unit", "tablet")
                                 navController.popBackStack()
                             },
                         shape = RoundedCornerShape(12.dp),
@@ -176,7 +139,7 @@ fun MedicineSearchScreen(
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    medicine.unit,
+                                    medicine.kategori ?: "Obat",
                                     fontSize = 12.sp,
                                     color = Color.Gray
                                 )
@@ -196,7 +159,7 @@ fun MedicineSearchScreen(
                     HorizontalDivider(color = Color(0xFFF0F0F0))
                 }
 
-                if (filteredMedicines.isEmpty() && searchQuery.length >= 2) {
+                if (medicineList.isEmpty() && searchQuery.length >= 2 && !isLoading) {
                     item {
                         Column(
                             modifier = Modifier

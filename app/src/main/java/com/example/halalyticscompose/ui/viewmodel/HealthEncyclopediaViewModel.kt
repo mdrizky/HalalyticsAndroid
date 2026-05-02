@@ -2,8 +2,8 @@ package com.example.halalyticscompose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.Model.HealthEncyclopedia
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.HealthEncyclopedia
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,8 +24,8 @@ class HealthEncyclopediaViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
-    private val _selectedItem = MutableStateFlow<com.example.halalyticscompose.Data.Model.HealthEncyclopedia?>(null)
-    val selectedItem: StateFlow<com.example.halalyticscompose.Data.Model.HealthEncyclopedia?> = _selectedItem
+    private val _selectedItem = MutableStateFlow<com.example.halalyticscompose.data.model.HealthEncyclopedia?>(null)
+    val selectedItem: StateFlow<com.example.halalyticscompose.data.model.HealthEncyclopedia?> = _selectedItem
 
     fun fetchEncyclopedia(type: String? = null, search: String? = null) {
         viewModelScope.launch {

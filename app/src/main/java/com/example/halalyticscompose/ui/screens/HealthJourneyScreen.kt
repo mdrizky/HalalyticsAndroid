@@ -209,7 +209,7 @@ fun HealthJourneyScreen(
 }
 
 @Composable
-fun HealthMetricItem(data: com.example.halalyticscompose.Data.Model.HealthMetricData) {
+fun HealthMetricItem(data: com.example.halalyticscompose.data.model.HealthMetricData) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),

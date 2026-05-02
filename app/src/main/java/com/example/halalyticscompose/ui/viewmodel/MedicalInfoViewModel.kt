@@ -2,13 +2,22 @@ package com.example.halalyticscompose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.Network.ApiConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class MedicalInfoViewModel : ViewModel() {
+import com.example.halalyticscompose.data.api.ApiService
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+import com.example.halalyticscompose.utils.SessionManager
+
+@HiltViewModel
+class MedicalInfoViewModel @Inject constructor(
+    private val apiService: ApiService,
+    private val sessionManager: SessionManager
+) : ViewModel() {
     private val _profileData = MutableStateFlow<Map<String, Any>?>(null)
     val profileData: StateFlow<Map<String, Any>?> = _profileData.asStateFlow()
 
@@ -18,11 +27,12 @@ class MedicalInfoViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    fun loadProfile(token: String) {
+    fun loadProfile() {
+        val token = sessionManager.getAuthToken() ?: return
         viewModelScope.launch {
             try {
                 _isLoading.value = true
-                val response = ApiConfig.apiService.getMedicalProfile("Bearer $token")
+                val response = apiService.getMedicalProfile("Bearer $token")
                 if (response.isSuccessful && response.body()?.success == true) {
                     val data = response.body()?.content as? Map<String, Any>
                     _profileData.value = data
@@ -37,13 +47,14 @@ class MedicalInfoViewModel : ViewModel() {
         }
     }
 
-    fun updateProfile(token: String, data: Map<String, Any>, onSuccess: () -> Unit) {
+    fun updateProfile(data: Map<String, Any>, onSuccess: () -> Unit) {
+        val token = sessionManager.getAuthToken() ?: return
         viewModelScope.launch {
             try {
                 _isLoading.value = true
-                val response = ApiConfig.apiService.updateMedicalProfile("Bearer $token", data)
+                val response = apiService.updateMedicalProfile("Bearer $token", data)
                 if (response.isSuccessful && response.body()?.success == true) {
-                    loadProfile(token)
+                    loadProfile()
                     onSuccess()
                 } else {
                     _error.value = "Failed to update profile"

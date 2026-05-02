@@ -10,10 +10,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import android.util.Log
 
-class IngredientDetailViewModel : ViewModel() {
-    private val apiService: IngredientApiService by lazy {
-        com.example.halalyticscompose.Data.Network.ApiConfig.getIngredientApiService()
-    }
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class IngredientDetailViewModel @Inject constructor(
+    private val apiService: IngredientApiService
+) : ViewModel() {
 
     private val _ingredient = MutableStateFlow<Ingredient?>(null)
     val ingredient: StateFlow<Ingredient?> = _ingredient.asStateFlow()

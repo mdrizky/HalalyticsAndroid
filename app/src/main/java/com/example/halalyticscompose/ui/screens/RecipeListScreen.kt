@@ -51,8 +51,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.example.halalyticscompose.Data.Model.Recipe
-import com.example.halalyticscompose.presentation.viewmodel.RecipeListViewModel
+import com.example.halalyticscompose.data.model.Recipe
+import com.example.halalyticscompose.ui.viewmodel.RecipeListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -31,7 +31,7 @@ import com.example.halalyticscompose.ui.viewmodel.MainViewModel // Assuming View
 import java.io.File
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.halalyticscompose.ui.components.HalalBadge
-import com.example.halalyticscompose.Data.Model.MealData
+import com.example.halalyticscompose.data.model.MealData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

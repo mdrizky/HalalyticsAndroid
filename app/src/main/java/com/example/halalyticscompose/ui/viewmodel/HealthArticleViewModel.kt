@@ -3,8 +3,8 @@ package com.example.halalyticscompose.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.halalyticscompose.BuildConfig
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.Model.HealthArticleItem
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.HealthArticleItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,10 +18,12 @@ import org.json.JSONObject
 import java.net.URLEncoder
 import java.util.UUID
 import javax.inject.Inject
+import com.example.halalyticscompose.utils.SessionManager
 
 @HiltViewModel
 class HealthArticleViewModel @Inject constructor(
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _articles = MutableStateFlow<List<HealthArticleItem>>(emptyList())
@@ -35,6 +37,9 @@ class HealthArticleViewModel @Inject constructor(
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
+
+    private val _recommendedArticles = MutableStateFlow<List<HealthArticleItem>>(emptyList())
+    val recommendedArticles: StateFlow<List<HealthArticleItem>> = _recommendedArticles.asStateFlow()
 
     private val articleCache = linkedMapOf<String, HealthArticleItem>()
 
@@ -134,6 +139,35 @@ class HealthArticleViewModel @Inject constructor(
                 _error.value = "Gagal memuat detail artikel: ${e.message ?: "unknown error"}"
             } finally {
                 _isLoading.value = false
+            }
+        }
+    }
+
+    fun loadRecommendedArticles(limit: Int = 5) {
+        viewModelScope.launch {
+            val token = sessionManager.getBearerToken() ?: return@launch
+            try {
+                val response = apiService.getRecommendedArticles(
+                    bearer = "Bearer $token",
+                    limit = limit
+                )
+                if (response.success) {
+                    _recommendedArticles.value = response.data ?: emptyList()
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    fun loadRecommendations() {
+        viewModelScope.launch {
+            try {
+                val token = sessionManager.getAuthToken() ?: return@launch
+                val response = apiService.getRecommendedArticles(bearer = "Bearer $token")
+                if (response.success) {
+                    _recommendedArticles.value = response.data ?: emptyList()
+                }
+            } catch (e: Exception) {
+                // Silent fail for recommendations
             }
         }
     }

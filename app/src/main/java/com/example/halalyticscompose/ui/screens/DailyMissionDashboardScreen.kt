@@ -59,13 +59,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.halalyticscompose.Data.Model.DailyMissionData
-import com.example.halalyticscompose.Data.Model.Mission
-import com.example.halalyticscompose.presentation.viewmodel.DashboardViewModel
+import com.example.halalyticscompose.data.model.DailyMissionData
+import com.example.halalyticscompose.data.model.Mission
+import com.example.halalyticscompose.ui.viewmodel.DashboardViewModel
+import androidx.compose.ui.res.stringResource
+import com.example.halalyticscompose.R
 
+// Color Constants moved to theme-aware components
 private val MissionTeal = Color(0xFF004D40)
-private val MissionMint = Color(0xFFE0F2F1)
-private val MissionBg = Color(0xFFF4F9F8)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,8 +74,6 @@ fun DailyMissionDashboardScreen(
     onNavigateBack: () -> Unit,
     onGoToScan: () -> Unit,
     onGoToNutrition: () -> Unit,
-    onGoToAr: () -> Unit,
-    onGoToMarketplace: () -> Unit,
     onGoToCommunity: () -> Unit,
     onGoToHalocode: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
@@ -86,13 +85,13 @@ fun DailyMissionDashboardScreen(
     }
 
     Scaffold(
-        containerColor = MissionBg,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Misi Harian AI", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.daily_mission_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
             )
@@ -105,7 +104,7 @@ fun DailyMissionDashboardScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center,
             ) {
-                CircularProgressIndicator(color = MissionTeal)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
             return@Scaffold
         }
@@ -120,12 +119,12 @@ fun DailyMissionDashboardScreen(
             item {
                 Column {
                     Text(
-                        text = "Selamat datang, ${uiState.userName ?: "Sobat Halal"}",
+                        text = stringResource(R.string.daily_mission_welcome, uiState.userName ?: stringResource(R.string.daily_mission_default_user)),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        text = "Selesaikan misi kecil hari ini untuk dapat poin dan kebiasaan sehat yang konsisten.",
+                        text = stringResource(R.string.daily_mission_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -140,13 +139,6 @@ fun DailyMissionDashboardScreen(
                         when (mission.id) {
                             "scan" -> onGoToScan()
                             "nutrition" -> onGoToNutrition()
-                            "location" -> {
-                                if (mission.isCompleted) {
-                                    onGoToAr()
-                                } else {
-                                    viewModel.completeMission("location", onGoToAr)
-                                }
-                            }
                         }
                     },
                 )
@@ -154,7 +146,7 @@ fun DailyMissionDashboardScreen(
 
             item {
                 Text(
-                    text = "Akses Cepat",
+                    text = stringResource(R.string.daily_mission_quick_access),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
@@ -164,8 +156,6 @@ fun DailyMissionDashboardScreen(
                 MissionQuickAccessGrid(
                     onGoToScan = onGoToScan,
                     onGoToNutrition = onGoToNutrition,
-                    onGoToAr = onGoToAr,
-                    onGoToMarketplace = onGoToMarketplace,
                     onGoToCommunity = onGoToCommunity,
                     onGoToHalocode = onGoToHalocode,
                 )
@@ -202,7 +192,7 @@ private fun DailyMissionSummaryCard(
     Card(
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        colors = CardDefaults.cardColors(containerColor = MissionMint),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)),
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(
@@ -212,26 +202,26 @@ private fun DailyMissionSummaryCard(
             ) {
                 Column {
                     Text(
-                        text = "Progress Hari Ini",
+                        text = stringResource(R.string.daily_mission_progress_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MissionTeal,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                     Text(
-                        text = "${missionData?.completedCount ?: 0}/${missionData?.totalCount ?: 0} misi selesai",
+                        text = stringResource(R.string.daily_mission_progress_count, missionData?.completedCount ?: 0, missionData?.totalCount ?: 0),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MissionTeal.copy(alpha = 0.75f),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
                     )
                 }
 
                 Surface(
-                    color = MissionTeal,
+                    color = MaterialTheme.colorScheme.primary,
                     shape = RoundedCornerShape(14.dp),
                 ) {
                     Text(
-                        text = "+${missionData?.pointsEarnedToday ?: 0} poin",
+                        text = stringResource(R.string.daily_mission_points, missionData?.pointsEarnedToday ?: 0),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.Bold,
                     )
                 }
@@ -250,8 +240,8 @@ private fun DailyMissionSummaryCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(9.dp),
-                color = MissionTeal,
-                trackColor = Color.White.copy(alpha = 0.6f),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f),
             )
 
             Spacer(modifier = Modifier.height(18.dp))
@@ -308,7 +298,7 @@ private fun MissionItemRow(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = MissionTeal,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(10.dp),
                 )
             }
@@ -331,7 +321,7 @@ private fun MissionItemRow(
         }
 
         if (isCompletingMission) {
-            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MissionTeal)
+            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.primary)
         } else {
             Surface(
                 color = Color.White,
@@ -343,7 +333,7 @@ private fun MissionItemRow(
                 ) {
                     Text(
                         text = "+${mission.pointsReward}",
-                        color = MissionTeal,
+                        color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                     )
@@ -352,7 +342,7 @@ private fun MissionItemRow(
                         Icon(
                             imageVector = Icons.Default.ChevronRight,
                             contentDescription = null,
-                            tint = MissionTeal,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp),
                         )
                     }
@@ -366,16 +356,12 @@ private fun MissionItemRow(
 private fun MissionQuickAccessGrid(
     onGoToScan: () -> Unit,
     onGoToNutrition: () -> Unit,
-    onGoToAr: () -> Unit,
-    onGoToMarketplace: () -> Unit,
     onGoToCommunity: () -> Unit,
     onGoToHalocode: () -> Unit,
 ) {
     val features = listOf(
         Triple("OCR Scan", Icons.Default.QrCodeScanner, onGoToScan) to Color(0xFFE53935),
         Triple("Nutrisi", Icons.Default.MonitorHeart, onGoToNutrition) to Color(0xFF00897B),
-        Triple("AR Finder", Icons.Default.Map, onGoToAr) to Color(0xFFF57C00),
-        Triple("Marketplace", Icons.Default.Store, onGoToMarketplace) to Color(0xFF2E7D32),
         Triple("Komunitas", Icons.Default.Groups, onGoToCommunity) to Color(0xFF1976D2),
         Triple("Halocode", Icons.Default.LocalHospital, onGoToHalocode) to Color(0xFF6A1B9A),
     )
@@ -392,7 +378,7 @@ private fun MissionQuickAccessGrid(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                 onClick = action,
             ) {

@@ -20,10 +20,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.halalyticscompose.R
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -44,7 +46,7 @@ import java.util.concurrent.Executors
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import com.example.halalyticscompose.ui.theme.*
-import com.example.halalyticscompose.ui.viewmodel.MainViewModel
+import com.example.halalyticscompose.ui.viewmodel.ScanViewModel
 import com.example.halalyticscompose.utils.RetailBarcodeAnalyzer
 import com.example.halalyticscompose.utils.TextRecognitionAnalyzer
 
@@ -52,7 +54,7 @@ import com.example.halalyticscompose.utils.TextRecognitionAnalyzer
 @Composable
 fun ScanScreen(
     navController: NavController,
-    viewModel: MainViewModel = hiltViewModel(),
+    viewModel: ScanViewModel = hiltViewModel(),
     paddingValues: PaddingValues = PaddingValues(0.dp)
 ) {
     val context = LocalContext.current
@@ -122,16 +124,16 @@ fun ScanScreen(
                 IconButton(
                     onClick = { navController.navigateUp() }
                 ) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(26.dp)
-                    )
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = stringResource(R.string.common_back),
+                            tint = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.size(26.dp)
+                        )
                 }
                 
                 Text(
-                            text = "Scan Produk",
+                            text = stringResource(R.string.scan_title),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onBackground
@@ -143,7 +145,7 @@ fun ScanScreen(
                 ) {
                     Icon(
                         if (showFlash) Icons.Filled.FlashOn else Icons.Outlined.FlashOff,
-                        contentDescription = "Toggle Flash",
+                        contentDescription = stringResource(R.string.scan_flash_toggle),
                         tint = if (showFlash) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(26.dp)
                     )
@@ -158,7 +160,7 @@ fun ScanScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 TabButton(
-                    text = "Barcode",
+                    text = stringResource(R.string.scan_tab_barcode),
                     icon = Icons.Outlined.QrCodeScanner,
                     isSelected = selectedTab == 0,
                     onClick = { selectedTab = 0 }
@@ -167,7 +169,7 @@ fun ScanScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 
                 TabButton(
-                    text = "OCR",
+                    text = stringResource(R.string.scan_tab_ocr),
                     icon = Icons.Outlined.CameraAlt,
                     isSelected = selectedTab == 1,
                     onClick = { 
@@ -176,14 +178,7 @@ fun ScanScreen(
                     }
                 )
 
-                Spacer(modifier = Modifier.width(8.dp))
 
-                TabButton(
-                    text = "Sertifikat",
-                    icon = Icons.Outlined.VerifiedUser,
-                    isSelected = selectedTab == 2,
-                    onClick = { selectedTab = 2 }
-                )
             }
             
             Spacer(modifier = Modifier.height(8.dp))
@@ -212,10 +207,7 @@ fun ScanScreen(
                                         // OCR Text Detected -> Send to Enhanced OCR Screen
                                         navController.navigate("enhanced_ocr?scannedText=${Uri.encode(result)}")
                                     }
-                                    2 -> {
-                                        // Certificate Verification
-                                        navController.navigate("certificate_result/$result")
-                                    }
+
                                     else -> {
                                         // Regular Barcode
                                         navController.navigate("product_detail/$result")
@@ -240,12 +232,12 @@ fun ScanScreen(
                                 modifier = Modifier.size(48.dp)
                             )
                              Spacer(modifier = Modifier.height(16.dp))
-                             Text("Izin kamera diperlukan", color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
+                             Text(stringResource(R.string.scan_permission_required), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
                              Spacer(modifier = Modifier.height(8.dp))
-                             Text("Untuk scan barcode, izinkan akses kamera", color = MaterialTheme.colorScheme.onSurface.copy(0.6f), fontSize = 12.sp)
+                             Text(stringResource(R.string.scan_permission_explanation), color = MaterialTheme.colorScheme.onSurface.copy(0.6f), fontSize = 12.sp)
                              Spacer(modifier = Modifier.height(16.dp))
                              Button(onClick = { launcher.launch(Manifest.permission.CAMERA) }) {
-                                 Text("Berikan Izin")
+                                 Text(stringResource(R.string.scan_give_permission))
                              }
                          }
                     }
@@ -265,7 +257,7 @@ fun ScanScreen(
                                 modifier = Modifier.size(48.dp)
                             )
                              Spacer(modifier = Modifier.height(8.dp))
-                             Text("Tekan 'Mulai Scan' untuk mengaktifkan kamera", color = MaterialTheme.colorScheme.onSurface.copy(0.6f), fontSize = 12.sp)
+                             Text(stringResource(R.string.scan_start_instruction), color = MaterialTheme.colorScheme.onSurface.copy(0.6f), fontSize = 12.sp)
                          }
                     }
                 }
@@ -301,7 +293,7 @@ fun ScanScreen(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "LIVE",
+                                    text = stringResource(R.string.scan_live_badge),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onError
@@ -354,11 +346,11 @@ fun ScanScreen(
                                     modifier = Modifier.size(48.dp)
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text(
+                                 Text(
                                     text = if (selectedTab == 0)
-                                        "Position barcode\nwithin the frame"
+                                        stringResource(R.string.scan_frame_barcode_instruction)
                                     else
-                                        "Tap OCR to capture\nproduct ingredients",
+                                        stringResource(R.string.scan_frame_ocr_instruction),
                                     fontSize = 13.sp,
                                     color = MaterialTheme.colorScheme.onSurface.copy(0.6f),
                                     textAlign = TextAlign.Center,
@@ -393,21 +385,17 @@ fun ScanScreen(
                                     val barcode = barcodes.firstOrNull()?.rawValue
                                     if (barcode != null) {
                                         scannedCode = barcode
-                                        if (selectedTab == 2) {
-                                            navController.navigate("certificate_result/$barcode")
-                                        } else {
-                                            navController.navigate("product_detail/$barcode")
-                                        }
+                                        navController.navigate("product_detail/$barcode")
                                     } else {
                                         // Show toast or error: No barcode found
-                                        android.widget.Toast.makeText(context, "No barcode found in image", android.widget.Toast.LENGTH_SHORT).show()
+                                        android.widget.Toast.makeText(context, context.getString(R.string.scan_no_barcode_found), android.widget.Toast.LENGTH_SHORT).show()
                                     }
                                 }
                                 .addOnFailureListener { e ->
-                                    android.widget.Toast.makeText(context, "Failed to scan: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                                    android.widget.Toast.makeText(context, context.getString(R.string.scan_failed, e.message ?: "Unknown error"), android.widget.Toast.LENGTH_SHORT).show()
                                 }
                         } catch (e: Exception) {
-                            android.widget.Toast.makeText(context, "Error loading image", android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(context, context.getString(R.string.scan_error_loading), android.widget.Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -431,8 +419,8 @@ fun ScanScreen(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Import dari Galeri",
+                     Text(
+                        text = stringResource(R.string.scan_import_gallery),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(0.6f)
                     )
@@ -463,8 +451,8 @@ fun ScanScreen(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "Mulai Scan",
+                     Text(
+                        text = stringResource(R.string.scan_start_button),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -475,7 +463,7 @@ fun ScanScreen(
                 
                 // Manual input link
                 Text(
-                    text = "atau masukkan barcode manual",
+                    text = stringResource(R.string.scan_manual_input),
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable {
@@ -487,7 +475,7 @@ fun ScanScreen(
                 
                 // NEW: Report Link
                 Text(
-                    text = "Barcode tidak ditemukan? Laporkan disini",
+                    text = stringResource(R.string.scan_report_missing),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(0.6f),
                     modifier = Modifier.clickable {

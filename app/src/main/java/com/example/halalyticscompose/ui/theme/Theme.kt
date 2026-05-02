@@ -64,6 +64,15 @@ val HalalGreenDark = Color(0xFF1B5E20)
 val TextGrayDark = Color(0xFF6B7280)
 val TextMutedDark = Color(0xFF4B5563)
 
+// Mappings for HomeScreen compatibility
+val TextMedium = TextSecondary
+val TextLight = TextTertiary
+val CardWhite = SurfaceWhite
+val Mint = MintAccent
+val MintPale = MintLight
+val BorderGray = BorderLight
+val Gold = GoldAccent
+
 // Legacy vars mapping
 val HalalColor = HalalGreen
 val HaramColor = HaramRed

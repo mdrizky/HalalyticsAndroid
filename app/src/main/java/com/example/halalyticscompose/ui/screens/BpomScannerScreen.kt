@@ -54,7 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.halalyticscompose.Data.Model.BpomProduct
+import com.example.halalyticscompose.data.model.BpomProduct
 import com.example.halalyticscompose.ui.viewmodel.BpomViewModel
 
 // Removed unused hardcoded colors

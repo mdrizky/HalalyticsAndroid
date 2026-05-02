@@ -2,9 +2,9 @@ package com.example.halalyticscompose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.Model.NutritionScanData
-import com.example.halalyticscompose.Data.Model.NutritionScanRequest
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.NutritionScanData
+import com.example.halalyticscompose.data.model.NutritionScanRequest
 import com.example.halalyticscompose.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

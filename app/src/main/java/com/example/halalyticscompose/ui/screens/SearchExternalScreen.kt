@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.halalyticscompose.Data.Model.ProductItem
+import com.example.halalyticscompose.data.model.ProductItem
 import com.example.halalyticscompose.ui.viewmodel.ProductExternalViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

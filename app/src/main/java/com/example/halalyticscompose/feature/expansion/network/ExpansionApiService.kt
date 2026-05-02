@@ -1,6 +1,6 @@
 package com.example.halalyticscompose.feature.expansion.network
 
-import com.example.halalyticscompose.Data.Model.ApiResponse
+import com.example.halalyticscompose.data.model.ApiResponse
 import com.example.halalyticscompose.feature.expansion.model.CommunityComment
 import com.example.halalyticscompose.feature.expansion.model.CommunityLeaderboardEntry
 import com.example.halalyticscompose.feature.expansion.model.CommunityPost
@@ -8,9 +8,6 @@ import com.example.halalyticscompose.feature.expansion.model.CommunityPostDetail
 import com.example.halalyticscompose.feature.expansion.model.HalocodeConsultation
 import com.example.halalyticscompose.feature.expansion.model.HalocodeExpert
 import com.example.halalyticscompose.feature.expansion.model.HalocodeMessage
-import com.example.halalyticscompose.feature.expansion.model.HealthFacility
-import com.example.halalyticscompose.feature.expansion.model.MarketplaceMerchant
-import com.example.halalyticscompose.feature.expansion.model.MarketplaceProduct
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -74,36 +71,6 @@ interface ExpansionApiService {
     suspend fun getExpertQueue(
         @Header("Authorization") bearer: String,
     ): Response<ApiResponse<List<HalocodeConsultation>>>
-
-    @GET("marketplace/nearby")
-    suspend fun getNearbyMerchants(
-        @Header("Authorization") bearer: String,
-        @Query("lat") lat: Double,
-        @Query("lng") lng: Double,
-        @Query("radius") radius: Int = 10,
-        @Query("type") type: String? = null,
-    ): Response<ApiResponse<List<MarketplaceMerchant>>>
-
-    @GET("marketplace/health-facilities")
-    suspend fun getNearbyHealthFacilities(
-        @Header("Authorization") bearer: String,
-        @Query("lat") lat: Double,
-        @Query("lng") lng: Double,
-    ): Response<ApiResponse<List<HealthFacility>>>
-
-    @GET("marketplace/products")
-    suspend fun getProducts(
-        @Header("Authorization") bearer: String,
-        @Query("merchant_id") merchantId: Int? = null,
-        @Query("category") category: String? = null,
-        @Query("search") search: String? = null,
-    ): Response<ApiResponse<List<MarketplaceProduct>>>
-
-    @GET("marketplace/products/{id}")
-    suspend fun getProductDetail(
-        @Header("Authorization") bearer: String,
-        @Path("id") id: Int,
-    ): Response<ApiResponse<MarketplaceProduct>>
 
     @GET("community/posts")
     suspend fun getPosts(

@@ -2,52 +2,52 @@ package com.example.halalyticscompose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.Model.AiAnalysisRequest
-import com.example.halalyticscompose.Data.Model.AiAnalysisResponse
-import com.example.halalyticscompose.Data.Model.AiAnalysisContent
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.AiAnalysisRequest
+import com.example.halalyticscompose.data.model.AiAnalysisContent
 import com.example.halalyticscompose.utils.SessionManager
+import com.example.halalyticscompose.ai.GeminiAnalyzer
+import com.example.halalyticscompose.ai.AiAnalysisResult
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import android.util.Log
+import javax.inject.Inject
 
 data class AiAnalysisUiState(
     val status: String = "Idle", // Idle, Loading, Success, Error
     val analysisResult: AiAnalysisContent? = null,
+    val localAiResult: AiAnalysisResult? = null,
     val healthAlerts: List<String> = emptyList(),
     val errorMessage: String? = null
 )
 
-class AiAnalysisViewModel : ViewModel() {
-    private var sessionManager: SessionManager? = null
-    
-    private val apiService: ApiService by lazy {
-        com.example.halalyticscompose.Data.Network.ApiConfig.apiService
-    }
+@HiltViewModel
+class AiAnalysisViewModel @Inject constructor(
+    private val apiService: ApiService,
+    private val sessionManager: SessionManager
+) : ViewModel() {
+
+    private val geminiAnalyzer = GeminiAnalyzer()
 
     private val _uiState = MutableStateFlow(AiAnalysisUiState())
     val uiState: StateFlow<AiAnalysisUiState> = _uiState.asStateFlow()
 
-    fun setSessionManager(manager: SessionManager) {
-        sessionManager = manager
-    }
-
     fun analyzeIngredients(ingredientsText: String, familyId: Int? = null) {
         viewModelScope.launch {
-            _uiState.value = AiAnalysisUiState(status = "Loading")
+            _uiState.value = _uiState.value.copy(status = "Loading")
             
             try {
-                val manager = sessionManager ?: throw Exception("SessionManager not initialized")
-                val token = manager.getBearerToken() ?: ""
+                val token = sessionManager.getAuthToken() ?: ""
                 
                 // Construct user profile context for AI
                 val userProfile = mutableMapOf<String, Any>()
-                manager.getMedicalHistory()?.let { userProfile["medical_history"] = it }
-                manager.getAllergy()?.let { userProfile["allergy"] = it }
-                userProfile["is_gluten_free"] = manager.isGlutenFree()
-                userProfile["has_nut_allergy"] = manager.hasNutAllergy()
+                sessionManager.getMedicalHistory()?.let { userProfile["medical_history"] = it }
+                sessionManager.getAllergy()?.let { userProfile["allergy"] = it }
+                userProfile["is_gluten_free"] = sessionManager.isGlutenFree()
+                userProfile["has_nut_allergy"] = sessionManager.hasNutAllergy()
                 
                 val request = AiAnalysisRequest(
                     ingredientsText = ingredientsText,
@@ -55,39 +55,52 @@ class AiAnalysisViewModel : ViewModel() {
                     userProfile = userProfile
                 )
                 
-                val response = apiService.analyzeIngredients(token, request)
+                val response = apiService.analyzeIngredients("Bearer $token", request)
                 
                 if (response.success && response.content != null) {
                     val content = response.content
-                    val healthAlerts = processHealthAlerts(content, manager, familyId)
+                    val healthAlerts = processHealthAlerts(content)
                     
-                    _uiState.value = AiAnalysisUiState(
+                    _uiState.value = _uiState.value.copy(
                         status = "Success",
                         analysisResult = content,
                         healthAlerts = healthAlerts
                     )
                 } else {
-                    _uiState.value = AiAnalysisUiState(
+                    _uiState.value = _uiState.value.copy(
                         status = "Error",
-                        errorMessage = response.message ?: "Failed to analyze ingredients"
+                        errorMessage = response.message ?: "Gagal menganalisis komposisi. Silakan coba lagi."
                     )
                 }
             } catch (e: Exception) {
                 Log.e("AiAnalysisVM", "Error analyzing ingredients", e)
-                _uiState.value = AiAnalysisUiState(
+                _uiState.value = _uiState.value.copy(
                     status = "Error",
-                    errorMessage = e.message ?: "An unexpected error occurred"
+                    errorMessage = "Terjadi kesalahan koneksi. Pastikan internet Anda stabil."
                 )
             }
         }
     }
 
-    private fun processHealthAlerts(content: AiAnalysisContent, sessionManager: SessionManager, familyId: Int?): List<String> {
+    fun analyzeIngredientsLocal(ingredients: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(status = "Loading")
+            geminiAnalyzer.analyzeIngredients(ingredients).collect { result ->
+                _uiState.value = _uiState.value.copy(
+                    status = when (result) {
+                        is AiAnalysisResult.Error -> "Error"
+                        is AiAnalysisResult.Success -> "Success"
+                        is AiAnalysisResult.Loading -> "Loading"
+                    },
+                    localAiResult = result,
+                    errorMessage = (result as? AiAnalysisResult.Error)?.message
+                )
+            }
+        }
+    }
+
+    private fun processHealthAlerts(content: AiAnalysisContent): List<String> {
         val alerts = mutableListOf<String>()
-        // Note: For now, client-side alerts still use main user session if family member data isn't easily accessible here.
-        // However, the backend 'analysis' text already contains family-specific warnings.
-        // We can supplement it here if we want.
-        
         val medicalHistory = sessionManager.getMedicalHistory()?.lowercase() ?: ""
         val allergies = sessionManager.getAllergy()?.lowercase() ?: ""
         

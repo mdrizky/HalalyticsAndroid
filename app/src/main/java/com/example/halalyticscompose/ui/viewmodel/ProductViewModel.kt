@@ -2,25 +2,24 @@ package com.example.halalyticscompose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.Data.Model.Product
-import com.example.halalyticscompose.data.api.HalalAlternativeResponse
-import com.example.halalyticscompose.Data.Repository.ProductRepository
+import com.example.halalyticscompose.data.model.Product
+import com.example.halalyticscompose.data.repository.ProductRepository
+import com.example.halalyticscompose.domain.usecase.GetProductImagesUseCase
+import com.example.halalyticscompose.data.model.ProductImageResult
+import com.example.halalyticscompose.utils.SessionManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import com.example.halalyticscompose.Data.Network.ApiConfig
-import com.example.halalyticscompose.domain.usecase.GetProductImagesUseCase
-import com.example.halalyticscompose.Data.Model.ProductImageResult
+import javax.inject.Inject
 
-class ProductViewModel : ViewModel() {
-
-    private var repository: ProductRepository = ProductRepository()
-    private val getProductImagesUseCase = GetProductImagesUseCase(ApiConfig.apiService)
-
-    fun initRepository(dao: com.example.halalyticscompose.Data.Local.Dao.CachedScanResultDao) {
-        repository = ProductRepository(cachedDao = dao)
-    }
+@HiltViewModel
+class ProductViewModel @Inject constructor(
+    private val repository: ProductRepository,
+    private val getProductImagesUseCase: GetProductImagesUseCase,
+    private val sessionManager: SessionManager
+) : ViewModel() {
 
     private val _productState = MutableStateFlow<ProductUiState>(ProductUiState.Loading)
     val productState: StateFlow<ProductUiState> = _productState.asStateFlow()
@@ -28,76 +27,55 @@ class ProductViewModel : ViewModel() {
     private val _productImageState = MutableStateFlow<ProductImageResult?>(null)
     val productImageState: StateFlow<ProductImageResult?> = _productImageState.asStateFlow()
 
-    private var authToken: String? = null
-
-    fun setToken(token: String) {
-        authToken = token
-    }
+    private val _alternativesState = MutableStateFlow<AlternativesUiState>(AlternativesUiState.Initial)
+    val alternativesState: StateFlow<AlternativesUiState> = _alternativesState.asStateFlow()
 
     fun loadProduct(barcode: String) {
-        println("🔍 Loading product for barcode: $barcode")
         viewModelScope.launch {
             _productState.value = ProductUiState.Loading
+            val token = sessionManager.getAuthToken()
             
-            println("📡 Calling repository.getProductWithHalalInfo for barcode: $barcode with token: ${authToken != null}")
-            repository.getProductWithHalalInfo(barcode, authToken)
+            repository.getProductWithHalalInfo(barcode, token)
                 .onSuccess { product ->
-                    println("✅ Product loaded successfully: ${product.name} (barcode: ${product.barcode})")
-                    println("📊 Product source: ${product.halalInfo?.source}")
                     _productState.value = ProductUiState.Success(product)
                     
-                    // Load advanced images with fallback
                     val source = if (product.halalInfo?.source == "open_food_facts") "external" else "local"
                     val result = getProductImagesUseCase(product.name, product.barcode, source)
                     _productImageState.value = result
                 }
                 .onFailure { error ->
-                    println("❌ Failed to load product: ${error.message}")
-                    _productState.value = ProductUiState.Error(
-                        error.message ?: "Unknown error"
-                    )
+                    _productState.value = ProductUiState.Error(error.message ?: "Unknown error")
                 }
         }
     }
 
     fun recheckHalalStatus(product: Product) {
-        println("🔄 Rechecking halal status for: ${product.name}")
         viewModelScope.launch {
             repository.checkHalalStatus(
                 product.barcode,
                 product.name,
                 product.brand
             ).onSuccess { halalInfo ->
-                println("✅ Halal status updated: ${halalInfo.halalStatus}")
                 val updatedProduct = product.copy(halalInfo = halalInfo)
                 _productState.value = ProductUiState.Success(updatedProduct)
             }
         }
     }
     
-    // Tambahkan fungsi untuk refresh data
     fun refreshProduct(barcode: String) {
-        println("🔄 Refreshing product data for barcode: $barcode")
         loadProduct(barcode)
     }
 
-    private val _alternativesState = MutableStateFlow<AlternativesUiState>(AlternativesUiState.Initial)
-    val alternativesState: StateFlow<AlternativesUiState> = _alternativesState.asStateFlow()
-
     fun loadAlternatives(barcode: String) {
-        println("🤖 Loading AI alternatives for barcode: $barcode")
         viewModelScope.launch {
             _alternativesState.value = AlternativesUiState.Loading
-            repository.getProductAlternatives(barcode, authToken)
+            val token = sessionManager.getAuthToken()
+            repository.getProductAlternatives(barcode, token)
                 .onSuccess { alternatives ->
-                    println("✅ AI alternatives loaded successfully")
                     _alternativesState.value = AlternativesUiState.Success(alternatives)
                 }
                 .onFailure { error ->
-                    println("❌ Failed to load alternatives: ${error.message}")
-                    _alternativesState.value = AlternativesUiState.Error(
-                        error.message ?: "Failed to get alternatives"
-                    )
+                    _alternativesState.value = AlternativesUiState.Error(error.message ?: "Failed to get alternatives")
                 }
         }
     }
@@ -112,6 +90,6 @@ sealed class ProductUiState {
 sealed class AlternativesUiState {
     object Initial : AlternativesUiState()
     object Loading : AlternativesUiState()
-    data class Success(val data: HalalAlternativeResponse) : AlternativesUiState()
+    data class Success(val response: com.example.halalyticscompose.data.api.HalalAlternativeResponse) : AlternativesUiState()
     data class Error(val message: String) : AlternativesUiState()
 }

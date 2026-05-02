@@ -1,9 +1,9 @@
 package com.example.halalyticscompose.repository
 
-import com.example.halalyticscompose.Data.API.ApiService
-import com.example.halalyticscompose.Data.Local.Dao.HaramIngredientDao
-import com.example.halalyticscompose.Data.Local.Entities.HaramIngredientEntity
-import com.example.halalyticscompose.Data.Model.OcrScanResultRequest
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.local.Dao.HaramIngredientDao
+import com.example.halalyticscompose.data.local.Entities.HaramIngredientEntity
+import com.example.halalyticscompose.data.model.OcrScanResultRequest
 import kotlinx.coroutines.flow.Flow
 import java.time.Instant
 import javax.inject.Inject

@@ -17,6 +17,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.halalyticscompose.ui.viewmodel.FavoritesViewModel
 import com.example.halalyticscompose.ui.components.SwipeableProductCard
+import androidx.compose.ui.res.stringResource
+import com.example.halalyticscompose.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +48,7 @@ fun FavoritesScreen(
     if (showFilterDialog) {
         AlertDialog(
             onDismissRequest = { showFilterDialog = false },
-            title = { Text("Filter Status Halal") },
+            title = { Text(stringResource(R.string.favorites_filter_title)) },
             text = {
                 Column {
                     filterOptions.forEach { filter ->
@@ -64,7 +66,7 @@ fun FavoritesScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showFilterDialog = false }) {
-                    Text("Tutup")
+                    Text(stringResource(R.string.common_close))
                 }
             }
         )
@@ -75,13 +77,13 @@ fun FavoritesScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        text = "Halal-Ku",
+                        text = stringResource(R.string.favorites_title),
                         fontWeight = FontWeight.Bold
                     ) 
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
                 actions = {
@@ -101,10 +103,10 @@ fun FavoritesScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                label = { Text("Cari produk favorit...") },
+                label = { Text(stringResource(R.string.favorites_search_placeholder)) },
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "Cari")
+                    Icon(Icons.Default.Search, contentDescription = stringResource(R.string.bottom_nav_search))
                 }
             )
             
@@ -121,13 +123,13 @@ fun FavoritesScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "Statistik Favorit",
+                        text = stringResource(R.string.favorites_stats_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Total Produk: ${favoriteProducts.size}",
+                        text = stringResource(R.string.favorites_stats_total, favoriteProducts.size),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -150,23 +152,9 @@ fun FavoritesScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = if (searchQuery.isEmpty()) "Belum ada produk favorit" 
-                                else "Tidak ada produk favorit yang ditemukan",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = if (searchQuery.isEmpty()) "Tekan icon bintang pada produk untuk menambahkan ke favorit"
-                                else "Coba kata kunci lain",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        ListEmptyState(
+                            searchQuery = searchQuery
+                        )
                     }
                 }
                 
@@ -181,7 +169,7 @@ fun FavoritesScreen(
                         ) { product ->
                             SwipeableProductCard(
                                 product = product,
-                                onDelete = { viewModel.deleteProduct(product.barcode) },
+                                onDelete = { viewModel.deleteProduct(it.barcode) },
                                 onFavoriteClick = { viewModel.toggleFavorite(product.barcode) },
                                 onCardClick = { 
                                     navController.navigate("product_detail/${product.barcode}")
@@ -195,3 +183,23 @@ fun FavoritesScreen(
     }
 }
 
+@Composable
+private fun ListEmptyState(searchQuery: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = if (searchQuery.isEmpty()) stringResource(R.string.favorites_empty_title)
+            else stringResource(R.string.favorites_search_empty_title),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = if (searchQuery.isEmpty()) stringResource(R.string.favorites_empty_desc)
+            else stringResource(R.string.favorites_search_empty_desc),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}

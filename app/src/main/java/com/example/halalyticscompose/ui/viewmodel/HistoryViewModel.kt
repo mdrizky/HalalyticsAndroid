@@ -2,99 +2,132 @@ package com.example.halalyticscompose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.halalyticscompose.data.database.ProductHistoryEntity
-import com.example.halalyticscompose.data.database.ProductRepository
+import com.example.halalyticscompose.data.api.ApiService
+import com.example.halalyticscompose.data.model.*
+import com.example.halalyticscompose.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import javax.inject.Inject
+import android.util.Log
+import java.text.SimpleDateFormat
+import java.util.*
 
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
-    private val repository: ProductRepository,
-    private val apiService: com.example.halalyticscompose.Data.API.ApiService,
-    private val sessionManager: com.example.halalyticscompose.utils.SessionManager
+    private val apiService: ApiService,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
-    
-    init {
-        syncHistoryFromApi()
-    }
-    
+
+    private val _scanHistory = MutableStateFlow<List<ScanHistoryItem>>(emptyList())
+    val scanHistory: StateFlow<List<ScanHistoryItem>> = _scanHistory.asStateFlow()
+
+    private val _banners = MutableStateFlow<List<Banner>>(emptyList())
+    val banners: StateFlow<List<Banner>> = _banners.asStateFlow()
+
+    val dailyHealthScore: StateFlow<Int> = _scanHistory.map { history ->
+        var score = 50 // Base score
+        val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        
+        history.filter { it.createdAt != null && it.createdAt.startsWith(todayStr) }.forEach { item ->
+            when (item.halalStatus?.lowercase()) {
+                "halal" -> score += 10
+                "haram" -> score -= 15
+                "syubhat" -> score -= 5
+            }
+        }
+        score.coerceIn(0, 100)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 50)
+
+    private val _totalScans = MutableStateFlow(0)
+    val totalScans: StateFlow<Int> = _totalScans.asStateFlow()
+
+    private val _halalProducts = MutableStateFlow(0)
+    val halalProducts: StateFlow<Int> = _halalProducts.asStateFlow()
+
+    private val _currentStreak = MutableStateFlow(0)
+    val currentStreak: StateFlow<Int> = _currentStreak.asStateFlow()
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-    
-    val allProducts = repository.getAllProducts()
-    
-    fun getRecentProducts(limit: Int = 5) = repository.getRecentProducts(limit)
-    
-    fun deleteProduct(barcode: String) {
-        viewModelScope.launch {
-            repository.deleteProduct(barcode)
-        }
+
+    private var syncJob: Job? = null
+
+    init {
+        loadBanners()
+        refreshAll()
+        startRealtimeSync()
     }
-    
-    fun toggleFavorite(barcode: String) {
+
+    fun loadBanners() {
         viewModelScope.launch {
-            repository.toggleFavorite(barcode)
-        }
-    }
-    
-    fun addToHistory(product: ProductHistoryEntity) {
-        viewModelScope.launch {
-            repository.insertProduct(product)
-        }
-    }
-    
-    fun cleanOldProducts() {
-        viewModelScope.launch {
-            repository.cleanOldProducts()
+            try {
+                val response = apiService.getBanners()
+                if (response.isSuccessful && response.body()?.success == true) {
+                    _banners.value = response.body()?.data ?: emptyList()
+                }
+            } catch (e: Exception) {
+                Log.e("HistoryViewModel", "Load banners error", e)
+            }
         }
     }
 
-    private fun syncHistoryFromApi() {
-        viewModelScope.launch {
-            val token = sessionManager.getBearerToken() ?: return@launch
-            // Don't set global isLoading to true to avoid blocking UI if local data exists
-            // Just sync in background
-            try {
-                val response = apiService.getRealtimeScanHistory(token)
-                if (response.success) {
-                    val serverItems = response.data?.data ?: emptyList()
-                    println("🔄 Syncing history... Found ${serverItems.size} items")
-                    serverItems.forEach { historyItem ->
-                        historyItem.barcode?.let { barcode ->
-                            val entity = com.example.halalyticscompose.data.database.ProductHistoryEntity(
-                                barcode = barcode,
-                                name = historyItem.productName ?: "Unknown Product",
-                                status = historyItem.halalStatus ?: "unknown",
-                                image = historyItem.productImage,
-                                timestamp = System.currentTimeMillis(), // Or parse createdAt
-                                isFavorite = false, // We don't know favorite status here easily unless we join checks, potentially overwrite if already exists
-                                // However, insertProduct uses OnConflictStrategy.REPLACE. 
-                                // This is risky if we overwrite isFavorite=true with false.
-                                // We should check if it exists or use ignore/update only specific fields if possible?
-                                // Repository.insertProduct uses REPLACE.
-                                // Better check if product exists first.
-                                isSynced = true
-                            )
-                            
-                            // Safe Insert: Preserve isFavorite status if exists
-                            val existing = repository.getProductByBarcode(barcode)
-                            val finalEntity = if (existing != null) {
-                                entity.copy(isFavorite = existing.isFavorite) 
-                            } else {
-                                entity
-                            }
-                            
-                            repository.insertProduct(finalEntity)
-                        }
-                    }
+    fun refreshAll() {
+        val token = sessionManager.getAuthToken() ?: return
+        fetchHistory(token)
+        fetchUserStats(token)
+    }
+
+    fun startRealtimeSync() {
+        syncJob?.cancel()
+        syncJob = viewModelScope.launch {
+            while (true) {
+                val token = sessionManager.getAuthToken()
+                if (!token.isNullOrBlank()) {
+                    fetchHistory(token)
+                    fetchUserStats(token)
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+                delay(60000) // Sync every 60 seconds
             }
         }
+    }
+
+    private fun fetchHistory(token: String) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getRealtimeScanHistory("Bearer $token")
+                if (response.success) {
+                    _scanHistory.value = response.data?.data ?: emptyList()
+                }
+            } catch (e: Exception) {
+                Log.e("HistoryViewModel", "Fetch history error", e)
+            }
+        }
+    }
+
+    private fun fetchUserStats(token: String) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getUserStats("Bearer $token")
+                if (response.responseCode == 200) {
+                    _totalScans.value = response.content.totalScans
+                    _halalProducts.value = response.content.halalScans
+                    _currentStreak.value = response.content.streak?.current ?: 0
+                }
+            } catch (e: Exception) {
+                Log.e("HistoryViewModel", "Fetch stats error", e)
+            }
+        }
+    }
+
+    fun refreshHistory() {
+        refreshAll()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        syncJob?.cancel()
     }
 }

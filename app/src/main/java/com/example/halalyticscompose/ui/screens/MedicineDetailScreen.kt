@@ -194,6 +194,11 @@ fun MedicineDetailScreen(
                                         else -> Color(0xFFF59E0B)
                                     }
                                 )
+                                MedBadge(
+                                    text = (med.bpomStatus ?: "Unverified").uppercase(),
+                                    icon = if ((med.bpomStatus ?: "").lowercase() == "registered") Icons.Default.Verified else Icons.Default.GppMaybe,
+                                    color = if ((med.bpomStatus ?: "").lowercase() == "registered") Color(0xFF0EA5E9) else Color(0xFF64748B)
+                                )
                             }
                         }
 
@@ -474,7 +479,7 @@ fun MedicineDetailScreen(
 
                         // ─── Set Reminder Button ─────────────────
                         Button(
-                            onClick = { /* Navigate to add reminder */ },
+                            onClick = { navController.navigate("add_medicine_reminder") },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 20.dp)
@@ -502,7 +507,7 @@ fun MedicineDetailScreen(
 // ═══════════════════════════════════════════════════════════════════
 
 @Composable
-private fun MedicineHeroCard(med: com.example.halalyticscompose.Data.Model.MedicineData) {
+private fun MedicineHeroCard(med: com.example.halalyticscompose.data.model.MedicineData) {
     val colorScheme = MaterialTheme.colorScheme
     Box(
         modifier = Modifier

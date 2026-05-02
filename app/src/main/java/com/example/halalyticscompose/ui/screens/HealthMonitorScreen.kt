@@ -40,13 +40,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.runtime.collectAsState
-import com.example.halalyticscompose.ui.viewmodel.MainViewModel
+import com.example.halalyticscompose.ui.viewmodel.HealthViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HealthMonitorScreen(
     navController: NavController,
-    viewModel: MainViewModel
+    viewModel: HealthViewModel = hiltViewModel()
 ) {
     val color = MaterialTheme.colorScheme
     val bmi by viewModel.bmi.collectAsState()

@@ -21,15 +21,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.halalyticscompose.ui.viewmodel.PointsViewModel
+import com.example.halalyticscompose.utils.SessionManager
 import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PointsRewardsScreen(
     navController: NavController,
-    totalPoints: Int = 0,
-    pointsHistory: List<PointHistoryItem> = emptyList()
+    viewModel: PointsViewModel = hiltViewModel()
 ) {
+    val totalPoints by viewModel.points.collectAsState()
+    val pointsHistoryRaw by viewModel.history.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+
+    // Map history to UI items
+    val pointsHistory = pointsHistoryRaw.mapNotNull { item ->
+        if (item is Map<*, *>) {
+            PointHistoryItem(
+                points = (item["points"] as? Number)?.toInt() ?: 0,
+                description = item["description"] as? String ?: "Aktivitas",
+                date = item["created_at"] as? String ?: "-",
+                source = item["source"] as? String ?: "system"
+            )
+        } else null
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadAll()
+    }
     val level = getLevelInfo(totalPoints)
     val progress = if (level.nextThreshold != null) {
         ((totalPoints - level.minThreshold).toFloat() / (level.nextThreshold - level.minThreshold))

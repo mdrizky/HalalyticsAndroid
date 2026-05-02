@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.halalyticscompose.Data.Model.HealthEncyclopedia
+import com.example.halalyticscompose.data.model.HealthEncyclopedia
 import com.example.halalyticscompose.ui.viewmodel.HealthEncyclopediaViewModel
 import com.example.halalyticscompose.ui.theme.*
 import java.net.URLEncoder

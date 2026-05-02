@@ -68,7 +68,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.halalyticscompose.data.ocr.DetectedIngredient
 import com.example.halalyticscompose.data.ocr.OcrProcessor
-import com.example.halalyticscompose.presentation.viewmodel.OcrScanViewModel
+import com.example.halalyticscompose.ui.viewmodel.OcrScanViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState

@@ -488,7 +488,7 @@ fun MedicalInfoScreen(navController: NavController) {
                                 val token = sessionManager.getBearerToken()
                                 
                                 if (!token.isNullOrBlank()) {
-                                    val apiService = com.example.halalyticscompose.Data.Network.ApiConfig.apiService
+                                    val apiService = com.example.halalyticscompose.data.network.ApiConfig.apiService
                                     
                                     val mergedHistory = mutableListOf<String>()
                                     if (chronicDiseases.isNotBlank()) mergedHistory.add(chronicDiseases)

@@ -26,7 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.halalyticscompose.ui.theme.*
-import com.example.halalyticscompose.ui.viewmodel.MainViewModel
+import com.example.halalyticscompose.ui.viewmodel.ContributionViewModel
 import java.io.File
 import java.io.FileOutputStream
 
@@ -36,13 +36,15 @@ fun ContributionScreen(
     navController: NavController,
     initialBarcode: String? = null,
     initialProductName: String? = null,
-    viewModel: MainViewModel = hiltViewModel()
+    viewModel: ContributionViewModel = hiltViewModel()
 ) {
     var productName by remember { mutableStateOf(initialProductName ?: "") }
     var barcode by remember { mutableStateOf(initialBarcode ?: "") }
     var complaint by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<android.net.Uri?>(null) }
     val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val successMessage by viewModel.successMessage.collectAsState()
     
     val context = LocalContext.current
     
@@ -50,6 +52,21 @@ fun ContributionScreen(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri -> selectedImageUri = uri }
     )
+
+    LaunchedEffect(successMessage) {
+        successMessage?.let {
+            android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_LONG).show()
+            viewModel.clearMessages()
+            navController.popBackStack()
+        }
+    }
+
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_LONG).show()
+            viewModel.clearMessages()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -128,9 +145,7 @@ fun ContributionScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = HalalGreen,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
             
@@ -145,9 +160,7 @@ fun ContributionScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = HalalGreen,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
             
@@ -161,9 +174,7 @@ fun ContributionScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = HalalGreen,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
             
@@ -184,14 +195,7 @@ fun ContributionScreen(
                         productName = productName,
                         barcode = barcode,
                         complaint = complaint,
-                        imageFile = file,
-                        onSuccess = { msg ->
-                            android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_LONG).show()
-                            navController.popBackStack()
-                        },
-                        onError = { err ->
-                            android.widget.Toast.makeText(context, err, android.widget.Toast.LENGTH_LONG).show()
-                        }
+                        imageFile = file
                     )
                 },
                 modifier = Modifier

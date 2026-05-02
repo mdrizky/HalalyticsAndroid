@@ -47,7 +47,11 @@ class HalocodeViewModel @Inject constructor(
     val wsConnectionState = wsManager.connectionState
 
     fun loadExperts() {
-        val bearer = sessionManager.getBearerToken() ?: return
+        val bearer = sessionManager.getBearerToken()
+        if (bearer == null) {
+            _error.value = "Silakan login terlebih dahulu untuk menggunakan fitur ini"
+            return
+        }
 
         viewModelScope.launch {
             _isLoading.value = true
@@ -67,7 +71,11 @@ class HalocodeViewModel @Inject constructor(
     }
 
     fun createConsultation(expertId: Int, onCreated: ((HalocodeConsultation) -> Unit)? = null) {
-        val bearer = sessionManager.getBearerToken() ?: return
+        val bearer = sessionManager.getBearerToken()
+        if (bearer == null) {
+            _error.value = "Silakan login terlebih dahulu untuk menggunakan fitur ini"
+            return
+        }
 
         viewModelScope.launch {
             _isLoading.value = true
@@ -90,7 +98,11 @@ class HalocodeViewModel @Inject constructor(
     }
 
     fun connectToChat(consultationId: Int) {
-        val bearer = sessionManager.getBearerToken() ?: return
+        val bearer = sessionManager.getBearerToken()
+        if (bearer == null) {
+            _error.value = "Silakan login terlebih dahulu untuk menggunakan fitur ini"
+            return
+        }
 
         viewModelScope.launch {
             try {
@@ -106,7 +118,11 @@ class HalocodeViewModel @Inject constructor(
     }
 
     fun sendMessage(consultationId: Int, message: String) {
-        val bearer = sessionManager.getBearerToken() ?: return
+        val bearer = sessionManager.getBearerToken()
+        if (bearer == null) {
+            _error.value = "Silakan login terlebih dahulu untuk menggunakan fitur ini"
+            return
+        }
 
         viewModelScope.launch {
             try {
@@ -125,7 +141,11 @@ class HalocodeViewModel @Inject constructor(
     }
 
     fun endConsultation(consultationId: Int, onEnded: (() -> Unit)? = null) {
-        val bearer = sessionManager.getBearerToken() ?: return
+        val bearer = sessionManager.getBearerToken()
+        if (bearer == null) {
+            _error.value = "Silakan login terlebih dahulu untuk menggunakan fitur ini"
+            return
+        }
 
         viewModelScope.launch {
             try {
@@ -139,7 +159,11 @@ class HalocodeViewModel @Inject constructor(
     }
 
     fun toggleOnline() {
-        val bearer = sessionManager.getBearerToken() ?: return
+        val bearer = sessionManager.getBearerToken()
+        if (bearer == null) {
+            _error.value = "Silakan login terlebih dahulu untuk menggunakan fitur ini"
+            return
+        }
 
         viewModelScope.launch {
             try {
@@ -157,7 +181,11 @@ class HalocodeViewModel @Inject constructor(
     }
 
     fun loadQueue() {
-        val bearer = sessionManager.getBearerToken() ?: return
+        val bearer = sessionManager.getBearerToken()
+        if (bearer == null) {
+            _error.value = "Silakan login terlebih dahulu untuk menggunakan fitur ini"
+            return
+        }
 
         viewModelScope.launch {
             try {

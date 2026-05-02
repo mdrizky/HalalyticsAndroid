@@ -33,9 +33,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.halalyticscompose.Data.API.BeautyProduct
-import com.example.halalyticscompose.Data.API.bestIngredientsText
-import com.example.halalyticscompose.Data.Model.*
+import com.example.halalyticscompose.data.api.BeautyProduct
+import com.example.halalyticscompose.data.api.bestIngredientsText
+import com.example.halalyticscompose.data.model.*
 import com.example.halalyticscompose.ui.theme.*
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 import com.example.halalyticscompose.ui.viewmodel.SkincareViewModel

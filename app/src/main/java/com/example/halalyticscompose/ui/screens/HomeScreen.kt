@@ -8,22 +8,12 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -31,61 +21,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Biotech
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.HealthAndSafety
-import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.LocalHospital
-import androidx.compose.material.icons.filled.Medication
-import androidx.compose.material.icons.filled.MedicalServices
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.MonitorHeart
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.QrCode2
-import androidx.compose.material.icons.filled.Science
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SmartToy
-import androidx.compose.material.icons.filled.Summarize
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.VerifiedUser
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Insights
-import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -94,82 +39,54 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.halalyticscompose.Data.Model.Banner
-import com.example.halalyticscompose.Data.Model.HealthArticleItem
-import com.example.halalyticscompose.Data.Model.ScanHistoryItem
+import com.example.halalyticscompose.data.model.*
 import com.example.halalyticscompose.R
-import com.example.halalyticscompose.ui.viewmodel.HealthArticleViewModel
-import com.example.halalyticscompose.ui.viewmodel.MainViewModel
-import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import com.example.halalyticscompose.ui.viewmodel.*
 import com.example.halalyticscompose.utils.toRelativeTime
-import com.example.halalyticscompose.ui.components.ShimmerProductItem
-import com.example.halalyticscompose.ui.components.ShimmerArticleItem
-import com.example.halalyticscompose.ui.components.ShimmerBanner
-import com.example.halalyticscompose.ui.components.ShimmerBentoGrid
+import com.example.halalyticscompose.ui.components.*
+import java.util.Calendar
+import kotlinx.coroutines.delay
 
-// ═══════════════════════════════════════════════════════════════════
-// COLOR CONSTANTS — Emerald Forest Premium Palette
-// ═══════════════════════════════════════════════════════════════════
-private val Navy = Color(0xFF004D40)        // Deep Emerald
-private val NavyLight = Color(0xFF00695C)   // Slightly lighter emerald
-private val Mint = Color(0xFF26A69A)        // Modern Mint
-private val MintPale = Color(0xFFE0F2F1)   // Soft Sage
-private val BgLight = Color(0xFFF4F9F8)    // Off-White Green
-private val CardWhite = Color(0xFFFFFFFF)
-private val BorderGray = Color(0xFFE0E0E0)
-private val TextDark = Color(0xFF212121)
-private val TextMedium = Color(0xFF757575)
-private val TextLight = Color(0xFF9E9E9E)
-private val GoldAccent = Color(0xFFD4AF37)  // Premium Gold
-
-// ═══════════════════════════════════════════════════════════════════
-// HOME SCREEN — Premium Emerald Forest (Halodoc-Level)
-// ═══════════════════════════════════════════════════════════════════
+// Color constants moved into the theme-aware components
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
-    viewModel: MainViewModel = hiltViewModel(),
-    articleViewModel: HealthArticleViewModel = hiltViewModel()
+    authViewModel: AuthViewModel = hiltViewModel(),
+    historyViewModel: HistoryViewModel = hiltViewModel(),
+    healthViewModel: HealthViewModel = hiltViewModel(),
+    articleViewModel: HealthArticleViewModel = hiltViewModel(),
+    paddingValues: PaddingValues = PaddingValues(0.dp)
 ) {
-    val user by viewModel.currentUser.collectAsState()
-    val banners by viewModel.banners.collectAsState()
-    val totalScans by viewModel.totalScans.collectAsState()
-    val halalProducts by viewModel.halalProducts.collectAsState()
-    val healthScore by viewModel.dailyHealthScore.collectAsState()
-    val streak by viewModel.currentStreak.collectAsState()
-    val scanHistory by viewModel.scanHistory.collectAsState()
+    val userData by authViewModel.userData.collectAsState()
+    val name = userData?.fullName ?: userData?.username ?: "User"
+    val banners by historyViewModel.banners.collectAsState()
+    val totalScans by historyViewModel.totalScans.collectAsState()
+    val halalProducts by historyViewModel.halalProducts.collectAsState()
+    val healthScore by historyViewModel.dailyHealthScore.collectAsState() 
+    val streak by historyViewModel.currentStreak.collectAsState()
+    val scanHistory by historyViewModel.scanHistory.collectAsState()
     val articles by articleViewModel.articles.collectAsState()
-    val aiDailyInsight by viewModel.aiDailyInsight.collectAsState()
-    val healthScoreData by viewModel.healthScoreData.collectAsState()
+    val aiDailyInsight by healthViewModel.aiDailyInsight.collectAsState()
+    
     var showAllFeaturesSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        viewModel.refreshData()
+        authViewModel.loadUserProfile()
+        historyViewModel.refreshAll()
+        healthViewModel.refreshHealthData()
         articleViewModel.loadArticles()
     }
 
-    val greeting = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
-        in 0..10 -> stringResource(R.string.home_greeting_morning)
-        in 11..14 -> stringResource(R.string.home_greeting_noon)
-        in 15..17 -> stringResource(R.string.home_greeting_afternoon)
-        else -> stringResource(R.string.home_greeting_night)
-    }
-
     Scaffold(
-        containerColor = BgLight,
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             PulsatingFAB(onClick = { navController.navigate("health_assistant") })
-        }
+        },
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -177,72 +94,98 @@ fun HomeScreen(
                 .padding(padding),
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            // ─── NAVY HEADER + FLOATING QUICK ACTION CARD ────────
             item {
-                Box {
-                    // Navy header background
-                    NavyHeader(
-                        greeting = greeting,
-                        name = user ?: stringResource(R.string.home_default_user),
-                        onNotification = { navController.navigate("notifications") },
-                        onSearch = { navController.navigate("search_hub") }
-                    )
-
-                    // Floating Quick Action Card (overlaps header and body)
-                    FloatingQuickActionCard(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .offset(y = 56.dp)
-                            .padding(horizontal = 20.dp),
-                        onScan = { navController.navigate("scan") },
-                        onHistory = { navController.navigate("history") },
-                        onInsight = { navController.navigate("health_assistant") },
-                        onPoints = { navController.navigate("health_journey") },
-                        onMedicine = { navController.navigate("drug_interaction") },
-                        onCosmetic = { navController.navigate("skincare_scanner") },
-                        onLabScan = { navController.navigate("lab_analysis") },
-                        onBpom = { navController.navigate("bpom_scanner") }
-                    )
-                }
-                // Spacer to account for the floating card overlap
-                Spacer(modifier = Modifier.height(68.dp))
+                GroceryHeader(
+                    name = name,
+                    imageUrl = userData?.image,
+                    location = userData?.bio?.take(20) ?: "Jakarta, ID",
+                    onNotification = { navController.navigate("notifications") }
+                )
             }
 
-            // ─── AUTO-SLIDING BANNER ─────────────────────────────
             item {
-                Spacer(modifier = Modifier.height(8.dp))
+                GrocerySearchBar(
+                    onClick = { navController.navigate("search_hub") }
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
                 AutoSlidingBanner(
                     banners = banners,
                     onClick = { banner -> navigateByBannerAction(navController, banner) }
                 )
             }
 
-            // ─── BENTO GRID — Clean White Cards ──────────────────
             item {
-                Spacer(modifier = Modifier.height(16.dp))
-                BentoGrid(
-                    healthScore = healthScoreData?.score ?: healthScore,
-                    healthScoreLabel = healthScoreData?.level,
-                    streak = streak,
-                    totalScans = totalScans,
-                    halalProducts = halalProducts,
-                    aiDailyInsight = aiDailyInsight,
-                    onAiInsight = { navController.navigate("health_assistant") },
-                    onHealthScore = { navController.navigate("health_journey") },
-                    onStreak = { navController.navigate("health_diary") },
-                    onLabCheck = { navController.navigate("lab_analysis") }
+                Spacer(modifier = Modifier.height(20.dp))
+                FeatureGridSS(
+                    onScan = { navController.navigate("scan") },
+                    onHistory = { navController.navigate("history") },
+                    onInsight = { navController.navigate("health_assistant") },
+                    onPoints = { navController.navigate("health_journey") },
+                    onMedicine = { navController.navigate("drug_interaction") },
+                    onCosmetic = { navController.navigate("skincare_scanner") },
+                    onBpom = { navController.navigate("bpom_scanner") },
+                    onLainnya = { showAllFeaturesSheet = true }
                 )
             }
 
-
-
-            // ─── HEALTH ARTICLES ─────────────────────────────────
             item {
                 Spacer(modifier = Modifier.height(16.dp))
-                SectionTitle(
-                    "Artikel Kesehatan",
-                    "Lihat Semua"
-                ) { navController.navigate("health_articles") }
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .clickable { navController.navigate("donor_home") },
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3F3)),
+                    border = BorderStroke(1.dp, Color(0xFFE74C3C).copy(alpha = 0.2f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFFE74C3C)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.WaterDrop, null, tint = Color.White)
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Blood Donor Central", fontWeight = FontWeight.Bold, color = Color(0xFFE74C3C))
+                            Text("Cek stok darah & event terdekat", fontSize = 12.sp, color = Color.Gray)
+                        }
+                        Icon(Icons.Default.ArrowForwardIos, null, modifier = Modifier.size(16.dp), tint = Color(0xFFE74C3C))
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                GroceryCategorySection(onViewAll = { navController.navigate("search_hub") })
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                GroceryTopPicksSection(
+                    products = scanHistory,
+                    onViewAll = { navController.navigate("history") },
+                    onProductClick = { item ->
+                        if (item.id > 0) navController.navigate("scan_history_detail/${item.id}")
+                    }
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                SectionTitle(stringResource(R.string.home_health_articles), stringResource(R.string.home_see_all)) { 
+                    navController.navigate("health_articles") 
+                }
             }
 
             if (articles.isEmpty()) {
@@ -251,41 +194,17 @@ fun HomeScreen(
                 items(articles.take(4)) { article ->
                     ArticleCard(
                         article = article,
-                        onClick = {
-                            val slug = article.slug ?: article.id
-                            navController.navigate("health_article_detail/${Uri.encode(slug)}")
+                        onClick = { 
+                            val slug = article.slug ?: article.id.toString()
+                            navController.navigate("health_article_detail/${Uri.encode(slug)}") 
                         }
                     )
-                }
-            }
-
-            // ─── RECENT SCANS ────────────────────────────────────
-            item {
-                Spacer(modifier = Modifier.height(12.dp))
-                SectionTitle(
-                    stringResource(R.string.home_recent_scan),
-                    stringResource(R.string.home_see_all)
-                ) { navController.navigate("history") }
-            }
-
-            if (scanHistory.isEmpty()) {
-                items(4) { ShimmerProductItem() }
-            } else {
-                items(scanHistory.take(4)) { item ->
-                    RecentScanCard(item = item) {
-                        if (item.id > 0) {
-                            navController.navigate("scan_history_detail/${item.id}")
-                        } else {
-                            navController.navigate("history")
-                        }
-                    }
                 }
             }
 
             item { Spacer(modifier = Modifier.height(80.dp)) }
         }
 
-        // ─── ALL FEATURES BOTTOM SHEET ──────────────────────
         if (showAllFeaturesSheet) {
             AllFeaturesSheet(
                 onDismiss = { showAllFeaturesSheet = false },
@@ -298,212 +217,100 @@ fun HomeScreen(
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// NAVY HEADER — GoPay / Dana Style (Flat solid Navy)
-// ═══════════════════════════════════════════════════════════════════
-
 @Composable
-private fun NavyHeader(
-    greeting: String,
-    name: String,
-    onNotification: () -> Unit,
-    onSearch: () -> Unit
-) {
-    Box(
+private fun GroceryHeader(name: String, imageUrl: String?, location: String, onNotification: () -> Unit) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                Brush.linearGradient(
-                    listOf(Navy, NavyLight)
-                )
-            )
-            .padding(bottom = 48.dp) // Extra space for floating card
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp)
-        ) {
-            // Row 1: Greeting + Notification
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        greeting,
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Normal
-                    )
-                    Text(
-                        name,
-                        color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.3).sp
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.12f))
-                        .clickable { onNotification() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Notifications,
-                        null,
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Row 2: Search Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color.White.copy(alpha = 0.15f))
-                    .clickable { onSearch() }
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Default.Search,
-                    null,
-                    tint = Color.White.copy(alpha = 0.7f),
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    stringResource(R.string.home_search_hint),
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Normal
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Icon(
-                    Icons.Default.CameraAlt,
-                    null,
-                    tint = Color.White.copy(alpha = 0.5f),
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
-    }
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// FLOATING QUICK ACTION CARD — Melayang di antara Header & Body
-// ═══════════════════════════════════════════════════════════════════
-
-@Composable
-private fun FloatingQuickActionCard(
-    modifier: Modifier = Modifier,
-    onScan: () -> Unit,
-    onHistory: () -> Unit,
-    onInsight: () -> Unit,
-    onPoints: () -> Unit,
-    onMedicine: () -> Unit = {},
-    onCosmetic: () -> Unit = {},
-    onLabScan: () -> Unit = {},
-    onBpom: () -> Unit = {}
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .zIndex(1f),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp, horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            // Row 1: Scan AI, Cek Obat, Kosmetik, Lab Scan
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                QuickActionIcon(Icons.Default.QrCode2, "Scan AI", Color(0xFF004D40), Color(0xFFE0F2F1), onScan)
-                QuickActionIcon(Icons.Default.Medication, "Cek Obat", Color(0xFFC62828), Color(0xFFFFEBEE), onMedicine)
-                QuickActionIcon(Icons.Default.AutoAwesome, "Kosmetik", Color(0xFF6A1B9A), Color(0xFFF3E5F5), onCosmetic)
-                QuickActionIcon(Icons.Default.Biotech, "Lab Scan", Color(0xFF2E7D32), Color(0xFFE8F5E9), onLabScan)
-            }
-            // Row 2: Halal Check, BPOM, AI Assistant, Riwayat
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                QuickActionIcon(Icons.Default.VerifiedUser, "Halal", Color(0xFFD4AF37), Color(0xFFFFF8E1), onPoints)
-                QuickActionIcon(Icons.Default.HealthAndSafety, "BPOM", Color(0xFF00695C), Color(0xFFE0F2F1), onBpom)
-                QuickActionIcon(Icons.Default.SmartToy, "AI Chat", Color(0xFF004D40), Color(0xFFE0F2F1), onInsight)
-                QuickActionIcon(Icons.Default.History, "Riwayat", Color(0xFF004D40), Color(0xFFE0F2F1), onHistory)
-            }
-        }
-    }
-}
-
-@Composable
-private fun QuickActionIcon(icon: ImageVector, label: String, tint: Color, bg: Color, onClick: () -> Unit) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .width(68.dp)
-            .clickable { onClick() }
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(50.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(bg),
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(Color.White)
+                .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+        ) {
+            if (!imageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(Icons.Default.Person, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.align(Alignment.Center))
+            }
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                stringResource(R.string.home_greeting_generic) + ", $name", 
+                color = MaterialTheme.colorScheme.onBackground, 
+                fontSize = 18.sp, 
+                fontWeight = FontWeight.Bold
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.LocationOn, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(location, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .shadow(2.dp, RoundedCornerShape(12.dp))
+                .clickable { onNotification() },
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, null, tint = tint, modifier = Modifier.size(24.dp))
+            Icon(Icons.Default.Notifications, null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(20.dp))
         }
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            label,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium,
-            color = TextDark,
-            textAlign = TextAlign.Center,
-            maxLines = 1
+    }
+}
+
+@Composable
+private fun GrocerySearchBar(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .height(56.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(Icons.Default.Search, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(stringResource(R.string.home_search_hint), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, modifier = Modifier.weight(1f))
+        Icon(
+            Icons.Default.Mic, 
+            null, 
+            tint = MaterialTheme.colorScheme.primary, 
+            modifier = Modifier.size(20.dp).clickable { /* Voice search implementation */ }
         )
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// AUTO-SLIDING BANNER with HorizontalPager
-// ═══════════════════════════════════════════════════════════════════
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun AutoSlidingBanner(
-    banners: List<Banner>,
-    onClick: (Banner?) -> Unit
-) {
+private fun AutoSlidingBanner(banners: List<Banner>, onClick: (Banner?) -> Unit) {
     if (banners.isEmpty()) return
-
     val pagerState = rememberPagerState(pageCount = { banners.size })
-
-    LaunchedEffect(pagerState, banners) {
-        if (banners.size > 1) {
-            while (true) {
-                delay(3000)
+    LaunchedEffect(banners) {
+        while (true) {
+            delay(3000)
+            if (banners.size > 1) {
                 val nextPage = (pagerState.currentPage + 1) % banners.size
                 pagerState.animateScrollToPage(nextPage)
             }
         }
     }
-
-    Column(
-        modifier = Modifier.padding(horizontal = 20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
@@ -512,829 +319,206 @@ private fun AutoSlidingBanner(
                 .clip(RoundedCornerShape(16.dp))
         ) { page ->
             val banner = banners[page]
-            BannerPage(banner = banner, onClick = { onClick(banner) })
-        }
-
-        // Page indicator dots
-        if (banners.size > 1) {
-            Spacer(modifier = Modifier.height(10.dp))
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                banners.forEachIndexed { index, _ ->
-                    val isSelected = pagerState.currentPage == index
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 3.dp)
-                            .size(if (isSelected) 8.dp else 6.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (isSelected) Navy
-                                else Navy.copy(alpha = 0.2f)
-                            )
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun BannerPage(banner: Banner, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clickable { onClick() }
-    ) {
-        if (!banner.image.isNullOrBlank()) {
-            AsyncImage(
-                model = banner.image,
-                contentDescription = banner.title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.linearGradient(
-                            listOf(Navy, Mint)
-                        )
-                    )
-            )
-        }
-
-        // Subtle gradient overlay at bottom
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f)),
-                        startY = 60f
-                    )
+            Box(modifier = Modifier.fillMaxSize().clickable { onClick(banner) }) {
+                AsyncImage(
+                    model = banner.image,
+                    contentDescription = banner.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
-                .padding(16.dp)
-        ) {
-            Column(modifier = Modifier.align(Alignment.BottomStart)) {
-                Text(
-                    banner.title ?: "Halalytics",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    banner.description ?: "",
-                    color = Color.White.copy(alpha = 0.85f),
-                    fontSize = 12.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// BENTO GRID — Clean White Cards + Thin Borders
-// ═══════════════════════════════════════════════════════════════════
-
-@Composable
-private fun BentoGrid(
-    healthScore: Int,
-    healthScoreLabel: String? = null,
-    streak: Int,
-    totalScans: Int,
-    halalProducts: Int,
-    aiDailyInsight: String? = null,
-    onAiInsight: () -> Unit,
-    onHealthScore: () -> Unit,
-    onStreak: () -> Unit,
-    onLabCheck: () -> Unit
-) {
-    Column(
-        modifier = Modifier.padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        // Section Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                "Health Dashboard",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextDark
-            )
-            Icon(
-                Icons.Default.AutoAwesome,
-                null,
-                tint = Mint,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // Row 1: AI Daily Insight (full width)
-        AiDailyInsightCard(
-            totalScans = totalScans,
-            halalProducts = halalProducts,
-            insight = aiDailyInsight,
-            onClick = onAiInsight
-        )
-
-        // Row 2: Health Score + Streak + Lab
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            HealthScoreCard(
-                score = healthScore,
-                label = healthScoreLabel,
-                modifier = Modifier.weight(1.2f),
-                onClick = onHealthScore
-            )
-
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                StreakCard(streak = streak, onClick = onStreak)
-                LabShortcutCard(onClick = onLabCheck)
-            }
-        }
-    }
-}
-
-@Composable
-private fun AiDailyInsightCard(
-    totalScans: Int,
-    halalProducts: Int,
-    insight: String? = null,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.linearGradient(
-                        listOf(Navy, Color(0xFF00796B))
-                    ),
-                    RoundedCornerShape(18.dp)
-                )
-                .padding(18.dp)
-        ) {
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.AutoAwesome,
-                        contentDescription = null,
-                        tint = Mint,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        "AI Health Insight",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(100.dp))
-                            .background(Color.White.copy(alpha = 0.15f))
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            "Gemini AI",
-                            color = Color.White.copy(alpha = 0.8f),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Medium
-                        )
+                Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)))).padding(16.dp)) {
+                    Column(modifier = Modifier.align(Alignment.BottomStart)) {
+                        Text(banner.title ?: "", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(banner.description ?: "", color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp)
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-
-                val insightText = insight ?: when {
-                    totalScans == 0 -> "Mulai scan produk hari ini untuk mendapatkan insight kesehatan yang dipersonalisasi untukmu."
-                    halalProducts == totalScans -> "Semua $totalScans produk yang kamu scan hari ini berstatus halal. Terus pertahankan gaya hidup sehat!"
-                    else -> "Dari $totalScans scan hari ini, $halalProducts produk halal. Pastikan selalu cek label sebelum konsumsi."
-                }
-
-                Text(
-                    insightText,
-                    color = Color.White,
-                    fontSize = 13.sp,
-                    lineHeight = 19.sp,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    "Selengkapnya →",
-                    color = Mint,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
             }
         }
     }
 }
 
 @Composable
-private fun HealthScoreCard(
-    score: Int,
-    label: String? = null,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    // Single color: Navy for progress arc
-    val animatedProgress = remember { androidx.compose.animation.core.Animatable(0f) }
-
-    LaunchedEffect(score) {
-        animatedProgress.animateTo(
-            score / 100f,
-            animationSpec = tween(1200, easing = FastOutSlowInEasing)
-        )
-    }
-
+private fun FeatureGridSS(onScan: () -> Unit, onHistory: () -> Unit, onInsight: () -> Unit, onPoints: () -> Unit, onMedicine: () -> Unit, onCosmetic: () -> Unit, onBpom: () -> Unit, onLainnya: () -> Unit) {
     Card(
-        modifier = modifier
-            .aspectRatio(0.85f)
-            .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .border(1.dp, BorderGray, RoundedCornerShape(16.dp))
-                .padding(14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                "Health Score",
-                color = TextMedium,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Circular progress — Navy only
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(90.dp)
-                    .drawBehind {
-                        val strokeWidth = 10.dp.toPx()
-                        val arcSize = size.minDimension - strokeWidth
-                        val topLeft = Offset(
-                            (size.width - arcSize) / 2f,
-                            (size.height - arcSize) / 2f
-                        )
-                        // Background arc (light gray)
-                        drawArc(
-                            color = BorderGray,
-                            startAngle = -90f,
-                            sweepAngle = 360f,
-                            useCenter = false,
-                            topLeft = topLeft,
-                            size = Size(arcSize, arcSize),
-                            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
-                        )
-                        // Progress arc — Navy
-                        drawArc(
-                            color = Navy,
-                            startAngle = -90f,
-                            sweepAngle = 360f * animatedProgress.value,
-                            useCenter = false,
-                            topLeft = topLeft,
-                            size = Size(arcSize, arcSize),
-                            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
-                        )
-                    }
-            ) {
-                Text(
-                    "$score",
-                    color = Navy,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                FeatureItemSS(Icons.Default.QrCodeScanner, stringResource(R.string.feature_scan_ai), MaterialTheme.colorScheme.primaryContainer, onScan)
+                FeatureItemSS(Icons.Default.Medication, stringResource(R.string.feature_cek_obat), MaterialTheme.colorScheme.secondaryContainer, onMedicine)
+                FeatureItemSS(Icons.Default.AutoAwesome, stringResource(R.string.feature_kosmetik), MaterialTheme.colorScheme.tertiaryContainer, onCosmetic)
+                FeatureItemSS(Icons.Default.VerifiedUser, stringResource(R.string.feature_halal_points), MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f), onPoints)
             }
-            if (label != null) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    label,
-                    color = TextMedium,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center
-                )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                FeatureItemSS(Icons.Default.HealthAndSafety, stringResource(R.string.feature_bpom_id), MaterialTheme.colorScheme.surfaceVariant, onBpom)
+                FeatureItemSS(Icons.Default.Chat, stringResource(R.string.feature_ai_chat_id), MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f), onInsight)
+                FeatureItemSS(Icons.Default.History, stringResource(R.string.feature_riwayat_id), MaterialTheme.colorScheme.surfaceVariant, onHistory)
+                FeatureItemSS(Icons.Default.GridView, stringResource(R.string.feature_lainnya_id), MaterialTheme.colorScheme.surfaceVariant, onLainnya)
             }
         }
     }
 }
 
 @Composable
-private fun StreakCard(streak: Int, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, BorderGray, RoundedCornerShape(16.dp))
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                Icons.Default.LocalFireDepartment,
-                null,
-                tint = Color(0xFFFF6D00),
-                modifier = Modifier.size(22.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text(
-                    "$streak",
-                    color = Color(0xFFFF6D00),
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 18.sp
-                )
-                Text(
-                    "Day Streak",
-                    color = TextMedium,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
+private fun FeatureItemSS(icon: ImageVector, label: String, bgColor: Color, onClick: () -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onClick() }) {
+        Box(modifier = Modifier.size(56.dp).clip(RoundedCornerShape(16.dp)).background(bgColor), contentAlignment = Alignment.Center) {
+            Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
         }
-    }
-}
-
-@Composable
-private fun LabShortcutCard(onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MintPale),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                Icons.Default.Biotech,
-                null,
-                tint = Mint,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                "Scan Hasil Lab",
-                color = Color(0xFF00695C),
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 12.sp,
-                modifier = Modifier.weight(1f)
-            )
-            Icon(
-                Icons.Default.ChevronRight,
-                null,
-                tint = Mint,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-    }
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// QUICK ACTIONS — Unified Navy Icons on Light Background
-// ═══════════════════════════════════════════════════════════════════
-
-@Composable
-private fun QuickActions(
-    onHealthSuite: () -> Unit,
-    onAssistant: () -> Unit,
-    onHalalSpecialist: () -> Unit,
-    onDrugInteraction: () -> Unit,
-    onLabAnalysis: () -> Unit,
-    onAiReport: () -> Unit,
-    onBpom: () -> Unit,
-    onMore: () -> Unit
-) {
-    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-        SectionTitle(stringResource(R.string.home_quick_action), null, null)
         Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            ActionButton(stringResource(R.string.home_action_suite), Icons.Default.HealthAndSafety, Color(0xFFE91E63), Color(0xFFFCE4EC), onClick = onHealthSuite)
-            ActionButton(stringResource(R.string.home_action_assistant), Icons.Default.SmartToy, Color(0xFF7B1FA2), Color(0xFFF3E5F5), onClick = onAssistant)
-            ActionButton(stringResource(R.string.home_action_halal), Icons.Default.VerifiedUser, Color(0xFF2E7D32), Color(0xFFE8F5E9), onClick = onHalalSpecialist)
-            ActionButton("BPOM", Icons.Default.VerifiedUser, Color(0xFF004D40), Color(0xFFE0F2F1), onClick = onBpom)
-        }
+        Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
+    }
+}
+
+@Composable
+private fun GroceryCategorySection(onViewAll: () -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        SectionTitle(stringResource(R.string.home_categories), stringResource(R.string.home_see_all), onViewAll)
         Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            ActionButton(stringResource(R.string.home_action_interaction), Icons.Default.MedicalServices, Color(0xFFD32F2F), Color(0xFFFFEBEE), onClick = onDrugInteraction)
-            ActionButton(stringResource(R.string.home_action_lab), Icons.Default.Biotech, Color(0xFF00897B), Color(0xFFE0F2F1), onClick = onLabAnalysis)
-            ActionButton(stringResource(R.string.home_action_report), Icons.Default.Summarize, Color(0xFFF57C00), Color(0xFFFFF3E0), onClick = onAiReport)
-            ActionButton("Lainnya", Icons.Default.GridView, Color(0xFF455A64), Color(0xFFECEFF1), onClick = onMore)
+        val categories = listOf(
+            stringResource(R.string.search_hub_food) to Icons.Default.Restaurant, 
+            stringResource(R.string.search_hub_medicine) to Icons.Default.LocalDrink, 
+            stringResource(R.string.search_hub_medicine) to Icons.Default.Medication, 
+            stringResource(R.string.home_meat_category) to Icons.Default.SetMeal
+        )
+        LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            items(categories) { (name, icon) ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable { onViewAll() }
+                ) {
+                    Box(modifier = Modifier.size(70.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surface).border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+                        Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun ActionButton(
-    label: String,
-    icon: ImageVector,
-    tint: Color = Navy,
-    bg: Color = Color(0xFFE0F2F1),
-    onClick: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .width(72.dp)
-            .clickable { onClick() }
-    ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(bg),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(icon, null, tint = tint, modifier = Modifier.size(22.dp))
+private fun GroceryTopPicksSection(products: List<ScanHistoryItem>, onViewAll: () -> Unit, onProductClick: (ScanHistoryItem) -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        SectionTitle(stringResource(R.string.home_recommendations), stringResource(R.string.home_see_all), onViewAll)
+        Spacer(modifier = Modifier.height(12.dp))
+        LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            if (products.isEmpty()) {
+                items(3) { ShimmerProductItem() }
+            } else {
+                items(products.take(6)) { item ->
+                    Card(modifier = Modifier.width(160.dp).clickable { onProductClick(item) }, shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            AsyncImage(model = item.productImage, contentDescription = null, modifier = Modifier.fillMaxWidth().height(100.dp).clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Crop)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(item.productName ?: stringResource(R.string.home_stats_product), fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
+                            Text(item.halalStatus ?: "Halal", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
         }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            label,
-            fontSize = 10.sp,
-            color = TextDark,
-            fontWeight = FontWeight.Medium,
-            maxLines = 2,
-            textAlign = TextAlign.Center
-        )
     }
 }
-
-// ═══════════════════════════════════════════════════════════════════
-// ARTICLE CARDS — Clean with Navy Category Badge
-// ═══════════════════════════════════════════════════════════════════
 
 @Composable
 private fun ArticleCard(article: HealthArticleItem, onClick: () -> Unit) {
     Card(
-        modifier = Modifier
-            .padding(horizontal = 20.dp, vertical = 4.dp)
-            .fillMaxWidth()
-            .clickable { onClick() },
+        modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp).fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(width = 90.dp, height = 68.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFF0F2F5))
-            ) {
-                if (!article.imageUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = article.imageUrl,
-                        contentDescription = article.title,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Icon(
-                        Icons.Default.Description,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(24.dp),
-                        tint = TextLight
-                    )
-                }
+        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(modifier = Modifier.size(width = 90.dp, height = 68.dp).clip(RoundedCornerShape(10.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
+                AsyncImage(model = article.imageUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
             }
-
             Spacer(modifier = Modifier.width(12.dp))
-
             Column(modifier = Modifier.weight(1f)) {
-                if (!article.category.isNullOrBlank()) {
-                    Text(
-                        article.category.uppercase(),
-                        color = Navy,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                }
-                Text(
-                    article.title,
-                    color = TextDark,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 13.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    lineHeight = 16.sp
-                )
-                if (!article.excerpt.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(3.dp))
-                    Text(
-                        article.excerpt,
-                        color = TextMedium,
-                        fontSize = 11.sp,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        lineHeight = 14.sp
-                    )
-                }
+                Text(article.category?.uppercase() ?: "KESEHATAN", color = MaterialTheme.colorScheme.primary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(article.title, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
         }
     }
 }
-
-// ═══════════════════════════════════════════════════════════════════
-// PULSATING FAB — Navy Container
-// ═══════════════════════════════════════════════════════════════════
 
 @Composable
 private fun PulsatingFAB(onClick: () -> Unit) {
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "fab_scale"
-    )
-
-    FloatingActionButton(
-        onClick = onClick,
-        containerColor = Navy,
-        contentColor = Color.White,
-        shape = CircleShape,
-        modifier = Modifier
-            .scale(scale)
-            .size(58.dp),
-        elevation = FloatingActionButtonDefaults.elevation(
-            defaultElevation = 12.dp,
-            pressedElevation = 16.dp
-        )
-    ) {
-        Icon(
-            Icons.Default.SmartToy,
-            contentDescription = "AI Assistant",
-            modifier = Modifier.size(26.dp)
-        )
+    val infiniteTransition = rememberInfiniteTransition()
+    val scale by infiniteTransition.animateFloat(initialValue = 1f, targetValue = 1.1f, animationSpec = infiniteRepeatable(animation = tween(1200), repeatMode = RepeatMode.Reverse))
+    FloatingActionButton(onClick = onClick, containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary, shape = CircleShape, modifier = Modifier.scale(scale).size(58.dp)) {
+        Icon(Icons.Default.AutoAwesome, "AI", modifier = Modifier.size(26.dp))
     }
 }
-
-// ═══════════════════════════════════════════════════════════════════
-// RECENT SCAN CARD — Clean White
-// ═══════════════════════════════════════════════════════════════════
-
-@Composable
-private fun RecentScanCard(item: ScanHistoryItem, onClick: () -> Unit) {
-    val status = (item.halalStatus ?: "unknown").lowercase()
-    val statusColor = when (status) {
-        "halal" -> Color(0xFF2E7D32)    // Professional green
-        "haram" -> Color(0xFFD32F2F)    // Medical red
-        else -> Color(0xFFF57C00)       // Deep amber
-    }
-
-    Card(
-        modifier = Modifier
-            .padding(horizontal = 20.dp, vertical = 3.dp)
-            .fillMaxWidth()
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFF0F2F5)),
-                contentAlignment = Alignment.Center
-            ) {
-                if (!item.productImage.isNullOrBlank()) {
-                    AsyncImage(
-                        model = item.productImage,
-                        contentDescription = item.productName,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Text("📦", fontSize = 16.sp)
-                }
-            }
-            Spacer(modifier = Modifier.width(10.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    item.productName ?: "Produk",
-                    color = TextDark,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 13.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(item.createdAt.toRelativeTime(), color = TextLight, fontSize = 10.sp)
-            }
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(100.dp))
-                    .background(statusColor.copy(alpha = 0.1f))
-                    .padding(horizontal = 10.dp, vertical = 5.dp)
-            ) {
-                Text(
-                    status.uppercase(),
-                    color = statusColor,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// SECTION TITLE
-// ═══════════════════════════════════════════════════════════════════
 
 @Composable
 private fun SectionTitle(title: String, action: String?, onAction: (() -> Unit)?) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(title, color = TextDark, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Text(title, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 16.sp)
         if (action != null && onAction != null) {
-            Text(
-                action,
-                color = Navy,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 13.sp,
-                modifier = Modifier.clickable { onAction() }
-            )
+            Text(action, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, modifier = Modifier.clickable { onAction() })
         }
     }
 }
-
-// ═══════════════════════════════════════════════════════════════════
-// ALL FEATURES BOTTOM SHEET
-// ═══════════════════════════════════════════════════════════════════
-
-private data class FeatureAction(
-    val title: String,
-    val icon: ImageVector,
-    val route: String
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AllFeaturesSheet(
-    onDismiss: () -> Unit,
-    onNavigate: (String) -> Unit
-) {
-    val features = remember {
-        listOf(
-            FeatureAction("Scan Barcode", Icons.Default.QrCode2, "scan"),
-            FeatureAction("Medical Records", Icons.Default.MedicalServices, "medical_records"),
-            FeatureAction("Medical Resume", Icons.Default.Description, "medical_resume"),
-            FeatureAction("Health Diary", Icons.Default.Edit, "health_diary"),
-            FeatureAction("Health Pass", Icons.Default.QrCode2, "health_pass"),
-            FeatureAction("Emergency P3K", Icons.Default.LocalHospital, "emergency_p3k"),
-            FeatureAction("Pantauan Tubuh", Icons.Default.MonitorHeart, "health_monitor"),
-            FeatureAction("Health Journey", Icons.Default.CalendarMonth, "health_journey"),
-            FeatureAction("Nutrition Scan", Icons.Default.CameraAlt, "nutrition_scanner"),
-            FeatureAction("Report Issue", Icons.Default.Description, "report_issue/0/General"),
-            FeatureAction("Intl Medicine", Icons.Default.MedicalServices, "international_medicine")
-        )
-    }
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = CardWhite,
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 10.dp)
-        ) {
-            Text(
-                text = "Semua Fitur",
-                color = TextDark,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
+private fun AllFeaturesSheet(onDismiss: () -> Unit, onNavigate: (String) -> Unit) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surface) {
+        Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
+            Text(stringResource(R.string.home_all_features_sheet), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Spacer(modifier = Modifier.height(16.dp))
-
-            features.chunked(4).forEach { rowItems ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    rowItems.forEach { item ->
-                        ActionButton(
-                            label = item.title,
-                            icon = item.icon,
-                            onClick = { onNavigate(item.route) }
-                        )
-                    }
-                    repeat(4 - rowItems.size) {
-                        Spacer(modifier = Modifier.width(72.dp))
+            val items = listOf(
+                stringResource(R.string.home_scan_barcode_sheet) to "scan", 
+                stringResource(R.string.feature_riwayat_id) to "history", 
+                stringResource(R.string.home_medicine_reminders_sheet) to "medicine_reminders", 
+                stringResource(R.string.home_mental_quiz_sheet) to "mental_health_hub"
+            )
+            items.chunked(2).forEach { row ->
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    row.forEach { (label, route) ->
+                        TextButton(
+                            onClick = { onNavigate(route) }, 
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(60.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
+                        ) { 
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = when(route) {
+                                        "scan" -> Icons.Default.QrCodeScanner
+                                        "history" -> Icons.Default.History
+                                        "medicine_reminders" -> Icons.Default.NotificationsActive
+                                        "mental_health_hub" -> Icons.Default.Psychology
+                                        else -> Icons.Default.Star
+                                    },
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center) 
+                            }
+                        }
                     }
                 }
+                Spacer(modifier = Modifier.height(10.dp))
             }
-            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// NAVIGATION HELPER
-// ═══════════════════════════════════════════════════════════════════
-
-private fun navigateByBannerAction(
-    navController: NavController,
-    banner: Banner?
-) {
-    if (banner == null) {
-        navController.navigate("bpom_scanner")
-        return
+private fun navigateByBannerAction(navController: NavController, banner: Banner?) {
+    val route = when (banner?.action_type) {
+        "open_screen" -> banner.action_value
+        "open_news" -> "health_articles"
+        else -> "scan_hub"
     }
-
-    val actionType = banner.action_type?.trim()?.lowercase()
-    val actionValue = banner.action_value?.trim().orEmpty()
-
-    val route = when (actionType) {
-        "open_screen" -> actionValue.ifBlank { null }
-        "open_news" -> if (actionValue.isNotBlank()) "health_article_detail/${Uri.encode(actionValue)}" else "health_articles"
-        "open_poster" -> "health_articles"
-        "open_search" -> "search_external"
-        "open_scan" -> "scan_hub"
-        "open_bpom" -> "bpom_scanner"
-        "open_health_suite" -> "health_suite_hub"
-        "open_product_external" -> actionValue.takeIf { it.isNotBlank() }?.let { "product_external_detail/$it" }
-        "open_product_local" -> actionValue.takeIf { it.isNotBlank() }?.let { "product_detail/$it" }
-        else -> when (banner.position) {
-            1 -> "health_articles"
-            2 -> "bpom_scanner"
-            else -> "health_articles"
-        }
-    }
-
     if (!route.isNullOrBlank()) navController.navigate(route)
 }
