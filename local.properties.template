@@ -1,0 +1,27 @@
+## local.properties Template
+## Copy file ini ke local.properties dan isi dengan nilai lokal Anda
+## JANGAN COMMIT local.properties dengan real API keys!
+
+# Android SDK location (WAJIB)
+sdk.dir=/path/to/Android/Sdk
+
+# API Keys (Development ONLY - leave blank for production)
+# ⚠️ PENTING: Kosongkan atau gunakan placeholder value saja
+# Fetch real keys dari backend saat app runtime!
+GEMINI_API_KEY=
+NEWSDATA_API_KEY=
+ANTHROPIC_API_KEY=
+UNSPLASH_API_KEY=
+
+# Backend Configuration
+# Gunakan 10.0.2.2 untuk Android Emulator, ganti dengan real URL untuk device/production
+API_BASE_URL=http://10.0.2.2:8000/api/
+REVERB_BASE_URL=ws://10.0.2.2:8080
+REVERB_APP_KEY=
+API_CERT_PIN=
+
+## Instructions:
+## 1. Copy file ini ke local.properties
+## 2. Edit dengan nilai lokal Anda (untuk development saja)
+## 3. NEVER commit real API keys
+## 4. NEVER check this file into git with actual values
