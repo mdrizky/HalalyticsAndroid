@@ -31,6 +31,8 @@ import com.example.halalyticscompose.Data.Model.ProductItem
 import com.example.halalyticscompose.ui.theme.*
 import com.example.halalyticscompose.ui.viewmodel.MainViewModel
 import com.example.halalyticscompose.ui.viewmodel.ProductExternalViewModel
+import com.example.halalyticscompose.Data.Model.ProductImageResult
+import com.example.halalyticscompose.ui.components.ProductImagesSection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,10 +44,10 @@ fun ProductExternalDetailScreen(
 ) {
     val context = LocalContext.current
     
-    // States from ViewModel
     val productDetail by externalViewModel.productDetail.collectAsState()
     val isLoading by externalViewModel.isLoadingDetail.collectAsState()
     val error by externalViewModel.detailError.collectAsState()
+    val imageState by externalViewModel.productImageState.collectAsState()
     
     // Fetch product on launch
     LaunchedEffect(barcode) {
@@ -159,6 +161,7 @@ fun ProductExternalDetailScreen(
                 ProductDetailContent(
                     product = productDetail!!,
                     barcode = barcode,
+                    imageState = imageState,
                     onSaveToHistory = {
                         mainViewModel.addScanToHistory(
                             productId = null,
@@ -179,6 +182,7 @@ fun ProductExternalDetailScreen(
 private fun ProductDetailContent(
     product: ProductItem,
     barcode: String,
+    imageState: ProductImageResult?,
     onSaveToHistory: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -194,51 +198,59 @@ private fun ProductDetailContent(
             .padding(horizontal = 20.dp)
             .padding(bottom = 100.dp)
     ) {
-        // Product Image
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+        // Image Gallery from ProductImagesSection if available, else simple fallback
+        if (imageState != null) {
+            ProductImagesSection(
+                imageResult = imageState,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            )
+        } else {
+            // Product Image (Legacy)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                val imageUrl = product.getBestImageUrl()
-                if (imageUrl != null) {
-                    AsyncImage(
-                        model = imageUrl,
-                        contentDescription = product.getDisplayName(),
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Fit
-                    )
-                } else {
-                    Icon(
-                        Icons.Outlined.Inventory2,
-                        contentDescription = null,
-                        tint = TextMuted,
-                        modifier = Modifier.size(64.dp)
-                    )
-                }
-                
-                // Nutriscore badge
-                product.nutriscoreGrade?.let { grade ->
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(12.dp)
-                            .size(40.dp)
-                            .background(getNutriscoreColor(grade), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = grade.uppercase(),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val imageUrl = product.getBestImageUrl()
+                    if (imageUrl != null) {
+                        AsyncImage(
+                            model = imageUrl,
+                            contentDescription = product.getDisplayName(),
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit
                         )
+                    } else {
+                        Icon(
+                            Icons.Outlined.Inventory2,
+                            contentDescription = null,
+                            tint = TextMuted,
+                            modifier = Modifier.size(64.dp)
+                        )
+                    }
+                    
+                    // Nutriscore badge
+                    product.nutriscoreGrade?.let { grade ->
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(12.dp)
+                                .size(40.dp)
+                                .background(getNutriscoreColor(grade), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = grade.uppercase(),
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
                 }
             }

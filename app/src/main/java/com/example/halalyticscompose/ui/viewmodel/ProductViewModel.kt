@@ -9,10 +9,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.example.halalyticscompose.Data.Network.ApiConfig
+import com.example.halalyticscompose.domain.usecase.GetProductImagesUseCase
+import com.example.halalyticscompose.Data.Model.ProductImageResult
 
 class ProductViewModel : ViewModel() {
 
     private var repository: ProductRepository = ProductRepository()
+    private val getProductImagesUseCase = GetProductImagesUseCase(ApiConfig.apiService)
 
     fun initRepository(dao: com.example.halalyticscompose.Data.Local.Dao.CachedScanResultDao) {
         repository = ProductRepository(cachedDao = dao)
@@ -20,6 +24,9 @@ class ProductViewModel : ViewModel() {
 
     private val _productState = MutableStateFlow<ProductUiState>(ProductUiState.Loading)
     val productState: StateFlow<ProductUiState> = _productState.asStateFlow()
+
+    private val _productImageState = MutableStateFlow<ProductImageResult?>(null)
+    val productImageState: StateFlow<ProductImageResult?> = _productImageState.asStateFlow()
 
     private var authToken: String? = null
 
@@ -38,6 +45,11 @@ class ProductViewModel : ViewModel() {
                     println("✅ Product loaded successfully: ${product.name} (barcode: ${product.barcode})")
                     println("📊 Product source: ${product.halalInfo?.source}")
                     _productState.value = ProductUiState.Success(product)
+                    
+                    // Load advanced images with fallback
+                    val source = if (product.halalInfo?.source == "open_food_facts") "external" else "local"
+                    val result = getProductImagesUseCase(product.name, product.barcode, source)
+                    _productImageState.value = result
                 }
                 .onFailure { error ->
                     println("❌ Failed to load product: ${error.message}")

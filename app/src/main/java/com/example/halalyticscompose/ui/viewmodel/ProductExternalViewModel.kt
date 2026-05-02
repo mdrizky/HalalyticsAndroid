@@ -9,9 +9,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.Response
 import java.io.IOException
 import org.json.JSONObject
+import com.example.halalyticscompose.domain.usecase.GetProductImagesUseCase
+import com.example.halalyticscompose.Data.Model.ProductImageResult
 
 /**
  * ViewModel for handling External Product API (OpenFoodFacts via Laravel backend)
@@ -22,6 +23,8 @@ class ProductExternalViewModel : ViewModel() {
         private const val TAG = "ProductExternalVM"
         private const val MAX_PAGES_TO_FETCH = 3
     }
+
+    private val getProductImagesUseCase = GetProductImagesUseCase(ApiConfig.apiService)
 
     private fun sanitizeErrorMessage(raw: String?): String? {
         val message = raw?.trim()?.takeIf { it.isNotBlank() } ?: return null
@@ -71,6 +74,10 @@ class ProductExternalViewModel : ViewModel() {
     // Total count from search
     private val _totalCount = MutableStateFlow(0)
     val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
+    
+    // Images State
+    private val _productImageState = MutableStateFlow<ProductImageResult?>(null)
+    val productImageState: StateFlow<ProductImageResult?> = _productImageState.asStateFlow()
     
     // Loading States
     private val _isSearching = MutableStateFlow(false)
@@ -408,6 +415,10 @@ class ProductExternalViewModel : ViewModel() {
                     if (body?.responseCode == 200 && content != null) {
                         _productDetail.value = content
                         Log.d(TAG, "✅ Product found: ${content.getDisplayName()}")
+                        
+                        // Load advanced images
+                        val result = getProductImagesUseCase(content.getDisplayName(), barcode, "external")
+                        _productImageState.value = result
                     } else {
                         val fallback = loadProductDetailDirectFallback(barcode)
                         if (!fallback) {
@@ -554,6 +565,11 @@ class ProductExternalViewModel : ViewModel() {
                 if (product != null) {
                     _productDetail.value = product
                     _detailError.value = ""
+                    
+                    // Load advanced images
+                    val result = getProductImagesUseCase(product.getDisplayName(), barcode, "external")
+                    _productImageState.value = result
+                    
                     true
                 } else {
                     false

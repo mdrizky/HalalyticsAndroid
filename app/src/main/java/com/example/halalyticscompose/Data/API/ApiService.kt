@@ -234,6 +234,14 @@ interface ApiService {
         @Path("barcode") barcode: String
     ): Response<OpenFoodFactsResponse>
 
+    @GET("https://api.unsplash.com/search/photos")
+    suspend fun searchUnsplashPhotos(
+        @Query("query") query: String,
+        @Query("per_page") perPage: Int = 4,
+        @Query("orientation") orientation: String = "squarish",
+        @Header("Authorization") clientId: String
+    ): Response<com.example.halalyticscompose.Data.Model.UnsplashSearchResponse>
+
     @POST("halal/check")
     suspend fun checkHalal(
         @Body request: HalalCheckRequest

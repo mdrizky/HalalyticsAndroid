@@ -1,6 +1,8 @@
 package com.example.halalyticscompose.ui.screens
 
 import android.net.Uri
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -351,13 +354,29 @@ fun HealthArticleDetailScreen(
                 }
             }
             remoteArticle != null -> {
-                ArticleDetailContent(
-                    modifier = Modifier.padding(padding),
-                    category = remoteArticle.category ?: "Kesehatan",
-                    title = remoteArticle.title,
-                    content = remoteArticle.content ?: (remoteArticle.excerpt ?: "-"),
-                    imageUrl = remoteArticle.imageUrl,
-                )
+                if (!remoteArticle.sourceUrl.isNullOrEmpty() && remoteArticle.content == remoteArticle.title) {
+                     // For pure external links without much content, show WebView
+                     AndroidView(
+                         factory = { context ->
+                             WebView(context).apply {
+                                 settings.javaScriptEnabled = true
+                                 settings.domStorageEnabled = true
+                                 webViewClient = WebViewClient()
+                                 loadUrl(remoteArticle.sourceUrl)
+                             }
+                         },
+                         modifier = Modifier.fillMaxSize().padding(padding)
+                     )
+                } else {
+                    ArticleDetailContent(
+                        modifier = Modifier.padding(padding),
+                        category = remoteArticle.category ?: "Kesehatan",
+                        title = remoteArticle.title,
+                        content = remoteArticle.content ?: (remoteArticle.excerpt ?: "-"),
+                        imageUrl = remoteArticle.imageUrl,
+                        sourceUrl = remoteArticle.sourceUrl
+                    )
+                }
             }
             else -> {
                 Box(
@@ -431,7 +450,8 @@ private fun ArticleDetailContent(
     category: String,
     title: String,
     content: String,
-    imageUrl: String?
+    imageUrl: String?,
+    sourceUrl: String? = null
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().then(modifier),
@@ -483,6 +503,16 @@ private fun ArticleDetailContent(
                     lineHeight = 26.sp,
                     textAlign = TextAlign.Justify
                 )
+                if (!sourceUrl.isNullOrEmpty()) {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    androidx.compose.material3.Button(
+                        onClick = { /* Not used since WebView handles layout but just to be safe */ },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Baca Sumber Asli", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    }
+                }
             }
         }
         item { Spacer(modifier = Modifier.height(100.dp)) }

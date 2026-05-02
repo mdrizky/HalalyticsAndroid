@@ -11,21 +11,13 @@ plugins {
 
 import java.util.Properties
 
-// Workaround for intermittent KSP duplicate-generated-file crashes on some environments.
-// This keeps generated Java stubs deterministic per variant before each KSP run.
-tasks.matching { it.name.startsWith("ksp") && it.name.endsWith("Kotlin") }.configureEach {
-    doFirst {
-        val variant = name.removePrefix("ksp").removeSuffix("Kotlin").lowercase()
-        delete(layout.buildDirectory.dir("generated/ksp/$variant/java").get().asFile)
-    }
-}
-
+// Java & Kotlin compatibility
 android {
-    namespace = "com.example.halalyticscompose"
+    namespace = "com.halalytics.app"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.halalyticscompose"
+        applicationId = "com.halalytics.app"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
@@ -46,6 +38,7 @@ android {
         val anthropicApiKey = (localProperties.getProperty("ANTHROPIC_API_KEY") ?: "").replace("\"", "\\\"")
         val reverbBaseUrl = (localProperties.getProperty("REVERB_BASE_URL") ?: "ws://10.0.2.2:8080").replace("\"", "\\\"")
         val reverbAppKey = (localProperties.getProperty("REVERB_APP_KEY") ?: "").replace("\"", "\\\"")
+        val unsplashApiKey = (localProperties.getProperty("UNSPLASH_API_KEY") ?: "").replace("\"", "\\\"")
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
         buildConfigField("String", "NEWSDATA_API_KEY", "\"$newsDataApiKey\"")
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
@@ -53,6 +46,7 @@ android {
         buildConfigField("String", "ANTHROPIC_API_KEY", "\"$anthropicApiKey\"")
         buildConfigField("String", "REVERB_BASE_URL", "\"$reverbBaseUrl\"")
         buildConfigField("String", "REVERB_APP_KEY", "\"$reverbAppKey\"")
+        buildConfigField("String", "UNSPLASH_API_KEY", "\"$unsplashApiKey\"")
     }
 
     buildTypes {
@@ -140,6 +134,10 @@ dependencies {
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.7.0")
 
+    // Facebook Login
+    implementation("com.facebook.android:facebook-android-sdk:latest.release")
+    implementation("com.facebook.android:facebook-login:latest.release")
+
     //Animasi
     implementation("androidx.compose.animation:animation:1.5.4")
 
@@ -202,7 +200,6 @@ dependencies {
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("com.google.accompanist:accompanist-permissions:0.37.2")
     implementation("com.google.android.gms:play-services-location:21.3.0")
-    implementation("com.google.ar:core:1.41.0")
 
     // 🔹 Compose Material Icons Extended
     implementation("androidx.compose.material:material-icons-extended")

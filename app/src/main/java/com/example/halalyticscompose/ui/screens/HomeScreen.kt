@@ -13,7 +13,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -22,7 +21,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.LazyColumn
@@ -141,22 +139,19 @@ private val GoldAccent = Color(0xFFD4AF37)  // Premium Gold
 fun HomeScreen(
     navController: NavController,
     viewModel: MainViewModel = hiltViewModel(),
-    articleViewModel: HealthArticleViewModel = hiltViewModel(),
-    paddingValues: PaddingValues = PaddingValues(0.dp)
+    articleViewModel: HealthArticleViewModel = hiltViewModel()
 ) {
     val user by viewModel.currentUser.collectAsState()
     val banners by viewModel.banners.collectAsState()
     val totalScans by viewModel.totalScans.collectAsState()
     val halalProducts by viewModel.halalProducts.collectAsState()
+    val healthScore by viewModel.dailyHealthScore.collectAsState()
     val streak by viewModel.currentStreak.collectAsState()
     val scanHistory by viewModel.scanHistory.collectAsState()
     val articles by articleViewModel.articles.collectAsState()
     val aiDailyInsight by viewModel.aiDailyInsight.collectAsState()
     val healthScoreData by viewModel.healthScoreData.collectAsState()
-    val homeLoading by viewModel.isLoading.collectAsState()
-    val homeError by viewModel.errorMessage.collectAsState()
-    val articleLoading by articleViewModel.isLoading.collectAsState()
-    val articleError by articleViewModel.error.collectAsState()
+    var showAllFeaturesSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.refreshData()
@@ -179,7 +174,7 @@ fun HomeScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(padding),
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             // ─── NAVY HEADER + FLOATING QUICK ACTION CARD ────────
@@ -197,7 +192,7 @@ fun HomeScreen(
                     FloatingQuickActionCard(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
-                            .offset(y = 92.dp)
+                            .offset(y = 56.dp)
                             .padding(horizontal = 20.dp),
                         onScan = { navController.navigate("scan") },
                         onHistory = { navController.navigate("history") },
@@ -205,56 +200,37 @@ fun HomeScreen(
                         onPoints = { navController.navigate("health_journey") },
                         onMedicine = { navController.navigate("drug_interaction") },
                         onCosmetic = { navController.navigate("skincare_scanner") },
-                        onBpom = { navController.navigate("bpom_scanner") },
-                        onAllFeatures = { navController.navigate("all_features") }
+                        onLabScan = { navController.navigate("lab_analysis") },
+                        onBpom = { navController.navigate("bpom_scanner") }
                     )
                 }
                 // Spacer to account for the floating card overlap
-                Spacer(modifier = Modifier.height(136.dp))
+                Spacer(modifier = Modifier.height(68.dp))
             }
 
             // ─── AUTO-SLIDING BANNER ─────────────────────────────
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                when {
-                    banners.isNotEmpty() -> {
-                        AutoSlidingBanner(
-                            banners = banners,
-                            onClick = { banner -> navigateByBannerAction(navController, banner) }
-                        )
-                    }
-                    homeLoading -> {
-                        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            ShimmerBanner()
-                        }
-                    }
-                    else -> {
-                        HomeStatusCard(
-                            message = "Banner belum tersedia. Kamu tetap bisa lanjut pakai fitur utama Halalytics.",
-                            tone = StatusTone.Info
-                        )
-                    }
-                }
-            }
-
-            if (!homeError.isNullOrBlank() || (!articleError.isNullOrBlank() && articles.isEmpty())) {
-                item {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    HomeStatusCard(
-                        message = homeError ?: articleError.orEmpty(),
-                        tone = StatusTone.Warning
-                    )
-                }
+                AutoSlidingBanner(
+                    banners = banners,
+                    onClick = { banner -> navigateByBannerAction(navController, banner) }
+                )
             }
 
             // ─── BENTO GRID — Clean White Cards ──────────────────
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 BentoGrid(
+                    healthScore = healthScoreData?.score ?: healthScore,
+                    healthScoreLabel = healthScoreData?.level,
+                    streak = streak,
                     totalScans = totalScans,
                     halalProducts = halalProducts,
                     aiDailyInsight = aiDailyInsight,
-                    onAiInsight = { navController.navigate("health_assistant") }
+                    onAiInsight = { navController.navigate("health_assistant") },
+                    onHealthScore = { navController.navigate("health_journey") },
+                    onStreak = { navController.navigate("health_diary") },
+                    onLabCheck = { navController.navigate("lab_analysis") }
                 )
             }
 
@@ -269,15 +245,8 @@ fun HomeScreen(
                 ) { navController.navigate("health_articles") }
             }
 
-            if (articleLoading && articles.isEmpty()) {
+            if (articles.isEmpty()) {
                 items(3) { ShimmerArticleItem() }
-            } else if (articles.isEmpty()) {
-                item {
-                    HomeStatusCard(
-                        message = articleError ?: "Artikel belum tersedia sekarang. Coba lagi sebentar lagi.",
-                        tone = StatusTone.Info
-                    )
-                }
             } else {
                 items(articles.take(4)) { article ->
                     ArticleCard(
@@ -290,11 +259,42 @@ fun HomeScreen(
                 }
             }
 
+            // ─── RECENT SCANS ────────────────────────────────────
+            item {
+                Spacer(modifier = Modifier.height(12.dp))
+                SectionTitle(
+                    stringResource(R.string.home_recent_scan),
+                    stringResource(R.string.home_see_all)
+                ) { navController.navigate("history") }
+            }
 
-            item { Spacer(modifier = Modifier.height(120.dp)) }
+            if (scanHistory.isEmpty()) {
+                items(4) { ShimmerProductItem() }
+            } else {
+                items(scanHistory.take(4)) { item ->
+                    RecentScanCard(item = item) {
+                        if (item.id > 0) {
+                            navController.navigate("scan_history_detail/${item.id}")
+                        } else {
+                            navController.navigate("history")
+                        }
+                    }
+                }
+            }
+
+            item { Spacer(modifier = Modifier.height(80.dp)) }
         }
 
-        // bottom sheet removed in favor of all_features full screen
+        // ─── ALL FEATURES BOTTOM SHEET ──────────────────────
+        if (showAllFeaturesSheet) {
+            AllFeaturesSheet(
+                onDismiss = { showAllFeaturesSheet = false },
+                onNavigate = { route ->
+                    showAllFeaturesSheet = false
+                    navController.navigate(route)
+                }
+            )
+        }
     }
 }
 
@@ -312,13 +312,12 @@ private fun NavyHeader(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .statusBarsPadding()
             .background(
                 Brush.linearGradient(
                     listOf(Navy, NavyLight)
                 )
             )
-            .padding(bottom = 84.dp)
+            .padding(bottom = 48.dp) // Extra space for floating card
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp)
@@ -407,13 +406,13 @@ private fun FloatingQuickActionCard(
     onPoints: () -> Unit,
     onMedicine: () -> Unit = {},
     onCosmetic: () -> Unit = {},
-    onBpom: () -> Unit = {},
-    onAllFeatures: () -> Unit = {}
+    onLabScan: () -> Unit = {},
+    onBpom: () -> Unit = {}
 ) {
     Card(
         modifier = modifier
-                .fillMaxWidth()
-                .zIndex(1f),
+            .fillMaxWidth()
+            .zIndex(1f),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = CardWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
@@ -421,29 +420,28 @@ private fun FloatingQuickActionCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp, horizontal = 12.dp),
+                .padding(vertical = 16.dp, horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Row 1: Scan AI, Cek Obat, Kosmetik, Halal
+            // Row 1: Scan AI, Cek Obat, Kosmetik, Lab Scan
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                QuickActionIcon(Icons.Default.QrCode2, "Scan AI", Color(0xFF00695C), Color(0xFFE0F2F1), onScan)
-                QuickActionIcon(Icons.Default.Medication, "Cek Obat", Color(0xFFD32F2F), Color(0xFFFFEBEE), onMedicine)
-                QuickActionIcon(Icons.Default.AutoAwesome, "Kosmetik", Color(0xFF7B1FA2), Color(0xFFF3E5F5), onCosmetic)
-                QuickActionIcon(Icons.Default.VerifiedUser, "Halal", Color(0xFFF57F17), Color(0xFFFFF8E1), onPoints)
+                QuickActionIcon(Icons.Default.QrCode2, "Scan AI", Color(0xFF004D40), Color(0xFFE0F2F1), onScan)
+                QuickActionIcon(Icons.Default.Medication, "Cek Obat", Color(0xFFC62828), Color(0xFFFFEBEE), onMedicine)
+                QuickActionIcon(Icons.Default.AutoAwesome, "Kosmetik", Color(0xFF6A1B9A), Color(0xFFF3E5F5), onCosmetic)
+                QuickActionIcon(Icons.Default.Biotech, "Lab Scan", Color(0xFF2E7D32), Color(0xFFE8F5E9), onLabScan)
             }
-            // Row 2: BPOM, AI Assistant, Lainnya (All Features)
+            // Row 2: Halal Check, BPOM, AI Assistant, Riwayat
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                QuickActionIcon(Icons.Default.HealthAndSafety, "BPOM", Color(0xFF0277BD), Color(0xFFE1F5FE), onBpom)
-                QuickActionIcon(Icons.Default.SmartToy, "AI Chat", Color(0xFF00695C), Color(0xFFE0F2F1), onInsight)
-                QuickActionIcon(Icons.Default.GridView, "Lainnya", Color(0xFF546E7A), Color(0xFFECEFF1), onAllFeatures)
-                // Placeholder to keep spacing consistent
-                Spacer(modifier = Modifier.width(72.dp))
+                QuickActionIcon(Icons.Default.VerifiedUser, "Halal", Color(0xFFD4AF37), Color(0xFFFFF8E1), onPoints)
+                QuickActionIcon(Icons.Default.HealthAndSafety, "BPOM", Color(0xFF00695C), Color(0xFFE0F2F1), onBpom)
+                QuickActionIcon(Icons.Default.SmartToy, "AI Chat", Color(0xFF004D40), Color(0xFFE0F2F1), onInsight)
+                QuickActionIcon(Icons.Default.History, "Riwayat", Color(0xFF004D40), Color(0xFFE0F2F1), onHistory)
             }
         }
     }
@@ -454,73 +452,27 @@ private fun QuickActionIcon(icon: ImageVector, label: String, tint: Color, bg: C
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .width(72.dp)
+            .width(68.dp)
             .clickable { onClick() }
     ) {
         Box(
             modifier = Modifier
                 .size(50.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(14.dp))
                 .background(bg),
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, null, tint = tint, modifier = Modifier.size(24.dp))
         }
-        Spacer(modifier = Modifier.height(7.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         Text(
             label,
-            fontSize = 10.5.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
             color = TextDark,
             textAlign = TextAlign.Center,
             maxLines = 1
         )
-    }
-}
-
-private enum class StatusTone {
-    Info,
-    Warning,
-}
-
-@Composable
-private fun HomeStatusCard(
-    message: String,
-    tone: StatusTone
-) {
-    val background = when (tone) {
-        StatusTone.Info -> MintPale
-        StatusTone.Warning -> Color(0xFFFFF3E0)
-    }
-    val foreground = when (tone) {
-        StatusTone.Info -> Navy
-        StatusTone.Warning -> Color(0xFFE65100)
-    }
-    val icon = when (tone) {
-        StatusTone.Info -> Icons.Default.Description
-        StatusTone.Warning -> Icons.Default.Warning
-    }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = background)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(icon, contentDescription = null, tint = foreground, modifier = Modifier.size(18.dp))
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(
-                text = message,
-                color = foreground,
-                fontSize = 12.sp,
-                lineHeight = 18.sp
-            )
-        }
     }
 }
 
@@ -653,10 +605,16 @@ private fun BannerPage(banner: Banner, onClick: () -> Unit) {
 
 @Composable
 private fun BentoGrid(
+    healthScore: Int,
+    healthScoreLabel: String? = null,
+    streak: Int,
     totalScans: Int,
     halalProducts: Int,
     aiDailyInsight: String? = null,
-    onAiInsight: () -> Unit
+    onAiInsight: () -> Unit,
+    onHealthScore: () -> Unit,
+    onStreak: () -> Unit,
+    onLabCheck: () -> Unit
 ) {
     Column(
         modifier = Modifier.padding(horizontal = 20.dp),
@@ -691,6 +649,27 @@ private fun BentoGrid(
             insight = aiDailyInsight,
             onClick = onAiInsight
         )
+
+        // Row 2: Health Score + Streak + Lab
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            HealthScoreCard(
+                score = healthScore,
+                label = healthScoreLabel,
+                modifier = Modifier.weight(1.2f),
+                onClick = onHealthScore
+            )
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                StreakCard(streak = streak, onClick = onStreak)
+                LabShortcutCard(onClick = onLabCheck)
+            }
+        }
     }
 }
 
@@ -916,6 +895,45 @@ private fun StreakCard(streak: Int, onClick: () -> Unit) {
     }
 }
 
+@Composable
+private fun LabShortcutCard(onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MintPale),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.Biotech,
+                null,
+                tint = Mint,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                "Scan Hasil Lab",
+                color = Color(0xFF00695C),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 12.sp,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                Icons.Default.ChevronRight,
+                null,
+                tint = Mint,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+    }
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // QUICK ACTIONS — Unified Navy Icons on Light Background
@@ -927,7 +945,7 @@ private fun QuickActions(
     onAssistant: () -> Unit,
     onHalalSpecialist: () -> Unit,
     onDrugInteraction: () -> Unit,
-
+    onLabAnalysis: () -> Unit,
     onAiReport: () -> Unit,
     onBpom: () -> Unit,
     onMore: () -> Unit
@@ -950,6 +968,7 @@ private fun QuickActions(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             ActionButton(stringResource(R.string.home_action_interaction), Icons.Default.MedicalServices, Color(0xFFD32F2F), Color(0xFFFFEBEE), onClick = onDrugInteraction)
+            ActionButton(stringResource(R.string.home_action_lab), Icons.Default.Biotech, Color(0xFF00897B), Color(0xFFE0F2F1), onClick = onLabAnalysis)
             ActionButton(stringResource(R.string.home_action_report), Icons.Default.Summarize, Color(0xFFF57C00), Color(0xFFFFF3E0), onClick = onAiReport)
             ActionButton("Lainnya", Icons.Default.GridView, Color(0xFF455A64), Color(0xFFECEFF1), onClick = onMore)
         }
@@ -1210,6 +1229,79 @@ private fun SectionTitle(title: String, action: String?, onAction: (() -> Unit)?
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// ALL FEATURES BOTTOM SHEET
+// ═══════════════════════════════════════════════════════════════════
+
+private data class FeatureAction(
+    val title: String,
+    val icon: ImageVector,
+    val route: String
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AllFeaturesSheet(
+    onDismiss: () -> Unit,
+    onNavigate: (String) -> Unit
+) {
+    val features = remember {
+        listOf(
+            FeatureAction("Scan Barcode", Icons.Default.QrCode2, "scan"),
+            FeatureAction("Medical Records", Icons.Default.MedicalServices, "medical_records"),
+            FeatureAction("Medical Resume", Icons.Default.Description, "medical_resume"),
+            FeatureAction("Health Diary", Icons.Default.Edit, "health_diary"),
+            FeatureAction("Health Pass", Icons.Default.QrCode2, "health_pass"),
+            FeatureAction("Emergency P3K", Icons.Default.LocalHospital, "emergency_p3k"),
+            FeatureAction("Pantauan Tubuh", Icons.Default.MonitorHeart, "health_monitor"),
+            FeatureAction("Health Journey", Icons.Default.CalendarMonth, "health_journey"),
+            FeatureAction("Nutrition Scan", Icons.Default.CameraAlt, "nutrition_scanner"),
+            FeatureAction("Report Issue", Icons.Default.Description, "report_issue/0/General"),
+            FeatureAction("Intl Medicine", Icons.Default.MedicalServices, "international_medicine")
+        )
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = CardWhite,
+        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 10.dp)
+        ) {
+            Text(
+                text = "Semua Fitur",
+                color = TextDark,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            features.chunked(4).forEach { rowItems ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    rowItems.forEach { item ->
+                        ActionButton(
+                            label = item.title,
+                            icon = item.icon,
+                            onClick = { onNavigate(item.route) }
+                        )
+                    }
+                    repeat(4 - rowItems.size) {
+                        Spacer(modifier = Modifier.width(72.dp))
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // NAVIGATION HELPER

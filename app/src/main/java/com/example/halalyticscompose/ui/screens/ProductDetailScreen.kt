@@ -251,46 +251,12 @@ fun ProductDetailContentPremium(
         // Hero Image
         item {
             Box(modifier = Modifier.fillMaxWidth().height(300.dp)) {
-                val imageUrl = product.imageFrontUrl
-                if (!imageUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = imageUrl,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    // Placeholder when no image available
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.linearGradient(
-                                    listOf(
-                                        MaterialTheme.colorScheme.primaryContainer,
-                                        MaterialTheme.colorScheme.secondaryContainer
-                                    )
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                Icons.Default.Inventory2,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f)
-                            )
-                            Spacer(Modifier.height(8.dp))
-                            Text(
-                                "Gambar produk tidak tersedia",
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
-                }
+                AsyncImage(
+                    model = product.imageFrontUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
                 Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, MaterialTheme.colorScheme.background))))
                 
                 // Status Badge overlay
@@ -323,13 +289,6 @@ fun ProductDetailContentPremium(
         // Product Identity
         item {
             Column(modifier = Modifier.padding(24.dp)) {
-                if ((product.halalInfo?.source ?: "").equals("fallback", ignoreCase = true) ||
-                    product.name.equals("Produk belum ditemukan", ignoreCase = true)
-                ) {
-                    ProductFallbackNoticeCard(barcode = product.barcode)
-                    Spacer(Modifier.height(16.dp))
-                }
-
                 Text(product.brand.uppercase(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface.copy(0.6f), fontWeight = FontWeight.Bold)
                 Text(product.name, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Black)
                 Spacer(Modifier.height(8.dp))
@@ -388,47 +347,6 @@ fun ProductDetailContentPremium(
         }
         
         item { Spacer(Modifier.height(40.dp)) }
-    }
-}
-
-@Composable
-private fun ProductFallbackNoticeCard(barcode: String) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(MaterialTheme.colorScheme.tertiaryContainer)
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.28f),
-                shape = RoundedCornerShape(18.dp)
-            )
-            .padding(16.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onTertiaryContainer
-            )
-            Column {
-                Text(
-                    text = "Mode Placeholder Aktif",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Barcode $barcode belum tersedia di database utama. Halalytics tetap menampilkan data placeholder agar layar tidak kosong dan kamu tetap bisa lanjut lapor/scan ulang.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-            }
-        }
     }
 }
 
